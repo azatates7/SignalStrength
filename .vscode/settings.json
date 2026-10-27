@@ -1,0 +1,9 @@
+{
+  "gradle.autoDetect": "off",
+  "java.import.gradle.enabled": false,
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/android/.gradle/**": true,
+    "**/android/build/**": true
+  }
+}
