@@ -5,8 +5,8 @@ import { LEVEL_COUNT, TECH_LABEL, qualityLabel, toLevel } from './src/signal/lev
 import { METRICS, rate, type MetricInfo } from './src/signal/metrics';
 import { expo } from './app.json';
 
-// app.json'daki "1.0.0" → "v1.0"
-const APP_VERSION = `v${expo.version.split('.').slice(0, 2).join('.')}`;
+// app.json'daki ad ve sürüm: "Sinyal Ölçer" + "2.0.0" → "Sinyal Ölçer v2.0"
+const APP_FOOTER = `${expo.name} v${expo.version.split('.').slice(0, 2).join('.')}`;
 
 const REASONS: Record<string, string> = {
   no_service: 'Şebeke yok (SIM yok / uçak modu)',
@@ -48,7 +48,7 @@ export default function App() {
         <MetricCard info={METRICS.sinr} value={reading.sinr} />
         <MetricCard info={METRICS.systemLevel} value={reading.systemLevel} />
 
-        <Text style={styles.version}>Signal Strength {APP_VERSION}</Text>
+        <Text style={styles.version}>{APP_FOOTER}</Text>
       </ScrollView>
     </View>
   );
@@ -107,7 +107,7 @@ function Centered({ text }: { text: string }) {
     <View style={[styles.screen, styles.centered]}>
       <StatusBar style="light" />
       <Text style={styles.quality}>{text}</Text>
-      <Text style={[styles.version, styles.versionCentered]}>Signal Strength {APP_VERSION}</Text>
+      <Text style={[styles.version, styles.versionCentered]}>{APP_FOOTER}</Text>
     </View>
   );
 }
