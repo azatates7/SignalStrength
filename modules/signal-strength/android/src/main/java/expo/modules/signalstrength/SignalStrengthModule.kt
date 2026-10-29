@@ -53,7 +53,19 @@ class SignalStrengthModule : Module() {
     OnDestroy { runCatching { stopListening() } }
   }
 
-  private fun emit(ss: SignalStrength?) = sendEvent("onSignalChange", toMap(ss))
+  // Dinleyici callback'leri ana thread'de çalışır; buradaki bir hata uygulamayı kapatmasın,
+  // JS tarafına "error" olarak iletilsin
+  private fun emit(ss: SignalStrength?) {
+    val payload = try {
+      toMap(ss)
+    } catch (e: Exception) {
+      mapOf(
+        "available" to false, "reason" to "error",
+        "errorMessage" to e.toString(), "timestamp" to System.currentTimeMillis()
+      )
+    }
+    runCatching { sendEvent("onSignalChange", payload) }
+  }
 
   private fun startListening() {
     // Android 9 altında dinleyici başlatılmaz; aksi halde "desteklenmiyor" ekranının üzerine veri yazar

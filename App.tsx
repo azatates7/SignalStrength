@@ -1,3 +1,4 @@
+import { Component, type ReactNode } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSignalStrength } from './src/signal/useSignalStrength';
@@ -5,7 +6,7 @@ import { BAR_COUNT, MAX_SCORE, TECH_LABEL, qualityLabel, toScore } from './src/s
 import { METRICS, rate, type MetricInfo } from './src/signal/metrics';
 import { expo } from './app.json';
 
-// app.json'daki ad ve sürüm: "Sinyal Ölçer" + "2.0.0" → "Sinyal Ölçer v2.0"
+// app.json'daki ad ve sürüm, ör. "Sinyal Ölçer" + "3.0.0" → "Sinyal Ölçer v3.0"
 const APP_FOOTER = `${expo.name} v${expo.version.split('.').slice(0, 2).join('.')}`;
 
 const REASONS: Record<string, string> = {
@@ -15,12 +16,37 @@ const REASONS: Record<string, string> = {
 };
 
 export default function App() {
+  return (
+    <ErrorBoundary>
+      <SignalScreen />
+    </ErrorBoundary>
+  );
+}
+
+// Ekran çizilirken oluşan bir JS hatası uygulamayı kapatmak yerine ekranda gösterilir
+class ErrorBoundary extends Component<{ children: ReactNode }, { error?: Error }> {
+  state: { error?: Error } = {};
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+  render() {
+    if (this.state.error) {
+      return <Centered text="Bir hata oluştu" detail={this.state.error.message} />;
+    }
+    return this.props.children;
+  }
+}
+
+function SignalScreen() {
   const reading = useSignalStrength();
 
   if (Platform.OS !== 'android') {
     return <Centered text="Şu an yalnızca Android destekleniyor" />;
   }
   if (!reading) return <Centered text="Okunuyor…" />;
+  if (reading.reason === 'error') {
+    return <Centered text="Bir hata oluştu" detail={reading.errorMessage} />;
+  }
   if (!reading.available) return <Centered text={REASONS[reading.reason ?? 'no_data']} />;
 
   const score = toScore(reading);
@@ -106,11 +132,16 @@ function MetricCard({ info, value }: { info: MetricInfo; value?: number | null }
   );
 }
 
-function Centered({ text }: { text: string }) {
+function Centered({ text, detail }: { text: string; detail?: string }) {
   return (
     <View style={[styles.screen, styles.centered]}>
       <StatusBar style="light" />
       <Text style={styles.quality}>{text}</Text>
+      {detail ? (
+        <Text style={styles.errorDetail} selectable>
+          {detail}
+        </Text>
+      ) : null}
       <Text style={[styles.version, styles.versionCentered]}>{APP_FOOTER}</Text>
     </View>
   );
@@ -140,6 +171,7 @@ const styles = StyleSheet.create({
   badge: { fontSize: 12, fontWeight: '600', borderWidth: 1, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, marginTop: 6, overflow: 'hidden' },
   cardDesc: { color: '#cbd5e1', fontSize: 14, lineHeight: 20, marginTop: 12 },
   cardIdeal: { color: '#94a3b8', fontSize: 13, marginTop: 8 },
+  errorDetail: { color: '#94a3b8', fontSize: 13, textAlign: 'center', marginTop: 12 },
   version: { color: '#64748b', fontSize: 12, textAlign: 'center', marginTop: 16 },
   versionCentered: { position: 'absolute', bottom: 32 },
 });
