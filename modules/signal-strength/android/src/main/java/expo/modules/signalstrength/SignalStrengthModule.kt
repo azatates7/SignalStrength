@@ -40,10 +40,10 @@ class SignalStrengthModule : Module() {
     Name("SignalStrength")
     Events("onSignalChange")
 
-    // Anlık tek okuma
+    // Anlık tek okuma. Android 9 (API 28) altı desteklenmez.
     Function("getCurrent") {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) toMap(telephony.signalStrength)
-      else mapOf("available" to false, "reason" to "unsupported_os")
+      else mapOf("available" to false, "reason" to "unsupported_os", "timestamp" to System.currentTimeMillis())
     }
 
     // Sinyal değiştikçe "onSignalChange" olayı gönderir
@@ -56,6 +56,8 @@ class SignalStrengthModule : Module() {
   private fun emit(ss: SignalStrength?) = sendEvent("onSignalChange", toMap(ss))
 
   private fun startListening() {
+    // Android 9 altında dinleyici başlatılmaz; aksi halde "desteklenmiyor" ekranının üzerine veri yazar
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return
     if (telephonyCallback != null || legacyListener != null) return
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -96,11 +98,11 @@ class SignalStrengthModule : Module() {
     val now = System.currentTimeMillis()
     if (ss == null) return mapOf("available" to false, "reason" to "no_data", "timestamp" to now)
 
-    // Android 9: hücre bazlı detay yok, sadece sistemin 0-4 seviyesi
+    // Android 9 (API 28): hücre bazlı detay public API'de yok, sadece sistemin 0-4 seviyesi
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
       return mapOf(
         "available" to true, "technology" to "UNKNOWN", "dbm" to null,
-        "systemLevel" to ss.level, "timestamp" to now
+        "systemLevel" to ss.level, "operator" to operatorName(), "timestamp" to now
       )
     }
 
@@ -113,6 +115,7 @@ class SignalStrengthModule : Module() {
     val result = mutableMapOf<String, Any?>(
       "available" to true,
       "technology" to techOf(cell),
+      "operator" to operatorName(),
       "dbm" to valid(cell.dbm),
       "asu" to valid(cell.asuLevel),
       "systemLevel" to cell.level,   // Android'in kendi 0-4 seviyesi (karşılaştırma için)
@@ -148,6 +151,10 @@ class SignalStrengthModule : Module() {
     is CellSignalStrengthGsm -> 4
     else -> 5
   }
+
+  // Kayıtlı olunan şebekenin adı (ör. TURKCELL). İzin gerektirmez; şebeke yoksa null.
+  private fun operatorName(): String? =
+    runCatching { telephony.networkOperatorName }.getOrNull()?.trim()?.takeIf { it.isNotEmpty() }
 
   // CellInfo.UNAVAILABLE == Int.MAX_VALUE
   private fun valid(v: Int): Int? = if (v == Int.MAX_VALUE || v == Int.MIN_VALUE) null else v

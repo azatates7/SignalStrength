@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSignalStrength } from './src/signal/useSignalStrength';
-import { LEVEL_COUNT, TECH_LABEL, qualityLabel, toLevel } from './src/signal/levels';
+import { BAR_COUNT, MAX_SCORE, TECH_LABEL, qualityLabel, toScore } from './src/signal/levels';
 import { METRICS, rate, type MetricInfo } from './src/signal/metrics';
 import { expo } from './app.json';
 
@@ -11,7 +11,7 @@ const APP_FOOTER = `${expo.name} v${expo.version.split('.').slice(0, 2).join('.'
 const REASONS: Record<string, string> = {
   no_service: 'Şebeke yok (SIM yok / uçak modu)',
   no_data: 'Sinyal bilgisi alınamadı',
-  unsupported_os: 'Android 9 ve üzeri gerekli',
+  unsupported_os: 'Bu uygulama Android 9 ve üzeri sürümlerde çalışır',
 };
 
 export default function App() {
@@ -23,7 +23,7 @@ export default function App() {
   if (!reading) return <Centered text="Okunuyor…" />;
   if (!reading.available) return <Centered text={REASONS[reading.reason ?? 'no_data']} />;
 
-  const level = toLevel(reading);
+  const score = toScore(reading);
   const tech = reading.technology ?? 'UNKNOWN';
 
   return (
@@ -31,14 +31,17 @@ export default function App() {
       <StatusBar style="light" />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.hero}>
-          <Text style={styles.tech}>{TECH_LABEL[tech]}</Text>
+          <Text style={styles.tech}>
+            {reading.operator ? `${reading.operator} · ` : ''}
+            {TECH_LABEL[tech]}
+          </Text>
           <Text style={styles.dbm}>
             {reading.dbm ?? '—'}
             <Text style={styles.unit}> dBm</Text>
           </Text>
-          <Bars level={level} />
+          <Bars score={score} />
           <Text style={styles.quality}>
-            {qualityLabel(level)} · {level}/{LEVEL_COUNT}
+            {qualityLabel(score)} · {score}/{MAX_SCORE}
           </Text>
         </View>
 
@@ -54,16 +57,17 @@ export default function App() {
   );
 }
 
-function Bars({ level }: { level: number }) {
+function Bars({ score }: { score: number }) {
+  const filled = Math.round(score / (MAX_SCORE / BAR_COUNT));
   return (
     <View style={styles.bars}>
-      {Array.from({ length: LEVEL_COUNT }, (_, i) => (
+      {Array.from({ length: BAR_COUNT }, (_, i) => (
         <View
           key={i}
           style={[
             styles.bar,
             { height: 16 + i * 10 },
-            i < level ? { backgroundColor: barColor(level) } : styles.barOff,
+            i < filled ? { backgroundColor: barColor(score) } : styles.barOff,
           ]}
         />
       ))}
@@ -71,8 +75,8 @@ function Bars({ level }: { level: number }) {
   );
 }
 
-function barColor(level: number) {
-  const p = level / LEVEL_COUNT;
+function barColor(score: number) {
+  const p = score / MAX_SCORE;
   if (p <= 0.3) return '#ef4444';
   if (p <= 0.6) return '#f59e0b';
   return '#22c55e';

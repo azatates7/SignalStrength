@@ -48,7 +48,7 @@ export const METRICS = {
     title: 'Telefonun çubuk göstergesi',
     techName: 'Android seviyesi',
     unit: '/ 4',
-    description: 'Telefonun üst çubuğunda gördüğünüz sinyal çubuğu sayısı. Bu uygulama aynı ölçümü 10 kademede daha hassas gösterir.',
+    description: 'Telefonun üst çubuğunda gördüğünüz sinyal çubuğu sayısı. Bu uygulama aynı ölçümü 0–100 arası puanla daha hassas gösterir.',
     ideal: 'İdeal: 3–4 çubuk · Zayıf: 0–1 çubuk',
     thresholds: [4, 3, 2],
   },
