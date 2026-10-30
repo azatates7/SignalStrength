@@ -1,6 +1,12 @@
 package expo.modules.signalstrength
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.net.wifi.WifiInfo
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -16,12 +22,15 @@ import android.telephony.SignalStrength
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
+import java.util.concurrent.atomic.AtomicBoolean
+import expo.modules.kotlin.Promise
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 
 /**
- * Telefonun o anki hücresel sinyal gücünü okur. İnternet ve ek izin gerektirmez
- * (SignalStrength okumak için Android izin istemez).
+ * Telefonun o anki hücresel sinyal gücünü ve aktif internet bağlantısının tipini okur.
+ * Sinyal okumak izin gerektirmez; bağlantı tipi için yalnızca ACCESS_NETWORK_STATE
+ * (kurulumda otomatik verilen, kullanıcıya sorulmayan) izni gerekir.
  */
 class SignalStrengthModule : Module() {
 
@@ -31,14 +40,18 @@ class SignalStrengthModule : Module() {
       return ctx.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
     }
 
+  private val connectivity: ConnectivityManager?
+    get() = appContext.reactContext?.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+
   private val mainHandler = Handler(Looper.getMainLooper())
   private var telephonyCallback: TelephonyCallback? = null   // Android 12+
   @Suppress("DEPRECATION")
   private var legacyListener: PhoneStateListener? = null     // Android 9-11
+  private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
   override fun definition() = ModuleDefinition {
     Name("SignalStrength")
-    Events("onSignalChange")
+    Events("onSignalChange", "onNetworkChange")
 
     // Anlık tek okuma. Android 9 (API 28) altı desteklenmez.
     Function("getCurrent") {
@@ -56,14 +69,123 @@ class SignalStrengthModule : Module() {
       prefs()?.edit()?.putString(KEY_THEME, mode)?.apply()
     }
 
-    OnDestroy { runCatching { stopListening() } }
+    // Dil tercihi ("tr" | "en"); kullanıcı seçmediyse null (telefon dili kullanılır)
+    Function("getLanguagePreference") { prefs()?.getString(KEY_LANGUAGE, null) }
+    Function("setLanguagePreference") { lang: String ->
+      prefs()?.edit()?.putString(KEY_LANGUAGE, lang)?.apply()
+    }
+
+    // Aktif internet bağlantısı (Wi-Fi / mobil veri / ...) ve değişiklik bildirimleri
+    Function("getNetworkInfo") { networkInfo(currentCapabilities()) }
+    Function("startNetworkListening") { startNetworkListening() }
+    Function("stopNetworkListening") { stopNetworkListening() }
+
+    // Bağlı Wi-Fi ağının adı (SSID). Android bunu yalnızca konum izni verilmiş ve
+    // konum servisi açıkken verir; aksi halde null döner.
+    AsyncFunction("getWifiName") { promise: Promise -> getWifiName(promise) }
+
+    OnDestroy {
+      runCatching { stopListening() }
+      runCatching { stopNetworkListening() }
+    }
   }
 
-  // Dinleyici callback'leri ana thread'de çalışır; buradaki bir hata uygulamayı kapatmasın,
-  // JS tarafına "error" olarak iletilsin
   private fun prefs() =
     appContext.reactContext?.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
+  // --- Bağlantı tipi ---
+
+  private fun currentCapabilities(): NetworkCapabilities? {
+    val cm = connectivity ?: return null
+    val network = cm.activeNetwork ?: return null
+    return cm.getNetworkCapabilities(network)
+  }
+
+  private fun networkInfo(caps: NetworkCapabilities?): Map<String, Any?> {
+    if (caps == null) {
+      return mapOf("connected" to false, "validated" to false, "type" to "none", "metered" to false)
+    }
+    val type = when {
+      caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
+      caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "cellular"
+      caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "ethernet"
+      caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> "vpn"
+      else -> "other"
+    }
+    return mapOf(
+      "connected" to caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET),
+      // Android, ağın gerçekten internete çıkabildiğini doğruladıysa true
+      "validated" to caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED),
+      "type" to type,
+      // Kotalı bağlantı (genelde mobil veri); hız testi öncesi kullanıcı uyarısı için
+      "metered" to !caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+    )
+  }
+
+  private fun startNetworkListening() {
+    if (networkCallback != null) return
+    val cm = connectivity ?: return
+    val cb = object : ConnectivityManager.NetworkCallback() {
+      override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) = emitNetwork(caps)
+      override fun onLost(network: Network) = emitNetwork(null)
+    }
+    cm.registerDefaultNetworkCallback(cb)
+    networkCallback = cb
+  }
+
+  private fun stopNetworkListening() {
+    networkCallback?.let { cb -> connectivity?.unregisterNetworkCallback(cb) }
+    networkCallback = null
+  }
+
+  private fun getWifiName(promise: Promise) {
+    val cm = connectivity ?: return promise.resolve(null)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+      // Android 12+: SSID yalnızca FLAG_INCLUDE_LOCATION_INFO ile kayıtlı callback'e verilir
+      val done = AtomicBoolean(false)
+      val request = NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build()
+      val cb = object : ConnectivityManager.NetworkCallback(ConnectivityManager.NetworkCallback.FLAG_INCLUDE_LOCATION_INFO) {
+        override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
+          if (done.getAndSet(true)) return
+          runCatching { cm.unregisterNetworkCallback(this) }
+          promise.resolve(cleanSsid((caps.transportInfo as? WifiInfo)?.ssid))
+        }
+      }
+      try {
+        cm.registerNetworkCallback(request, cb)
+      } catch (e: Exception) {
+        return promise.resolve(null)
+      }
+      // Wi-Fi yoksa callback hiç çağrılmaz; 3 sn sonra boş dön
+      mainHandler.postDelayed({
+        if (!done.getAndSet(true)) {
+          runCatching { cm.unregisterNetworkCallback(cb) }
+          promise.resolve(null)
+        }
+      }, 3000)
+    } else {
+      val wifi = appContext.reactContext?.applicationContext
+        ?.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+      @Suppress("DEPRECATION")
+      promise.resolve(cleanSsid(runCatching { wifi?.connectionInfo?.ssid }.getOrNull()))
+    }
+  }
+
+  // Android SSID'yi tırnak içinde verir; izin yoksa "<unknown ssid>" döner
+  private fun cleanSsid(raw: String?): String? {
+    val s = raw?.trim()?.removeSurrounding("\"") ?: return null
+    return if (s.isEmpty() || s == "<unknown ssid>") null else s
+  }
+
+  // Ağ callback'leri arka plan thread'inde çalışır; hata uygulamayı kapatmasın
+  private fun emitNetwork(caps: NetworkCapabilities?) {
+    runCatching { sendEvent("onNetworkChange", networkInfo(caps)) }
+  }
+
+  // --- Sinyal ---
+
+  // Dinleyici callback'leri ana thread'de çalışır; buradaki bir hata uygulamayı kapatmasın,
+  // JS tarafına "error" olarak iletilsin
   private fun emit(ss: SignalStrength?) {
     val payload = try {
       toMap(ss)
@@ -180,6 +302,7 @@ class SignalStrengthModule : Module() {
   companion object {
     private const val PREFS_NAME = "sinyal_olcer"
     private const val KEY_THEME = "theme"
+    private const val KEY_LANGUAGE = "language"
   }
 
   // CellInfo.UNAVAILABLE == Int.MAX_VALUE

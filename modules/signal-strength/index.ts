@@ -19,8 +19,18 @@ export type SignalReading = {
   timestamp: number;
 };
 
+export type NetworkType = 'wifi' | 'cellular' | 'ethernet' | 'vpn' | 'other' | 'none';
+
+export type NetworkInfo = {
+  connected: boolean; // İnternet yeteneği olan bir ağ var
+  validated: boolean; // Android internete gerçekten çıkılabildiğini doğruladı
+  type: NetworkType;
+  metered: boolean; // Kotalı bağlantı (genelde mobil veri)
+};
+
 type Events = {
   onSignalChange: (reading: SignalReading) => void;
+  onNetworkChange: (info: NetworkInfo) => void;
 };
 
 declare class SignalStrengthNative extends NativeModule<Events> {
@@ -29,6 +39,13 @@ declare class SignalStrengthNative extends NativeModule<Events> {
   stopListening(): void;
   getThemePreference(): string | null;
   setThemePreference(mode: string): void;
+  getLanguagePreference(): string | null;
+  setLanguagePreference(lang: string): void;
+  getNetworkInfo(): NetworkInfo;
+  startNetworkListening(): void;
+  stopNetworkListening(): void;
+  /** Bağlı Wi-Fi'nin adı; konum izni yoksa / konum kapalıysa null */
+  getWifiName(): Promise<string | null>;
 }
 
 // Modül bulunamazsa uygulama açılışta çökmesin diye null döner; hook bunu ekranda hata olarak gösterir

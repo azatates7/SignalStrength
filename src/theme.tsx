@@ -14,8 +14,10 @@ export type Palette = {
   textMuted: string;   // İkincil bilgiler
   textFaint: string;   // En silik (teknik ad, sürüm)
   barOff: string;      // Boş çubuk
-  segment: string;     // Tema seçici arka planı
+  segment: string;     // Sekme çubuğu / ikincil buton arka planı
   segmentActive: string;
+  accent: string;      // Ana buton (Testi Başlat)
+  onAccent: string;    // Ana buton yazısı
 };
 
 const DARK: Palette = {
@@ -28,6 +30,8 @@ const DARK: Palette = {
   barOff: '#334155',
   segment: '#1e293b',
   segmentActive: '#334155',
+  accent: '#22c55e',
+  onAccent: '#052e16',
 };
 
 const LIGHT: Palette = {
@@ -40,6 +44,8 @@ const LIGHT: Palette = {
   barOff: '#cbd5e1',
   segment: '#e2e8f0',
   segmentActive: '#ffffff',
+  accent: '#15803d',
+  onAccent: '#ffffff',
 };
 
 // Durum renkleri açık zeminde yazı olarak okunmuyor; açık temada koyu tonları kullanılır

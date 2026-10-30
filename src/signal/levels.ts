@@ -1,6 +1,7 @@
 // src/signal/levels.ts
 // Android'in 0-4 seviyesi yerine dBm'den 0-100 arası bir sinyal puanı hesaplıyoruz.
 import type { SignalReading, Technology } from '../../modules/signal-strength';
+import type { QualityKey } from '../i18n/strings';
 
 export const MAX_SCORE = 100;
 export const BAR_COUNT = 10; // Ekrandaki çubuk sayısı (her çubuk 10 puan)
@@ -30,21 +31,23 @@ export function toScore(reading: SignalReading | null): number {
   return Math.max(0, Math.min(MAX_SCORE, Math.round(ratio * MAX_SCORE)));
 }
 
-export function qualityLabel(score: number): string {
-  if (score === 0) return 'Sinyal yok';
-  if (score <= 20) return 'Çok zayıf';
-  if (score <= 40) return 'Zayıf';
-  if (score <= 60) return 'Orta';
-  if (score <= 80) return 'İyi';
-  return 'Mükemmel';
+export function qualityKey(score: number): QualityKey {
+  if (score === 0) return 'none';
+  if (score <= 20) return 'veryPoor';
+  if (score <= 40) return 'poor';
+  if (score <= 60) return 'fair';
+  if (score <= 80) return 'good';
+  return 'excellent';
 }
 
-export const TECH_LABEL: Record<Technology, string> = {
+// "Bilinmiyor" / "Unknown" dile göre src/i18n/strings.ts → common.unknown
+export const TECH_LABEL: Record<Exclude<Technology, 'UNKNOWN'>, string> = {
   NR: '5G',
   LTE: '4G (LTE)',
   WCDMA: '3G (WCDMA)',
   TDSCDMA: '3G (TD-SCDMA)',
   GSM: '2G (GSM)',
   CDMA: '2G/3G (CDMA)',
-  UNKNOWN: 'Bilinmiyor',
 };
+
+export const techLabel = (tech: Technology, unknown: string) => (tech === 'UNKNOWN' ? unknown : TECH_LABEL[tech]);

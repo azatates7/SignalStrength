@@ -1,34 +1,137 @@
-import { Component, type ReactNode } from 'react';
+import { Component, useRef, useState, type ReactNode } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  StatusBar as RNStatusBar,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+  type ScrollViewInstance,
+} from 'react-native';
 import { useSignalStrength } from './src/signal/useSignalStrength';
-import { BAR_COUNT, MAX_SCORE, TECH_LABEL, qualityLabel, toScore } from './src/signal/levels';
+import { BAR_COUNT, MAX_SCORE, qualityKey, techLabel, toScore } from './src/signal/levels';
 import { METRICS, rate, type MetricInfo } from './src/signal/metrics';
-import { ThemeProvider, useTheme, type ThemeMode } from './src/theme';
-import { expo } from './app.json';
+import { SpeedTestScreen } from './src/speedtest/SpeedTestScreen';
+import { ThemeProvider, useTheme } from './src/theme';
+import { LanguageProvider, useI18n } from './src/i18n';
+import { appFooter } from './src/appInfo';
 
-// app.json'daki ad ve sürüm, ör. "Sinyal Ölçer" + "3.0.0" → "Sinyal Ölçer v3.0"
-const APP_FOOTER = `${expo.name} v${expo.version.split('.').slice(0, 2).join('.')}`;
-
-const REASONS: Record<string, string> = {
-  no_service: 'Şebeke yok (SIM yok / uçak modu)',
-  no_data: 'Sinyal bilgisi alınamadı',
-  unsupported_os: 'Bu uygulama Android 9 ve üzeri sürümlerde çalışır',
-};
-
-const THEME_OPTIONS: { mode: ThemeMode; label: string }[] = [
-  { mode: 'system', label: 'Sistem' },
-  { mode: 'light', label: 'Açık' },
-  { mode: 'dark', label: 'Koyu' },
-];
+type Tab = 'signal' | 'speed';
+const TABS: Tab[] = ['signal', 'speed'];
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <ErrorBoundary>
-        <SignalScreen />
-      </ErrorBoundary>
-    </ThemeProvider>
+    <LanguageProvider>
+      <ThemeProvider>
+        <Root />
+      </ThemeProvider>
+    </LanguageProvider>
+  );
+}
+
+function Root() {
+  const { colors: c, isDark } = useTheme();
+  const [tab, setTab] = useState<Tab>('signal');
+  const { width } = useWindowDimensions();
+  const pager = useRef<ScrollViewInstance>(null);
+
+  // Sekmeye dokununca ilgili sayfaya kaydır
+  const goTo = (t: Tab) => {
+    setTab(t);
+    pager.current?.scrollTo({ x: TABS.indexOf(t) * width, animated: true });
+  };
+
+  return (
+    <View style={[styles.screen, { backgroundColor: c.background }]}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <Header />
+      <TabBar tab={tab} onChange={goTo} />
+      {/* Sola / sağa kaydırarak sekme değiştirme. İki sayfa da bağlı kalır;
+          sekme değişince devam eden hız testi kesilmez */}
+      <ScrollView
+        ref={pager}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        style={styles.tabPage}
+        onMomentumScrollEnd={(e) => {
+          const i = Math.round(e.nativeEvent.contentOffset.x / width);
+          setTab(TABS[Math.min(Math.max(i, 0), TABS.length - 1)]);
+        }}
+      >
+        <View style={[styles.tabPage, { width }]}>
+          <ErrorBoundary>
+            <SignalScreen />
+          </ErrorBoundary>
+        </View>
+        <View style={[styles.tabPage, { width }]}>
+          <ErrorBoundary>
+            <SpeedTestScreen active={tab === 'speed'} />
+          </ErrorBoundary>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+function Header() {
+  const { colors: c, isDark, setMode } = useTheme();
+  const { t, lang, toggleLang } = useI18n();
+  return (
+    <View style={[styles.header, { paddingTop: (RNStatusBar.currentHeight ?? 24) + 12 }]}>
+      <Text style={[styles.appTitle, { color: c.text }]} numberOfLines={1}>
+        {t.appName}
+      </Text>
+      <View style={styles.headerButtons}>
+        {/* Dil: geçilecek dili gösterir (Türkçedeyken "EN", İngilizcedeyken "TR") */}
+        <Pressable
+          onPress={toggleLang}
+          style={({ pressed }) => [styles.roundButton, { backgroundColor: c.segment, opacity: pressed ? 0.7 : 1 }]}
+          accessibilityRole="button"
+          accessibilityLabel={t.header.switchLanguage}
+          hitSlop={8}
+        >
+          <Text style={[styles.langText, { color: c.text }]}>{lang === 'tr' ? 'EN' : 'TR'}</Text>
+        </Pressable>
+        {/* Tema: tek dokunuş açık ↔ koyu, uzun basış telefonun temasına dön */}
+        <Pressable
+          onPress={() => setMode(isDark ? 'light' : 'dark')}
+          onLongPress={() => setMode('system')}
+          style={({ pressed }) => [styles.roundButton, { backgroundColor: c.segment, opacity: pressed ? 0.7 : 1 }]}
+          accessibilityRole="button"
+          accessibilityLabel={isDark ? t.header.toLight : t.header.toDark}
+          hitSlop={8}
+        >
+          <Text style={styles.themeIcon}>{isDark ? '☀️' : '🌙'}</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+function TabBar({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
+  const { colors: c } = useTheme();
+  const { t } = useI18n();
+  return (
+    <View style={[styles.segment, styles.tabBar, { backgroundColor: c.segment }]}>
+      {TABS.map((key) => {
+        const active = key === tab;
+        return (
+          <Pressable
+            key={key}
+            onPress={() => onChange(key)}
+            style={[styles.segmentItem, active && { backgroundColor: c.segmentActive }]}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: active }}
+          >
+            <Text style={[styles.segmentText, { color: active ? c.text : c.textMuted }]}>{t.tabs[key]}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
   );
 }
 
@@ -40,82 +143,68 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error?: Error }
   }
   render() {
     if (this.state.error) {
-      return <Centered text="Bir hata oluştu" detail={this.state.error.message} />;
+      return <ErrorView detail={this.state.error.message} />;
     }
     return this.props.children;
   }
 }
 
+// Hata ekranı (sınıf bileşeni hook kullanamadığı için ayrı)
+function ErrorView({ detail }: { detail?: string }) {
+  const { t } = useI18n();
+  return <Centered text={t.common.error} detail={detail} />;
+}
+
 function SignalScreen() {
   const reading = useSignalStrength();
-  const { colors: c, isDark } = useTheme();
+  const { colors: c } = useTheme();
+  const { t } = useI18n();
 
   if (Platform.OS !== 'android') {
-    return <Centered text="Şu an yalnızca Android destekleniyor" />;
+    return <Centered text={t.signal.androidOnly} />;
   }
-  if (!reading) return <Centered text="Okunuyor…" />;
+  if (!reading) return <Centered text={t.signal.reading} />;
   if (reading.reason === 'error') {
-    return <Centered text="Bir hata oluştu" detail={reading.errorMessage} />;
+    return <ErrorView detail={reading.errorMessage} />;
   }
-  if (!reading.available) return <Centered text={REASONS[reading.reason ?? 'no_data']} />;
+  if (!reading.available) {
+    const reason =
+      reading.reason === 'no_service'
+        ? t.signal.noService
+        : reading.reason === 'unsupported_os'
+          ? t.signal.unsupportedOs
+          : t.signal.noData;
+    return <Centered text={reason} />;
+  }
 
   const score = toScore(reading);
   const tech = reading.technology ?? 'UNKNOWN';
 
   return (
-    <View style={[styles.screen, { backgroundColor: c.background }]}>
-      <StatusBar style={isDark ? 'light' : 'dark'} />
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.hero}>
-          <Text style={[styles.tech, { color: c.textMuted }]}>
-            {reading.operator ? `${reading.operator} · ` : ''}
-            {TECH_LABEL[tech]}
-          </Text>
-          <Text style={[styles.dbm, { color: c.text }]}>
-            {reading.dbm ?? '—'}
-            <Text style={[styles.unit, { color: c.textMuted }]}> dBm</Text>
-          </Text>
-          <Bars score={score} />
-          <Text style={[styles.quality, { color: c.textSoft }]}>
-            {qualityLabel(score)} · {score}/{MAX_SCORE}
-          </Text>
-        </View>
-
-        <Text style={[styles.sectionTitle, { color: c.textMuted }]}>Detaylar</Text>
-        <MetricCard info={METRICS.rsrp} value={reading.rsrp} />
-        <MetricCard info={METRICS.rsrq} value={reading.rsrq} />
-        <MetricCard info={METRICS.sinr} value={reading.sinr} />
-        <MetricCard info={METRICS.systemLevel} value={reading.systemLevel} bars={4} />
-
-        <ThemePicker />
-        <Text style={[styles.version, { color: c.textFaint }]}>{APP_FOOTER}</Text>
-      </ScrollView>
-    </View>
-  );
-}
-
-function ThemePicker() {
-  const { mode, setMode, colors: c } = useTheme();
-  return (
-    <View style={styles.themeBox}>
-      <Text style={[styles.sectionTitle, { color: c.textMuted }]}>Tema</Text>
-      <View style={[styles.segment, { backgroundColor: c.segment }]}>
-        {THEME_OPTIONS.map((o) => {
-          const active = o.mode === mode;
-          return (
-            <Pressable
-              key={o.mode}
-              onPress={() => setMode(o.mode)}
-              style={[styles.segmentItem, active && { backgroundColor: c.segmentActive }]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-            >
-              <Text style={[styles.segmentText, { color: active ? c.text : c.textMuted }]}>{o.label}</Text>
-            </Pressable>
-          );
-        })}
+    <ScrollView contentContainerStyle={styles.content}>
+      <View style={styles.hero}>
+        <Text style={[styles.tech, { color: c.textMuted }]}>
+          {reading.operator ? `${reading.operator} · ` : ''}
+          {techLabel(tech, t.common.unknown)}
+        </Text>
+        <Text style={[styles.dbm, { color: c.text }]}>
+          {reading.dbm ?? '—'}
+          <Text style={[styles.unit, { color: c.textMuted }]}> dBm</Text>
+        </Text>
+        <Bars score={score} />
+        <Text style={[styles.quality, { color: c.textSoft }]}>
+          {t.quality[qualityKey(score)]} · {score}/{MAX_SCORE}
+        </Text>
       </View>
-    </View>
+
+      <Text style={[styles.sectionTitle, { color: c.textMuted }]}>{t.signal.details}</Text>
+      <MetricCard info={METRICS.rsrp} value={reading.rsrp} />
+      <MetricCard info={METRICS.rsrq} value={reading.rsrq} />
+      <MetricCard info={METRICS.sinr} value={reading.sinr} />
+      <MetricCard info={METRICS.systemLevel} value={reading.systemLevel} bars={4} />
+
+      <Text style={[styles.version, { color: c.textFaint }]}>{appFooter(t.appName)}</Text>
+    </ScrollView>
   );
 }
 
@@ -155,16 +244,18 @@ function MetricCard({
   bars?: number; // Verilirse değerin yanında bu kadar kademeli küçük sinyal simgesi çizilir
 }) {
   const { colors: c, tone } = useTheme();
+  const { t } = useI18n();
   // 3G/2G'de bazı ölçümler gelmez; o kartlar gizlenir
   if (value == null) return null;
   const r = rate(value, info.thresholds);
+  const text = t.metrics[info.key];
   const color = tone(r.color);
   return (
     <View style={[styles.card, { backgroundColor: c.card }]}>
       <View style={styles.cardHeader}>
         <View style={styles.cardTitleBox}>
-          <Text style={[styles.cardTitle, { color: c.text }]}>{info.title}</Text>
-          <Text style={[styles.cardTech, { color: c.textFaint }]}>{info.techName}</Text>
+          <Text style={[styles.cardTitle, { color: c.text }]}>{text.title}</Text>
+          <Text style={[styles.cardTech, { color: c.textFaint }]}>{text.techName}</Text>
         </View>
         <View style={styles.cardValueBox}>
           <View style={styles.cardValueRow}>
@@ -173,11 +264,13 @@ function MetricCard({
               {value} <Text style={[styles.cardUnit, { color: c.textMuted }]}>{info.unit}</Text>
             </Text>
           </View>
-          <Text style={[styles.badge, { color, borderColor: color }]}>{r.label}</Text>
+          <Text style={[styles.badge, { color, borderColor: color }]} numberOfLines={1}>
+            {t.rating[r.key]}
+          </Text>
         </View>
       </View>
-      <Text style={[styles.cardDesc, { color: c.textSoft }]}>{info.description}</Text>
-      <Text style={[styles.cardIdeal, { color: c.textMuted }]}>{info.ideal}</Text>
+      <Text style={[styles.cardDesc, { color: c.textSoft }]}>{text.description}</Text>
+      <Text style={[styles.cardIdeal, { color: c.textMuted }]}>{text.ideal}</Text>
     </View>
   );
 }
@@ -197,18 +290,19 @@ function MiniBars({ filled, total, color }: { filled: number; total: number; col
   );
 }
 
+// Sekme içeriği yerine gösterilen durum / hata mesajı
 function Centered({ text, detail }: { text: string; detail?: string }) {
-  const { colors: c, isDark } = useTheme();
+  const { colors: c } = useTheme();
+  const { t } = useI18n();
   return (
-    <View style={[styles.screen, styles.centered, { backgroundColor: c.background }]}>
-      <StatusBar style={isDark ? 'light' : 'dark'} />
+    <View style={[styles.tabPage, styles.centered]}>
       <Text style={[styles.quality, { color: c.textSoft }]}>{text}</Text>
       {detail ? (
         <Text style={[styles.errorDetail, { color: c.textMuted }]} selectable>
           {detail}
         </Text>
       ) : null}
-      <Text style={[styles.version, styles.versionCentered, { color: c.textFaint }]}>{APP_FOOTER}</Text>
+      <Text style={[styles.version, styles.versionCentered, { color: c.textFaint }]}>{appFooter(t.appName)}</Text>
     </View>
   );
 }
@@ -216,8 +310,16 @@ function Centered({ text, detail }: { text: string; detail?: string }) {
 // Yalnızca yerleşim; renkler temadan geliyor
 const styles = StyleSheet.create({
   screen: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12 },
+  appTitle: { fontSize: 22, fontWeight: '700', flexShrink: 1 },
+  headerButtons: { flexDirection: 'row', gap: 10 },
+  roundButton: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
+  langText: { fontSize: 14, fontWeight: '700' },
+  themeIcon: { fontSize: 20 },
+  tabBar: { marginHorizontal: 20, marginBottom: 8 },
+  tabPage: { flex: 1 },
   centered: { alignItems: 'center', justifyContent: 'center', padding: 24 },
-  content: { padding: 20, paddingTop: 56, paddingBottom: 32 },
+  content: { padding: 20, paddingTop: 16, paddingBottom: 32 },
   hero: { alignItems: 'center', marginBottom: 28 },
   tech: { fontSize: 18, marginBottom: 8 },
   dbm: { fontSize: 64, fontWeight: '700' },
@@ -240,7 +342,6 @@ const styles = StyleSheet.create({
   badge: { fontSize: 12, fontWeight: '600', borderWidth: 1, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, marginTop: 6, overflow: 'hidden' },
   cardDesc: { fontSize: 14, lineHeight: 20, marginTop: 12 },
   cardIdeal: { fontSize: 13, marginTop: 8 },
-  themeBox: { marginTop: 16 },
   segment: { flexDirection: 'row', borderRadius: 12, padding: 4 },
   segmentItem: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 9 },
   segmentText: { fontSize: 14, fontWeight: '600' },

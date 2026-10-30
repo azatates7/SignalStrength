@@ -1,0 +1,8 @@
+{
+  "android": {
+    "app_name": "Sinyal Ölçer"
+  },
+  "ios": {
+    "CFBundleDisplayName": "Sinyal Ölçer"
+  }
+}

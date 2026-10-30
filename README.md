@@ -1,6 +1,6 @@
-# Sinyal Ölçer
+# Sinyal Ölçer (Signal Strength)
 
-Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerektirmeden** gösteren Android uygulaması. React Native (Expo) ile yazıldı. Sinyal, Kotlin ile yazılmış yerel bir native modül üzerinden doğrudan Android'den okunuyor.
+Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerektirmeden** gösteren, bağlantı varsa **hız testi** de yapabilen Android uygulaması. React Native (Expo) ile yazıldı. Sinyal ve bağlantı bilgisi, Kotlin ile yazılmış yerel bir native modül üzerinden doğrudan Android'den okunuyor.
 
 <p align="center">
   <img src="docs/screenshots/koyu-tema.png" width="280" alt="Koyu tema" />
@@ -15,8 +15,15 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 - **Operatör ve bağlantı teknolojisi:** Örneğin `TURKCELL · 4G (LTE)`. 5G, 4G, 3G ve 2G desteklenir.
 - **Herkesin anlayacağı detaylar:** RSRP, RSRQ ve SINR değerleri sade bir açıklama, ideal aralık ve renkli bir durum etiketiyle (Mükemmel / İyi / Orta / Zayıf) gösterilir.
 - **Telefonun çubuk göstergesi:** Android'in 0–4 seviyesi, telefonun üst çubuğuna benzeyen küçük bir simgeyle gösterilir.
-- **Açık / koyu tema:** Sistem, Açık ve Koyu seçenekleri. Seçim uygulama kapansa da hatırlanır.
-- **İzin istemez, internet kullanmaz:** Konum, telefon ya da internet izni gerekmez. Uygulama hiçbir veri toplamaz veya göndermez.
+- **Hız testi:** Wi-Fi veya mobil veri bağlıysa ping, indirme ve yükleme hızını ölçer. Bağlantı tipi, servis sağlayıcı ve test sunucusunun konumu da gösterilir. Ölçüm Cloudflare sunucularıyla yapılır.
+- **Otomatik başlayan test:** "Hız Testi" sekmesi açılınca test kendiliğinden başlar. Dakikada en fazla 3 test yapılabilir.
+- **İki sekme:** "Bağlantı Kontrol" (sinyal) ve "Hız Testi". Sekmeler arasında sola / sağa kaydırarak geçilebilir.
+- **Bağlantı değişince yeni test:** Wi-Fi ile mobil ağ arasında geçişte ve bağlantı geri geldiğinde hız testi kendiliğinden tekrarlanır. Bağlantı kopunca değerler temizlenir.
+- **Türkçe / İngilizce:** Uygulama telefon dilinde açılır (Türkçe değilse İngilizce). Üst paneldeki dil butonuyla (Türkçedeyken "EN", İngilizcedeyken "TR") bütün metinler anında değişir ve seçim hatırlanır. Ana ekrandaki uygulama adı telefon diline göre "Sinyal Ölçer" / "Signal Strength" olur.
+- **Son test zamanı:** "Tekrar Test Et" butonunun altında son testin tarihi ve saati görünür.
+- **Tek dokunuşla tema:** Üst paneldeki ☀️ / 🌙 butonu açık ve koyu tema arasında geçiş yapar. Uzun basınca telefonun temasına döner. Seçim hatırlanır.
+- **Gereksiz izin istemez:** Telefon izni gerekmez. Konum izni yalnızca Wi-Fi adını görmek için, kullanıcı "Göster"e dokunduğunda istenir (Android bunu zorunlu tutuyor). Sinyal sekmesi internet kullanmaz. İnternet yalnızca kullanıcı hız testini başlattığında kullanılır. Uygulama hiçbir veri toplamaz veya saklamaz.
+- **Mobil veride veri sınırı:** Kotalı bağlantıda hız testi en fazla yaklaşık 100 MB kullanır.
 - **Çökme yerine anlaşılır hata ekranı:** Beklenmedik bir hata olursa uygulama kapanmak yerine hatayı ekranda gösterir.
 
 ## Platform desteği
@@ -37,17 +44,27 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 | Framework | Expo SDK 58, React Native 0.88, React 19 |
 | Dil | TypeScript (arayüz), Kotlin (native modül) |
 | Native API | `TelephonyManager`, `SignalStrength`, `TelephonyCallback` (Android 12+), `PhoneStateListener` (Android 9–11) |
+| Hız testi | Cloudflare (`speed.cloudflare.com`), ölçüm yöntemi Cloudflare'in açık kaynak [`@cloudflare/speedtest`](https://github.com/cloudflare/speedtest) kütüphanesini izler |
 | Ek bağımlılık | Yok. Sadece `expo`, `expo-status-bar`, `expo-splash-screen` ve `expo-system-ui` kullanılıyor. |
 
 ## Proje yapısı
 
 ```
-├─ App.tsx                     Ana ekran, detay kartları, tema seçici, hata ekranı
+├─ App.tsx                     Üst panel, tema butonu, sekmeler, sinyal ekranı, hata ekranı
 ├─ index.ts                    Giriş noktası (App.tsx'i başlatır)
 ├─ app.json                    Uygulama adı, sürüm, paket adı, ikon ve splash ayarları
 ├─ assets/images/              Uygulama ikonu ve splash görselleri
+├─ locales/tr.json            Ana ekrandaki Türkçe uygulama adı
 ├─ src/
+│  ├─ appInfo.ts              Sürüm ve alt bilgi yazısı
+│  ├─ i18n/
+│  │  ├─ strings.ts            Bütün metinler (Türkçe / İngilizce)
+│  │  └─ index.tsx             Dil seçimi (LanguageProvider, useI18n)
 │  ├─ theme.tsx                Açık/koyu renk paletleri, tema tercihi (ThemeProvider)
+│  ├─ speedtest/
+│  │  ├─ cloudflare.ts         Hız testi motoru (ping, indirme, yükleme, sunucu bilgisi)
+│  │  ├─ useNetwork.ts         Aktif bağlantıyı (Wi-Fi / mobil veri) izleyen hook
+│  │  └─ SpeedTestScreen.tsx   Hız testi sekmesi
 │  └─ signal/
 │     ├─ useSignalStrength.ts  Native modülü dinleyen React hook'u
 │     ├─ levels.ts             dBm → 0–100 puan hesabı, teknoloji etiketleri
@@ -142,6 +159,7 @@ Native modül (`SignalStrengthModule.kt`) JS tarafına şu fonksiyonları sağla
 |---|---|
 | `getCurrent()` | Anlık tek okuma |
 | `startListening()` / `stopListening()` | Sinyal değiştikçe `onSignalChange` olayı gönderir |
+| `getNetworkInfo()` / `startNetworkListening()` | Aktif bağlantının tipi (Wi-Fi, mobil veri…) ve değişiklikleri |
 | `getThemePreference()` / `setThemePreference()` | Tema tercihini Android SharedPreferences'ta saklar |
 
 5G NSA bağlantılarında LTE ve NR birlikte raporlanır. Bu durumda en yeni teknoloji (NR) seçilir.
@@ -176,6 +194,18 @@ Puan, dBm değerinin bağlantı teknolojisine göre belirlenen aralıktaki yerin
 
 RSRP, RSRQ ve SINR sadece 4G ve 5G bağlantılarda ölçülür. 3G ve 2G'de bu kartlar gizlenir. Açıklama metinleri ve eşikler `src/signal/metrics.ts` dosyasından değiştirilebilir.
 
+### Hız testi
+
+1. **Sunucu bilgisi:** `speed.cloudflare.com/meta` adresinden servis sağlayıcı adı ve en yakın Cloudflare sunucusunun konumu alınır.
+2. **Ping:** 11 küçük istek gönderilir. İlki bağlantı kurulumunu içerdiği için sayılmaz. Kalanların medyanı ping, ardışık farkların ortalaması dalgalanma (jitter) olarak gösterilir. Sunucunun işlem süresi `Server-Timing` başlığından okunup düşülür.
+3. **İndirme / yükleme:** 100 KB'tan başlayarak büyüyen dosyalar aktarılır. Bir aktarım yaklaşık 1 saniyeyi geçince daha büyük boyuta geçilmez. Her yön en fazla yaklaşık 10 saniye sürer. Sonuç, anlamlı uzunluktaki ölçümlerin 90. yüzdelik değeridir.
+
+| | Mükemmel | İyi | Orta | Zayıf |
+|---|---|---|---|---|
+| Ping | ≤ 20 ms | ≤ 50 ms | ≤ 100 ms | > 100 ms |
+| İndirme | ≥ 100 Mbps | ≥ 25 Mbps | ≥ 5 Mbps | < 5 Mbps |
+| Yükleme | ≥ 50 Mbps | ≥ 10 Mbps | ≥ 2 Mbps | < 2 Mbps |
+
 ### dBm nedir?
 
 dBm, telefona ulaşan sinyalin gücünü 1 miliwatt'a göre ölçen bir birimdir. Değerler her zaman eksidir ve **sıfıra ne kadar yakınsa sinyal o kadar güçlüdür.** Ölçek logaritmik: her 10 dBm'lik fark, sinyal gücünde 10 kat fark demektir. Örneğin −80 dBm, −90 dBm'den 10 kat güçlüdür.
@@ -186,7 +216,9 @@ dBm, telefona ulaşan sinyalin gücünü 1 miliwatt'a göre ölçen bir birimdir
 - **Android 9:** dBm ve detay değerleri gösterilmez. Bu sürümde izin istemeyen public API'lerde bu veriler bulunmuyor.
 - **Splash ekranı:** Açılış ekranı her zaman koyu. Uygulama içinde açık tema seçilse de açılışta bir an koyu ekran görünür.
 - **Operatör adı:** Ad, operatörün yayınladığı haliyle gösterilir. Büyük/küçük harf operatöre göre değişebilir.
+- **Hız testi sonuçları:** Ölçüm tek bir Cloudflare sunucusuna yapılır. Speedtest.net gibi farklı sunucular kullanan uygulamalarla sonuçlar birebir aynı olmayabilir.
+- **Wi-Fi adı (SSID):** Android bunun için konum izni ve açık konum servisi istiyor. İzin verilmezse ad gösterilmez, test yine çalışır.
 
 ## Lisans
 
-MIT. Ayrıntılar için [LICENSE](LICENSE) dosyasına bakın.
+MIT © 2026 Azat Ateş. Ayrıntılar için [LICENSE](LICENSE) dosyasına bakın.

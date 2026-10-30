@@ -15,7 +15,7 @@ export function useSignalStrength(): SignalReading | null {
   useEffect(() => {
     const mod = SignalStrength;
     if (!mod) {
-      setReading(failure("Native modül bulunamadı: 'SignalStrength'"));
+      setReading(failure("Native module not found: 'SignalStrength'"));
       return;
     }
 
