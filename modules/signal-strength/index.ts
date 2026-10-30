@@ -8,7 +8,7 @@ export type SignalReading = {
   reason?: 'no_data' | 'no_service' | 'unsupported_os' | 'error';
   errorMessage?: string; // reason === 'error' olduğunda hatanın ayrıntısı
   technology?: Technology;
-  operator?: string | null; // Şebeke operatörü adı, örneğin TURKCELL
+  operator?: string | null; // Şebeke operatörü adı, ör. TURKCELL
   dbm?: number | null;
   asu?: number | null;
   systemLevel?: number; // Android'in 0-4 seviyesi
@@ -27,6 +27,8 @@ declare class SignalStrengthNative extends NativeModule<Events> {
   getCurrent(): SignalReading;
   startListening(): void;
   stopListening(): void;
+  getThemePreference(): string | null;
+  setThemePreference(mode: string): void;
 }
 
 // Modül bulunamazsa uygulama açılışta çökmesin diye null döner; hook bunu ekranda hata olarak gösterir

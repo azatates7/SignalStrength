@@ -50,11 +50,20 @@ class SignalStrengthModule : Module() {
     Function("startListening") { startListening() }
     Function("stopListening") { stopListening() }
 
+    // Tema tercihi ("system" | "light" | "dark"). Senkron okunur, böylece açılışta yanlış tema yanıp sönmez.
+    Function("getThemePreference") { prefs()?.getString(KEY_THEME, null) }
+    Function("setThemePreference") { mode: String ->
+      prefs()?.edit()?.putString(KEY_THEME, mode)?.apply()
+    }
+
     OnDestroy { runCatching { stopListening() } }
   }
 
   // Dinleyici callback'leri ana thread'de çalışır; buradaki bir hata uygulamayı kapatmasın,
   // JS tarafına "error" olarak iletilsin
+  private fun prefs() =
+    appContext.reactContext?.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
   private fun emit(ss: SignalStrength?) {
     val payload = try {
       toMap(ss)
@@ -167,6 +176,11 @@ class SignalStrengthModule : Module() {
   // Kayıtlı olunan şebekenin adı (ör. TURKCELL). İzin gerektirmez; şebeke yoksa null.
   private fun operatorName(): String? =
     runCatching { telephony.networkOperatorName }.getOrNull()?.trim()?.takeIf { it.isNotEmpty() }
+
+  companion object {
+    private const val PREFS_NAME = "sinyal_olcer"
+    private const val KEY_THEME = "theme"
+  }
 
   // CellInfo.UNAVAILABLE == Int.MAX_VALUE
   private fun valid(v: Int): Int? = if (v == Int.MAX_VALUE || v == Int.MIN_VALUE) null else v
