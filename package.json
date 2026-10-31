@@ -1,6 +1,6 @@
 {
   "name": "signal-strength",
-  "version": "6.0.0",
+  "version": "7.0.0",
   "description": "Shows mobile signal strength offline and runs an internet speed test (Android).",
   "author": "Azat Ateş",
   "license": "MIT",

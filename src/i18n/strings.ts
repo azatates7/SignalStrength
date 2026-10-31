@@ -12,6 +12,7 @@ export type PhaseKey = 'meta' | 'ping' | 'download' | 'upload';
 
 const tr = {
   appName: 'Sinyal Ölçer',
+  privacy: 'Gizlilik politikası',
   common: {
     error: 'Bir hata oluştu',
     unknown: 'Bilinmiyor',
@@ -98,16 +99,16 @@ const tr = {
     failed: (msg: string) => `Test tamamlanamadı: ${msg}`,
     uploadFailed: (msg: string) => `Yükleme ölçülemedi: ${msg}`,
     dataUsed: (mb: number) => `Bu test yaklaşık ${mb} MB veri kullandı.`,
-    meteredNote: (mb: number) => `Kotalı bağlantıdasınız (mobil veri). Test en fazla yaklaşık ${mb} MB veri kullanır.`,
+    meteredTitle: 'Mobil veri kullanıyorsunuz',
+    meteredBody: (mb: number) =>
+      `Hız testi mobil veri paketinizden en fazla yaklaşık ${mb} MB kullanabilir. Bu yüzden mobil veride test kendiliğinden başlamaz; başlatmak için "Testi Başlat"a dokunun. Wi-Fi'de test otomatik çalışır.`,
     explainPing: "Bağlantının tepki süresi. Oyun ve görüntülü görüşmede düşük olması iyidir. ± değeri, ping'in ne kadar dalgalandığını gösterir. İdeal: 20 ms altı.",
     explainDownload: 'İnternetten veri alma hızı: video izleme, sayfa açma, dosya indirme. İdeal: 25 Mbps ve üzeri.',
     explainUpload: 'İnternete veri gönderme hızı: fotoğraf/video paylaşma, görüntülü görüşme. İdeal: 10 Mbps ve üzeri.',
     source: 'Ölçüm sunucusu: Cloudflare (speed.cloudflare.com)',
   },
   conn: {
-    infoFailed: (e: string) => `Bağlantı bilgisi alınamadı: ${e}`,
     connected: 'İnternete bağlı',
-    notValidated: 'Ağa bağlı, internet erişimi doğrulanmadı',
     type: 'Bağlantı tipi',
     wifiName: 'Wi-Fi adı',
     isp: 'Servis sağlayıcı',
@@ -133,6 +134,7 @@ export type Strings = typeof tr;
 
 const en: Strings = {
   appName: 'Signal Strength',
+  privacy: 'Privacy policy',
   common: {
     error: 'Something went wrong',
     unknown: 'Unknown',
@@ -219,16 +221,16 @@ const en: Strings = {
     failed: (msg) => `Test could not be completed: ${msg}`,
     uploadFailed: (msg) => `Upload could not be measured: ${msg}`,
     dataUsed: (mb) => `This test used about ${mb} MB of data.`,
-    meteredNote: (mb) => `You are on a metered connection (mobile data). The test uses at most about ${mb} MB.`,
+    meteredTitle: 'You are using mobile data',
+    meteredBody: (mb) =>
+      `The speed test can use up to about ${mb} MB of your mobile data. That's why it doesn't start automatically on mobile data; tap "Start Test" to run it. On Wi-Fi the test runs automatically.`,
     explainPing: 'Response time of the connection. Lower is better for gaming and video calls. The ± value shows how much the ping varies. Ideal: below 20 ms.',
     explainDownload: 'How fast you receive data: watching videos, opening pages, downloading files. Ideal: 25 Mbps or higher.',
     explainUpload: 'How fast you send data: sharing photos/videos, video calls. Ideal: 10 Mbps or higher.',
     source: 'Test server: Cloudflare (speed.cloudflare.com)',
   },
   conn: {
-    infoFailed: (e) => `Could not read connection info: ${e}`,
     connected: 'Connected to the internet',
-    notValidated: 'Connected to network, internet access not verified',
     type: 'Connection type',
     wifiName: 'Wi-Fi name',
     isp: 'Service provider',

@@ -19,11 +19,15 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 - **Otomatik başlayan test:** "Hız Testi" sekmesi açılınca test kendiliğinden başlar. Dakikada en fazla 3 test yapılabilir.
 - **İki sekme:** "Bağlantı Kontrol" (sinyal) ve "Hız Testi". Sekmeler arasında sola / sağa kaydırarak geçilebilir.
 - **Bağlantı değişince yeni test:** Wi-Fi ile mobil ağ arasında geçişte ve bağlantı geri geldiğinde hız testi kendiliğinden tekrarlanır. Bağlantı kopunca değerler temizlenir.
-- **Türkçe / İngilizce:** Uygulama telefon dilinde açılır (Türkçe değilse İngilizce). Üst paneldeki dil butonuyla (Türkçedeyken "EN", İngilizcedeyken "TR") bütün metinler anında değişir ve seçim hatırlanır. Ana ekrandaki uygulama adı telefon diline göre "Sinyal Ölçer" / "Signal Strength" olur.
+- **Türkçe / İngilizce:** Uygulama telefon dilinde açılır (Türkçe değilse İngilizce). Üst paneldeki dil butonu o anki dili gösterir (Türkçe → "TR", İngilizce → "EN"); dokununca bütün metinler anında diğer dile geçer ve seçim hatırlanır. Ana ekrandaki uygulama adı telefon diline göre "Sinyal Ölçer" / "Signal Strength" olur.
 - **Son test zamanı:** "Tekrar Test Et" butonunun altında son testin tarihi ve saati görünür.
-- **Tek dokunuşla tema:** Üst paneldeki ☀️ / 🌙 butonu açık ve koyu tema arasında geçiş yapar. Uzun basınca telefonun temasına döner. Seçim hatırlanır.
+- **Tek dokunuşla tema:** Üst paneldeki buton o anki temayı gösterir (koyu temada 🌙, açık temada ☀️); dokununca açık ve koyu tema arasında geçiş yapar. Uzun basınca telefonun temasına döner. Seçim hatırlanır.
 - **Gereksiz izin istemez:** Telefon izni gerekmez. Konum izni yalnızca Wi-Fi adını görmek için, kullanıcı "Göster"e dokunduğunda istenir (Android bunu zorunlu tutuyor). Sinyal sekmesi internet kullanmaz. İnternet yalnızca kullanıcı hız testini başlattığında kullanılır. Uygulama hiçbir veri toplamaz veya saklamaz.
-- **Mobil veride veri sınırı:** Kotalı bağlantıda hız testi en fazla yaklaşık 100 MB kullanır.
+- **Mobil veride veri koruması:** Hız testi mobil veride kendiliğinden başlamaz. Ne kadar veri kullanacağını anlatan bir bilgi kutusu gösterilir, test kullanıcı başlatınca çalışır ve en fazla yaklaşık 100 MB kullanır. Wi-Fi'de test otomatik başlar.
+- **Çift SIM desteği:** Sinyal, teknoloji ve operatör, mobil verinin kullanıldığı SIM'den okunur. Veri SIM'i değiştirilince uygulama yeni SIM'e geçer.
+- **Canlı bağlantı bilgisi:** Hız Testi kartındaki `Turkcell · 4G (LTE)` bilgisi sinyal değiştikçe güncellenir (ör. 4G → 5G geçişi hemen görünür).
+- **Pil dostu:** Uygulama arka plandayken sinyal ve ağ dinleyicileri durur, öne gelince güncel değer okunup yeniden başlar.
+- **Gizlilik politikası:** Sayfa altındaki "Gizlilik politikası" bağlantısı [PRIVACY.md](PRIVACY.md) dosyasını açar.
 - **Çökme yerine anlaşılır hata ekranı:** Beklenmedik bir hata olursa uygulama kapanmak yerine hatayı ekranda gösterir.
 
 ## Platform desteği
@@ -55,8 +59,10 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 ├─ app.json                    Uygulama adı, sürüm, paket adı, ikon ve splash ayarları
 ├─ assets/images/              Uygulama ikonu ve splash görselleri
 ├─ locales/tr.json            Ana ekrandaki Türkçe uygulama adı
+├─ PRIVACY.md                  Gizlilik politikası (Türkçe / İngilizce)
 ├─ src/
-│  ├─ appInfo.ts              Sürüm ve alt bilgi yazısı
+│  ├─ appInfo.ts              Sürüm, alt bilgi yazısı, gizlilik politikası adresi
+│  ├─ AppFooter.tsx           Sayfa altı: sürüm + gizlilik politikası bağlantısı
 │  ├─ i18n/
 │  │  ├─ strings.ts            Bütün metinler (Türkçe / İngilizce)
 │  │  └─ index.tsx             Dil seçimi (LanguageProvider, useI18n)
@@ -133,6 +139,9 @@ eas build -p android --profile production
 
 Sonuç olarak imzalı bir `.aab` dosyası üretilir. Bu dosya Play Console'a yüklenir. EAS imza anahtarını (keystore) kendisi yönetir.
 
+**Gizlilik politikası:** Uygulama konum izni istediği için Play Console zorunlu tutuyor. Play Console → *Uygulama içeriği → Gizlilik politikası* alanına şu adres girilir:
+`https://github.com/azatates7/SignalStrength/blob/main/PRIVACY.md` (repo herkese açık olmalı). Uygulamaya izin, sunucu veya veri saklama eklenirse `PRIVACY.md` ve *Veri güvenliği* formu da güncellenmeli.
+
 ## Sürüm güncelleme
 
 Sürüm sadece `app.json` içinde değiştirilir. Ekranın altındaki `Sinyal Ölçer v4.0` yazısı otomatik olarak buradan okunur.
@@ -163,6 +172,8 @@ Native modül (`SignalStrengthModule.kt`) JS tarafına şu fonksiyonları sağla
 | `getThemePreference()` / `setThemePreference()` | Tema tercihini Android SharedPreferences'ta saklar |
 
 5G NSA bağlantılarında LTE ve NR birlikte raporlanır. Bu durumda en yeni teknoloji (NR) seçilir.
+
+Çift SIM'li telefonlarda okuma, `SubscriptionManager.getDefaultDataSubscriptionId()` ile bulunan mobil veri SIM'i üzerinden yapılır. Uygulama arka plana geçince dinleyiciler durdurulur, öne gelince yeniden başlatılır.
 
 ### 0–100 puan hesabı
 
@@ -212,7 +223,7 @@ dBm, telefona ulaşan sinyalin gücünü 1 miliwatt'a göre ölçen bir birimdir
 
 ## Bilinen kısıtlar
 
-- **Çift SIM:** Sadece varsayılan SIM'in sinyali ve operatörü gösterilir.
+- **Çift SIM:** Aynı anda yalnızca mobil veri SIM'inin sinyali gösterilir; diğer SIM gösterilmez.
 - **Android 9:** dBm ve detay değerleri gösterilmez. Bu sürümde izin istemeyen public API'lerde bu veriler bulunmuyor.
 - **Splash ekranı:** Açılış ekranı her zaman koyu. Uygulama içinde açık tema seçilse de açılışta bir an koyu ekran görünür.
 - **Operatör adı:** Ad, operatörün yayınladığı haliyle gösterilir. Büyük/küçük harf operatöre göre değişebilir.

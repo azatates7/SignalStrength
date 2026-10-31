@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NetworkInfo } from '../../modules/signal-strength';
-import { appFooter } from '../appInfo';
+import { AppFooter } from '../AppFooter';
 import { useI18n, type Lang, type Strings } from '../i18n';
 import { cityName } from '../i18n/strings';
+import { techLabel } from '../signal/levels';
 import { rate, type Rating } from '../signal/metrics';
 import { useTheme } from '../theme';
 import {
@@ -38,9 +39,9 @@ type Status = 'idle' | 'running' | 'done' | 'error';
  * sağlayıcı bilgisi de yalnızca sekme açıkken alınır.
  */
 export function SpeedTestScreen({ active }: { active: boolean }) {
-  const { colors: c } = useTheme();
+  const { colors: c, tone } = useTheme();
   const { t, lang, locale } = useI18n();
-  const { info, error: netError } = useNetwork();
+  const { info } = useNetwork();
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<SpeedErrorInfo>();
   const [lastTestAt, setLastTestAt] = useState<number>(); // Son tamamlanan testin zamanı
@@ -51,6 +52,8 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
   const [values, setValues] = useState<Partial<SpeedResult>>({});
   const tokenRef = useRef<CancelToken | undefined>(undefined);
   const [waitSec, setWaitSec] = useState(0); // Deneme sınırı dolduysa kalan süre
+  // Mobil veride bu bağlantıda en az bir test başlatıldı mı (başlatılınca veri uyarısı kalkar)
+  const [meteredTested, setMeteredTested] = useState(false);
   const autoPending = useRef(false);
   const prevType = useRef(info.type);
 
@@ -101,6 +104,7 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
     tokenRef.current = undefined; // Durdurulan testin geç gelen sonuçları ekrana yazılmasın
     setPhase(undefined);
     setLiveMbps(undefined);
+    setMeteredTested(false); // Yeni bağlantıda mobil veri uyarısı yeniden gösterilir
     if (info.type === 'none') {
       setValues({});
       setError(undefined);
@@ -116,6 +120,8 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
   useEffect(() => {
     if (!autoPending.current || !active || !online || status === 'running' || waitSec > 0) return;
     autoPending.current = false;
+    // Mobil veride (kotalı bağlantı) test kendiliğinden başlamaz; kullanıcı uyarıyı görüp kendisi başlatır
+    if (info.metered) return;
     start(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, online, info.type, status, waitSec]);
@@ -136,6 +142,7 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
     // Bu test yerine yenisi başlatıldıysa eski testin sonuçları ekrana yazılmaz
     const current = () => tokenRef.current === token;
     setStatus('running');
+    if (info.metered) setMeteredTested(true);
     setError(undefined);
     setValues({});
     setLiveMbps(undefined);
@@ -185,7 +192,7 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <ConnectionCard info={info} meta={meta} metaFailed={metaFailed} error={netError} />
+      <ConnectionCard info={info} meta={meta} metaFailed={metaFailed} />
 
       {/* Ana gösterge: test sırasında canlı hız, bitince indirme hızı */}
       <View style={[styles.gauge, { backgroundColor: c.card }]}>
@@ -241,6 +248,16 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
         />
       </View>
 
+      {/* Mobil veri bilgilendirmesi: test başlatılana kadar görünür */}
+      {online && info.metered && !meteredTested ? (
+        <View style={[styles.infoBox, { backgroundColor: c.card, borderLeftColor: tone('#f59e0b') }]}>
+          <Text style={[styles.infoTitle, { color: c.text }]}>{t.speed.meteredTitle}</Text>
+          <Text style={[styles.infoText, { color: c.textSoft }]}>
+            {t.speed.meteredBody(Math.round((METERED_LIMIT * 2) / 1e6))}
+          </Text>
+        </View>
+      ) : null}
+
       <Pressable
         onPress={running ? () => tokenRef.current?.cancel() : () => start()}
         disabled={!running && (!online || waitSec > 0)}
@@ -276,9 +293,7 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
       {status === 'done' && values.bytesUsed ? (
         <Text style={[styles.note, { color: c.textMuted }]}>{t.speed.dataUsed(Math.round(values.bytesUsed / 1e6))}</Text>
       ) : null}
-      {online && info.metered && status !== 'done' ? (
-        <Text style={[styles.note, { color: c.textMuted }]}>{t.speed.meteredNote(Math.round((METERED_LIMIT * 2) / 1e6))}</Text>
-      ) : null}
+
 
       <View style={[styles.card, { backgroundColor: c.card }]}>
         <Explain title={t.speed.ping} text={t.speed.explainPing} />
@@ -287,7 +302,7 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
       </View>
 
       <Text style={[styles.source, { color: c.textFaint }]}>{t.speed.source}</Text>
-      <Text style={[styles.version, { color: c.textFaint }]}>{appFooter(t.appName)}</Text>
+      <AppFooter style={styles.version} />
     </ScrollView>
   );
 }
@@ -296,34 +311,26 @@ function ConnectionCard({
   info,
   meta,
   metaFailed,
-  error,
 }: {
   info: NetworkInfo;
   meta?: ConnectionMeta;
   metaFailed: boolean;
-  error?: string;
 }) {
   const { colors: c, tone } = useTheme();
   const { t, lang } = useI18n();
   const wifi = useWifiName(info);
   const cell = useCellularName(info);
-  const dot = !info.connected ? '#ef4444' : info.validated ? '#22c55e' : '#f59e0b';
-  const statusText = error
-    ? t.conn.infoFailed(error)
-    : !info.connected
-      ? t.speed.noInternet
-      : info.validated
-        ? t.conn.connected
-        : t.conn.notValidated;
-  // Başlık: "Wi-Fi · MyWifi · D-SMART" / "Mobil Ağ · TURKCELL (LTE)"
-  const title =
-    info.type === 'wifi'
-      ? [t.net.wifi, wifi.ssid, meta?.isp].filter(Boolean).join(' · ')
-      : info.type === 'cellular'
-        ? [t.net.cellular, cell.operator && `${cell.operator}${cell.tech ? ` (${cell.tech})` : ''}`].filter(Boolean).join(' · ')
-        : t.net[info.type];
-  // Mobil ağda operatör adı SIM'den gelir; Wi-Fi'de Cloudflare'in verdiği ağ bilgisinden
-  const isp = info.type === 'cellular' ? (cell.operator ?? meta?.isp) : meta?.isp;
+  // Durum yalnızca iki türlü: internete bağlı / bağlantı yok
+  const hasInternet = info.connected && info.validated;
+  const dot = hasInternet ? '#22c55e' : '#ef4444';
+  const statusText = hasInternet ? t.conn.connected : t.net.none;
+  // Mobil ağda operatör adı SIM'den gelir ve teknolojiyle yazılır (ör. "Turkcell · 4G (LTE)");
+  // Wi-Fi'de Cloudflare'in verdiği ağ bilgisinden
+  const operator = cell.operator ?? meta?.isp;
+  const isp =
+    info.type === 'cellular'
+      ? operator && [operator, cell.technology && techLabel(cell.technology, t.common.unknown)].filter(Boolean).join(' · ')
+      : meta?.isp;
   const ispDetail = meta?.asn ? `AS${meta.asn}${meta.ispRaw && meta.ispRaw !== isp ? ` · ${meta.ispRaw}` : ''}` : undefined;
   const pending = metaFailed ? t.conn.failed : info.connected ? t.conn.loading : '—';
   const server = meta?.serverCode
@@ -334,11 +341,10 @@ function ConnectionCard({
     <View style={[styles.card, { backgroundColor: c.card }]}>
       <View style={styles.connHeader}>
         <View style={[styles.dot, { backgroundColor: tone(dot) }]} />
-        <Text style={[styles.connType, { color: c.text }]} numberOfLines={2}>
-          {title}
+        <Text style={[styles.connType, { color: c.text }]} numberOfLines={1}>
+          {statusText}
         </Text>
       </View>
-      <Text style={[styles.connStatus, { color: c.textMuted }]}>{statusText}</Text>
       <Row label={t.conn.type} value={t.net[info.type]} />
       {info.type === 'wifi' ? <WifiNameRow {...wifi} /> : null}
       <Row label={t.conn.isp} value={isp} sub={ispDetail} placeholder={pending} />
@@ -517,10 +523,9 @@ function formatMs(v?: number) {
 const styles = StyleSheet.create({
   content: { padding: 20, paddingTop: 8, paddingBottom: 32 },
   card: { borderRadius: 14, padding: 16, marginBottom: 12 },
-  connHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  connHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
   dot: { width: 10, height: 10, borderRadius: 5 },
   connType: { fontSize: 18, fontWeight: '700', flexShrink: 1 },
-  connStatus: { fontSize: 13, marginTop: 4, marginBottom: 8 },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 10 },
   rowLabel: { fontSize: 14 },
   rowRight: { alignItems: 'flex-end', flexShrink: 1 },
@@ -539,6 +544,9 @@ const styles = StyleSheet.create({
   tileUnit: { fontSize: 12 },
   tileSub: { fontSize: 11, marginTop: 6, textAlign: 'center' },
   badge: { fontSize: 12, fontWeight: '600', borderWidth: 1, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, marginTop: 8, overflow: 'hidden', maxWidth: '100%' },
+  infoBox: { borderRadius: 14, borderLeftWidth: 4, padding: 14, marginBottom: 12 },
+  infoTitle: { fontSize: 14, fontWeight: '700' },
+  infoText: { fontSize: 13, lineHeight: 19, marginTop: 4 },
   button: { borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginBottom: 8 },
   buttonText: { fontSize: 17, fontWeight: '700' },
   note: { fontSize: 13, textAlign: 'center', marginBottom: 8, lineHeight: 18 },
@@ -546,5 +554,5 @@ const styles = StyleSheet.create({
   explainTitle: { fontSize: 14, fontWeight: '600' },
   explainText: { fontSize: 13, lineHeight: 19, marginTop: 2 },
   source: { fontSize: 12, textAlign: 'center', marginTop: 4 },
-  version: { fontSize: 12, textAlign: 'center', marginTop: 8 },
+  version: { marginTop: 8 },
 });

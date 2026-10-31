@@ -19,6 +19,7 @@ import android.telephony.CellSignalStrengthTdscdma
 import android.telephony.CellSignalStrengthWcdma
 import android.telephony.PhoneStateListener
 import android.telephony.SignalStrength
+import android.telephony.SubscriptionManager
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
@@ -40,6 +41,23 @@ class SignalStrengthModule : Module() {
       return ctx.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
     }
 
+  // Çift SIM: sinyal ve operatör, mobil verinin kullanıldığı SIM'den okunur (izin gerektirmez).
+  // Veri SIM'i seçili değilse telefonun varsayılanı kullanılır.
+  private fun dataSubId(): Int = runCatching { SubscriptionManager.getDefaultDataSubscriptionId() }
+    .getOrDefault(SubscriptionManager.INVALID_SUBSCRIPTION_ID)
+
+  private fun dataTelephony(): TelephonyManager {
+    val base = telephony
+    val id = dataSubId()
+    return if (id != SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
+      runCatching { base.createForSubscriptionId(id) }.getOrDefault(base)
+    } else base
+  }
+
+  // Dinleyicinin kayıtlı olduğu SIM; kayıt silinirken aynı nesne kullanılmalı
+  private var listenTelephony: TelephonyManager? = null
+  private var listenSubId: Int = SubscriptionManager.INVALID_SUBSCRIPTION_ID
+
   private val connectivity: ConnectivityManager?
     get() = appContext.reactContext?.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
 
@@ -55,7 +73,7 @@ class SignalStrengthModule : Module() {
 
     // Anlık tek okuma. Android 9 (API 28) altı desteklenmez.
     Function("getCurrent") {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) toMap(telephony.signalStrength)
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) toMap(dataTelephony().signalStrength)
       else mapOf("available" to false, "reason" to "unsupported_os", "timestamp" to System.currentTimeMillis())
     }
 
@@ -177,9 +195,16 @@ class SignalStrengthModule : Module() {
     return if (s.isEmpty() || s == "<unknown ssid>") null else s
   }
 
-  // Ağ callback'leri arka plan thread'inde çalışır; hata uygulamayı kapatmasın
+  // Ağ callback'leri arka plan thread'inde çalışır; hata uygulamayı kapatmasın.
+  // Mobil veri başka SIM'e geçtiyse sinyal dinleyicisi yeni SIM için yeniden kurulur.
   private fun emitNetwork(caps: NetworkCapabilities?) {
     runCatching { sendEvent("onNetworkChange", networkInfo(caps)) }
+    mainHandler.post {
+      if (listenTelephony != null && dataSubId() != listenSubId) {
+        runCatching { stopListening() }
+        runCatching { startListening() }
+      }
+    }
   }
 
   // --- Sinyal ---
@@ -201,40 +226,48 @@ class SignalStrengthModule : Module() {
   private fun startListening() {
     // Android 9 altında dinleyici başlatılmaz; aksi halde "desteklenmiyor" ekranının üzerine veri yazar
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return
-    if (telephonyCallback != null || legacyListener != null) return
+    if (listenTelephony != null) return // Zaten dinleniyor (kayıt anında ayarlanır)
+    val ctx = appContext.reactContext ?: return
+    val tm = dataTelephony()
+    listenTelephony = tm
+    listenSubId = dataSubId()
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-      val ctx = appContext.reactContext ?: return
       val cb = SignalCallback { emit(it) }
-      telephony.registerTelephonyCallback(ctx.mainExecutor, cb)
+      tm.registerTelephonyCallback(ctx.mainExecutor, cb)
       telephonyCallback = cb
     } else {
       // PhoneStateListener, Looper'ı olan bir thread'de oluşturulmalı
       mainHandler.post {
+        // Bu arada stopListening çağrıldıysa kayıt yapma (yoksa dinleyici sızar)
+        if (listenTelephony !== tm) return@post
         @Suppress("DEPRECATION")
         val listener = object : PhoneStateListener() {
           @Deprecated("Deprecated in Java")
           override fun onSignalStrengthsChanged(ss: SignalStrength?) = emit(ss)
         }
         @Suppress("DEPRECATION")
-        telephony.listen(listener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS)
+        tm.listen(listener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS)
         legacyListener = listener
       }
     }
   }
 
   private fun stopListening() {
+    val tm = listenTelephony ?: telephony
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-      telephonyCallback?.let { telephony.unregisterTelephonyCallback(it) }
+      telephonyCallback?.let { tm.unregisterTelephonyCallback(it) }
       telephonyCallback = null
     }
     legacyListener?.let { l ->
       mainHandler.post {
         @Suppress("DEPRECATION")
-        telephony.listen(l, PhoneStateListener.LISTEN_NONE)
+        tm.listen(l, PhoneStateListener.LISTEN_NONE)
       }
     }
     legacyListener = null
+    listenTelephony = null
+    listenSubId = SubscriptionManager.INVALID_SUBSCRIPTION_ID
   }
 
   private fun toMap(ss: SignalStrength?): Map<String, Any?> {
@@ -295,9 +328,9 @@ class SignalStrengthModule : Module() {
     else -> 5
   }
 
-  // Kayıtlı olunan şebekenin adı (ör. TURKCELL). İzin gerektirmez; şebeke yoksa null.
+  // Mobil veri SIM'inin kayıtlı olduğu şebekenin adı (ör. TURKCELL). İzin gerektirmez; şebeke yoksa null.
   private fun operatorName(): String? =
-    runCatching { telephony.networkOperatorName }.getOrNull()?.trim()?.takeIf { it.isNotEmpty() }
+    runCatching { dataTelephony().networkOperatorName }.getOrNull()?.trim()?.takeIf { it.isNotEmpty() }
 
   companion object {
     private const val PREFS_NAME = "sinyal_olcer"

@@ -2,7 +2,7 @@
 // Aktif internet bağlantısını (Wi-Fi / mobil veri / yok) izleyen hook.
 import { useCallback, useEffect, useState } from 'react';
 import { AppState, Linking, PermissionsAndroid } from 'react-native';
-import SignalStrength, { type NetworkInfo, type Technology } from '../../modules/signal-strength';
+import SignalStrength, { type NetworkInfo, type SignalReading, type Technology } from '../../modules/signal-strength';
 
 const NONE: NetworkInfo = { connected: false, validated: false, type: 'none', metered: false };
 
@@ -24,7 +24,22 @@ export function useNetwork(): { info: NetworkInfo; error?: string } {
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
+    // Pil için: uygulama arka plandayken ağ değişiklikleri dinlenmez; öne gelince güncel bağlantı
+    // okunur (arada Wi-Fi ↔ mobil değiştiyse ekran ve otomatik test buna göre güncellenir)
+    const appSub = AppState.addEventListener('change', (state) => {
+      try {
+        if (state === 'active') {
+          setInfo(mod.getNetworkInfo());
+          mod.startNetworkListening();
+        } else if (state === 'background') {
+          mod.stopNetworkListening();
+        }
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e));
+      }
+    });
     return () => {
+      appSub.remove();
       try {
         sub?.remove();
         mod.stopNetworkListening();
@@ -108,23 +123,35 @@ const TECH_SHORT: Partial<Record<Technology, string>> = {
   CDMA: '2G',
 };
 
-/** Mobil ağdayken operatör adı ve teknoloji (ör. TURKCELL, LTE). İnternet kullanmaz, SIM'den okunur. */
-export function useCellularName(info: NetworkInfo): { operator?: string; tech?: string } {
-  const [value, setValue] = useState<{ operator?: string; tech?: string }>({});
+/**
+ * Mobil ağdayken operatör adı ve teknoloji. İnternet kullanmaz; mobil verinin kullanıldığı SIM'den okunur.
+ * Sinyal değiştikçe (ör. 4G → 5G) güncellenir.
+ * tech: kısa ad (ör. "LTE"), technology: ham değer (ekranda "4G (LTE)" gibi uzun ad için)
+ */
+export function useCellularName(info: NetworkInfo): { operator?: string; tech?: string; technology?: Technology } {
+  const [value, setValue] = useState<{ operator?: string; tech?: string; technology?: Technology }>({});
   useEffect(() => {
     if (info.type !== 'cellular') {
       setValue({});
       return;
     }
-    try {
-      const r = SignalStrength?.getCurrent();
+    const apply = (r: SignalReading | null | undefined) => {
+      if (!r?.available) return; // Geçici "veri yok" okumaları son bilinen değeri silmesin
       setValue({
-        operator: r?.operator ?? undefined,
-        tech: r?.technology ? TECH_SHORT[r.technology] : undefined,
+        operator: r.operator ?? undefined,
+        tech: r.technology ? TECH_SHORT[r.technology] : undefined,
+        technology: r.technology && r.technology !== 'UNKNOWN' ? r.technology : undefined,
       });
+    };
+    let sub: { remove(): void } | undefined;
+    try {
+      apply(SignalStrength?.getCurrent());
+      // Sinyal dinleyicisi "Bağlantı Kontrol" sekmesi tarafından çalıştırılır; burada sadece olaylar izlenir
+      sub = SignalStrength?.addListener('onSignalChange', apply);
     } catch {
       setValue({});
     }
+    return () => sub?.remove();
   }, [info.type, info.validated]);
   return value;
 }

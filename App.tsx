@@ -17,7 +17,7 @@ import { METRICS, rate, type MetricInfo } from './src/signal/metrics';
 import { SpeedTestScreen } from './src/speedtest/SpeedTestScreen';
 import { ThemeProvider, useTheme } from './src/theme';
 import { LanguageProvider, useI18n } from './src/i18n';
-import { appFooter } from './src/appInfo';
+import { AppFooter } from './src/AppFooter';
 
 type Tab = 'signal' | 'speed';
 const TABS: Tab[] = ['signal', 'speed'];
@@ -86,7 +86,7 @@ function Header() {
         {t.appName}
       </Text>
       <View style={styles.headerButtons}>
-        {/* Dil: geçilecek dili gösterir (Türkçedeyken "EN", İngilizcedeyken "TR") */}
+        {/* Dil: o anki sayfa dilini gösterir (Türkçe → "TR", İngilizce → "EN"); dokununca diğer dile geçer */}
         <Pressable
           onPress={toggleLang}
           style={({ pressed }) => [styles.roundButton, { backgroundColor: c.segment, opacity: pressed ? 0.7 : 1 }]}
@@ -94,9 +94,9 @@ function Header() {
           accessibilityLabel={t.header.switchLanguage}
           hitSlop={8}
         >
-          <Text style={[styles.langText, { color: c.text }]}>{lang === 'tr' ? 'EN' : 'TR'}</Text>
+          <Text style={[styles.langText, { color: c.text }]}>{lang === 'tr' ? 'TR' : 'EN'}</Text>
         </Pressable>
-        {/* Tema: tek dokunuş açık ↔ koyu, uzun basış telefonun temasına dön */}
+        {/* Tema: simge o anki temayı gösterir (koyu → 🌙, açık → ☀️); dokunuş açık ↔ koyu, uzun basış telefonun temasına dön */}
         <Pressable
           onPress={() => setMode(isDark ? 'light' : 'dark')}
           onLongPress={() => setMode('system')}
@@ -105,7 +105,7 @@ function Header() {
           accessibilityLabel={isDark ? t.header.toLight : t.header.toDark}
           hitSlop={8}
         >
-          <Text style={styles.themeIcon}>{isDark ? '☀️' : '🌙'}</Text>
+          <Text style={styles.themeIcon}>{isDark ? '🌙' : '☀️'}</Text>
         </Pressable>
       </View>
     </View>
@@ -203,7 +203,7 @@ function SignalScreen() {
       <MetricCard info={METRICS.sinr} value={reading.sinr} />
       <MetricCard info={METRICS.systemLevel} value={reading.systemLevel} bars={4} />
 
-      <Text style={[styles.version, { color: c.textFaint }]}>{appFooter(t.appName)}</Text>
+      <AppFooter />
     </ScrollView>
   );
 }
@@ -302,7 +302,7 @@ function Centered({ text, detail }: { text: string; detail?: string }) {
           {detail}
         </Text>
       ) : null}
-      <Text style={[styles.version, styles.versionCentered, { color: c.textFaint }]}>{appFooter(t.appName)}</Text>
+      <AppFooter style={styles.versionCentered} />
     </View>
   );
 }
@@ -346,6 +346,5 @@ const styles = StyleSheet.create({
   segmentItem: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 9 },
   segmentText: { fontSize: 14, fontWeight: '600' },
   errorDetail: { fontSize: 13, textAlign: 'center', marginTop: 12 },
-  version: { fontSize: 12, textAlign: 'center', marginTop: 16 },
   versionCentered: { position: 'absolute', bottom: 32 },
 });

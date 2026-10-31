@@ -1,5 +1,6 @@
 // src/signal/useSignalStrength.ts
 import { useEffect, useState } from 'react';
+import { AppState } from 'react-native';
 import SignalStrength, { type SignalReading } from '../../modules/signal-strength';
 
 const failure = (message: string): SignalReading => ({
@@ -29,7 +30,22 @@ export function useSignalStrength(): SignalReading | null {
       setReading(failure(e instanceof Error ? e.message : String(e)));
     }
 
+    // Pil için: uygulama arka plandayken sinyal dinlenmez, öne gelince güncel değerle yeniden başlar
+    const appSub = AppState.addEventListener('change', (state) => {
+      try {
+        if (state === 'active') {
+          setReading(mod.getCurrent());
+          mod.startListening();
+        } else if (state === 'background') {
+          mod.stopListening();
+        }
+      } catch (e) {
+        setReading(failure(e instanceof Error ? e.message : String(e)));
+      }
+    });
+
     return () => {
+      appSub.remove();
       try {
         sub?.remove();
         mod.stopListening();
