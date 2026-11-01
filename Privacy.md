@@ -2,9 +2,9 @@
 
 *English version below.*
 
-**Yürürlük tarihi:** 31 Ekim 2026
-**Uygulama:** Sinyal Ölçer (Signal Strength), Android
-**Geliştirici:** Azat Ateş
+**Yürürlük tarihi:** 31 Ekim 2026  
+**Uygulama:** Sinyal Ölçer (Signal Strength), Android  
+**Geliştirici:** Azat Ateş  
 **İletişim:** https://github.com/azatates7/SignalStrength/issues
 
 Sinyal Ölçer, telefonunuzun mobil şebeke çekim gücünü gösteren ve isteğe bağlı olarak internet hız testi yapan bir uygulamadır. Bu politika, uygulamanın hangi bilgilere eriştiğini, bunları nasıl kullandığını ve kimlerle paylaştığını açıklar.
@@ -74,9 +74,9 @@ Sorularınız için: https://github.com/azatates7/SignalStrength/issues
 
 # Privacy Policy — Signal Strength
 
-**Effective date:** October 31, 2026
-**App:** Signal Strength (Sinyal Ölçer), Android
-**Developer:** Azat Ateş
+**Effective date:** October 31, 2026  
+**App:** Signal Strength (Sinyal Ölçer), Android  
+**Developer:** Azat Ateş  
 **Contact:** https://github.com/azatates7/SignalStrength/issues
 
 Signal Strength shows your phone's mobile network signal strength and can optionally run an internet speed test. This policy explains what information the app accesses, how it is used and with whom it is shared.

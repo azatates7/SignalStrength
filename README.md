@@ -27,7 +27,7 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 - **Çift SIM desteği:** Sinyal, teknoloji ve operatör, mobil verinin kullanıldığı SIM'den okunur. Veri SIM'i değiştirilince uygulama yeni SIM'e geçer.
 - **Canlı bağlantı bilgisi:** Hız Testi kartındaki `Turkcell · 4G (LTE)` bilgisi sinyal değiştikçe güncellenir (ör. 4G → 5G geçişi hemen görünür).
 - **Pil dostu:** Uygulama arka plandayken sinyal ve ağ dinleyicileri durur, öne gelince güncel değer okunup yeniden başlar.
-- **Gizlilik politikası:** Sayfa altındaki "Gizlilik politikası" bağlantısı [PRIVACY.md](PRIVACY.md) dosyasını açar.
+- **Gizlilik politikası:** Sayfa altındaki "Gizlilik politikası" bağlantısı politikayı uygulamanın seçili dilinde açar. Politika GitHub Pages ile yayınlanan ayrı bir web sayfasıdır (`docs/privacy/index.html`); metnin kaynağı [PRIVACY.md](PRIVACY.md).
 - **Çökme yerine anlaşılır hata ekranı:** Beklenmedik bir hata olursa uygulama kapanmak yerine hatayı ekranda gösterir.
 
 ## Platform desteği
@@ -59,7 +59,8 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 ├─ app.json                    Uygulama adı, sürüm, paket adı, ikon ve splash ayarları
 ├─ assets/images/              Uygulama ikonu ve splash görselleri
 ├─ locales/tr.json            Ana ekrandaki Türkçe uygulama adı
-├─ PRIVACY.md                  Gizlilik politikası (Türkçe / İngilizce)
+├─ PRIVACY.md                  Gizlilik politikası metni (Türkçe / İngilizce)
+├─ docs/privacy/index.html     Aynı politikanın web sayfası (GitHub Pages)
 ├─ src/
 │  ├─ appInfo.ts              Sürüm, alt bilgi yazısı, gizlilik politikası adresi
 │  ├─ AppFooter.tsx           Sayfa altı: sürüm + gizlilik politikası bağlantısı
@@ -139,8 +140,7 @@ eas build -p android --profile production
 
 Sonuç olarak imzalı bir `.aab` dosyası üretilir. Bu dosya Play Console'a yüklenir. EAS imza anahtarını (keystore) kendisi yönetir.
 
-**Gizlilik politikası:** Uygulama konum izni istediği için Play Console zorunlu tutuyor. Play Console → *Uygulama içeriği → Gizlilik politikası* alanına şu adres girilir:
-`https://github.com/azatates7/SignalStrength/blob/main/PRIVACY.md` (repo herkese açık olmalı). Uygulamaya izin, sunucu veya veri saklama eklenirse `PRIVACY.md` ve *Veri güvenliği* formu da güncellenmeli.
+**Gizlilik politikası:** Uygulama konum izni istediği için Play Console zorunlu tutuyor. Politika GitHub Pages ile yayınlanır: GitHub'da repo → *Settings → Pages → Build and deployment*: Source **Deploy from a branch**, Branch **main**, klasör **/docs** → *Save*. Birkaç dakika sonra sayfa `https://azatates7.github.io/SignalStrength/privacy/` adresinde açılır (repo herkese açık olmalı). Play Console → *Uygulama içeriği → Gizlilik politikası* alanına bu adres girilir. Uygulamaya izin, sunucu veya veri saklama eklenirse `PRIVACY.md`, `docs/privacy/index.html` ve *Veri güvenliği* formu birlikte güncellenmeli.
 
 ## Sürüm güncelleme
 

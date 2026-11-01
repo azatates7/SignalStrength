@@ -9,5 +9,6 @@ export const APP_VERSION = `v${expo.version.split('.').slice(0, 2).join('.')}`;
 export const appFooter = (appName: string) => `${appName} ${APP_VERSION}`;
 
 // Gizlilik politikası (Play Store bunun uygulama içinden de açılabilmesini istiyor).
-// Depo herkese açık olmalı; aksi halde bağlantı giriş sayfasına düşer.
-export const PRIVACY_URL = 'https://github.com/azatates7/SignalStrength/blob/main/PRIVACY.md';
+// GitHub Pages ile docs/privacy/index.html'den yayınlanır; ?lang= sayfayı seçili dilde açar.
+export const PRIVACY_URL = 'https://azatates7.github.io/SignalStrength/privacy/';
+export const privacyUrl = (lang: 'tr' | 'en') => `${PRIVACY_URL}?lang=${lang}`;
