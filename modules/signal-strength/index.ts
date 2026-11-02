@@ -26,6 +26,7 @@ export type NetworkInfo = {
   validated: boolean; // Android internete gerçekten çıkılabildiğini doğruladı
   type: NetworkType;
   metered: boolean; // Kotalı bağlantı (genelde mobil veri)
+  vpn: boolean; // VPN açık (type yine alttaki bağlantıyı gösterir: Wi-Fi / mobil veri)
 };
 
 type Events = {
@@ -44,6 +45,9 @@ declare class SignalStrengthNative extends NativeModule<Events> {
   getPrivacyNoticeDismissed(): boolean;
   setPrivacyNoticeDismissed(value: boolean): void;
   getNetworkInfo(): NetworkInfo;
+  isLocationEnabled(): boolean;
+  openLocationSettings(): boolean;
+  getStatusBarHeight(): number;
   startNetworkListening(): void;
   stopNetworkListening(): void;
   /** Bağlı Wi-Fi'nin adı; konum izni yoksa / konum kapalıysa null */

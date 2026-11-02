@@ -1,6 +1,8 @@
 package expo.modules.signalstrength
 
 import android.content.Context
+import android.content.Intent
+import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -10,6 +12,8 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
+import android.view.WindowInsets
 import android.telephony.CellSignalStrength
 import android.telephony.CellSignalStrengthCdma
 import android.telephony.CellSignalStrengthGsm
@@ -108,10 +112,48 @@ class SignalStrengthModule : Module() {
     // konum servisi açıkken verir; aksi halde null döner.
     AsyncFunction("getWifiName") { promise: Promise -> getWifiName(promise) }
 
+    // Konum servisi (telefonun "Konum" anahtarı) açık mı. Wi-Fi adı izin olsa bile kapalıyken okunamaz.
+    Function("isLocationEnabled") {
+      val lm = appContext.reactContext?.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return@Function true // eski sürümde engelleme
+      runCatching { lm?.isLocationEnabled }.getOrNull() ?: true // bilinmiyorsa engelleme
+    }
+
+    // Telefonun konum ayarları sayfasını açar (kullanıcı konumu oradan açar)
+    Function("openLocationSettings") {
+      val ctx = appContext.currentActivity ?: appContext.reactContext ?: return@Function false
+      val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+      if (ctx !is android.app.Activity) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      runCatching { ctx.startActivity(intent) }.isSuccess
+    }
+
+    // Durum çubuğu (saat, pil) yüksekliği, dp. Uygulama ekranın en üstünden çizildiği için
+    // üst panel bu kadar aşağıdan başlamalı. Çentikli / kameralı ekranlarda daha yüksek olabilir.
+    Function("getStatusBarHeight") { statusBarHeightDp() }
+
     OnDestroy {
       runCatching { stopListening() }
       runCatching { stopNetworkListening() }
     }
+  }
+
+  private fun statusBarHeightDp(): Double {
+    val res = appContext.reactContext?.resources ?: return 0.0
+    var px = runCatching {
+      val insets = appContext.currentActivity?.window?.decorView?.rootWindowInsets
+      when {
+        insets == null -> 0
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.R ->
+          insets.getInsets(WindowInsets.Type.statusBars() or WindowInsets.Type.displayCutout()).top
+        else -> @Suppress("DEPRECATION") insets.systemWindowInsetTop
+      }
+    }.getOrNull() ?: 0
+    if (px <= 0) {
+      // Pencere henüz hazır değilse sistemin varsayılan durum çubuğu yüksekliği
+      val id = res.getIdentifier("status_bar_height", "dimen", "android")
+      if (id > 0) px = res.getDimensionPixelSize(id)
+    }
+    return (px / res.displayMetrics.density).toDouble()
   }
 
   private fun prefs() =
@@ -127,7 +169,7 @@ class SignalStrengthModule : Module() {
 
   private fun networkInfo(caps: NetworkCapabilities?): Map<String, Any?> {
     if (caps == null) {
-      return mapOf("connected" to false, "validated" to false, "type" to "none", "metered" to false)
+      return mapOf("connected" to false, "validated" to false, "type" to "none", "metered" to false, "vpn" to false)
     }
     val type = when {
       caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
@@ -142,7 +184,10 @@ class SignalStrengthModule : Module() {
       "validated" to caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED),
       "type" to type,
       // Kotalı bağlantı (genelde mobil veri); hız testi öncesi kullanıcı uyarısı için
-      "metered" to !caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+      "metered" to !caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED),
+      // VPN açık mı. Android VPN ağına alttaki bağlantının tipini de (Wi-Fi / mobil) ekler;
+      // bu yüzden "type" yine Wi-Fi / mobil veri olarak kalır, VPN ayrıca belirtilir.
+      "vpn" to caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
     )
   }
 

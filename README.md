@@ -24,6 +24,8 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 - **Tek dokunuşla tema:** Üst paneldeki buton o anki temayı gösterir (koyu temada 🌙, açık temada ☀️); dokununca açık ve koyu tema arasında geçiş yapar. Uzun basınca telefonun temasına döner. Seçim hatırlanır.
 - **Gereksiz izin istemez:** Telefon izni gerekmez. Konum izni yalnızca Wi-Fi adını görmek için, kullanıcı "Göster"e dokunduğunda istenir (Android bunu zorunlu tutuyor). Sinyal sekmesi internet kullanmaz. İnternet yalnızca kullanıcı hız testini başlattığında kullanılır. Uygulama hiçbir veri toplamaz veya saklamaz.
 - **Mobil veride veri koruması:** Hız testi mobil veride kendiliğinden başlamaz. Ne kadar veri kullanacağını anlatan bir bilgi kutusu gösterilir, test kullanıcı başlatınca çalışır ve en fazla yaklaşık 100 MB kullanır. Wi-Fi'de test otomatik başlar.
+- **VPN kontrolü:** Hız Testi kartında VPN'in açık olup olmadığı gösterilir. VPN açıkken hızın VPN sunucusu üzerinden ölçüldüğü belirtilir; VPN açılıp kapanınca test yenilenir.
+- **Konum kapalıysa yönlendirme:** Wi-Fi adı için konum izni verilmiş ama telefonun konum servisi kapalıysa "Konumu aç" butonu konum ayarlarını açar; geri dönünce ad kendiliğinden okunur.
 - **Çift SIM desteği:** Sinyal, teknoloji ve operatör, mobil verinin kullanıldığı SIM'den okunur. Veri SIM'i değiştirilince uygulama yeni SIM'e geçer.
 - **Canlı bağlantı bilgisi:** Hız Testi kartındaki `Turkcell · 4G (LTE)` bilgisi sinyal değiştikçe güncellenir (ör. 4G → 5G geçişi hemen görünür).
 - **Pil dostu:** Uygulama arka plandayken sinyal ve ağ dinleyicileri durur, öne gelince güncel değer okunup yeniden başlar.
@@ -231,7 +233,7 @@ dBm, telefona ulaşan sinyalin gücünü 1 miliwatt'a göre ölçen bir birimdir
 - **Splash ekranı:** Açılış ekranı her zaman koyu. Uygulama içinde açık tema seçilse de açılışta bir an koyu ekran görünür.
 - **Operatör adı:** Ad, operatörün yayınladığı haliyle gösterilir. Büyük/küçük harf operatöre göre değişebilir.
 - **Hız testi sonuçları:** Ölçüm tek bir Cloudflare sunucusuna yapılır. Speedtest.net gibi farklı sunucular kullanan uygulamalarla sonuçlar birebir aynı olmayabilir.
-- **Wi-Fi adı (SSID):** Android bunun için konum izni ve açık konum servisi istiyor. İzin verilmezse ad gösterilmez, test yine çalışır.
+- **Wi-Fi adı (SSID):** Android bunun için konum izni ve açık konum servisi istiyor. İzin verilmezse ad gösterilmez, test yine çalışır. Konum kapalıysa uygulama konum ayarlarına yönlendirir.
 
 ## Lisans
 

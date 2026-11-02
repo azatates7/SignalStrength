@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AppState, Linking, PermissionsAndroid } from 'react-native';
 import SignalStrength, { type NetworkInfo, type SignalReading, type Technology } from '../../modules/signal-strength';
 
-const NONE: NetworkInfo = { connected: false, validated: false, type: 'none', metered: false };
+const NONE: NetworkInfo = { connected: false, validated: false, type: 'none', metered: false, vpn: false };
 
 export function useNetwork(): { info: NetworkInfo; error?: string } {
   const [info, setInfo] = useState<NetworkInfo>(NONE);
@@ -52,7 +52,23 @@ export function useNetwork(): { info: NetworkInfo; error?: string } {
   return { info, error };
 }
 
-export type WifiNameState = 'idle' | 'needPermission' | 'loading' | 'ok' | 'unavailable' | 'denied' | 'blocked';
+export type WifiNameState =
+  | 'idle'
+  | 'needPermission'
+  | 'loading'
+  | 'ok'
+  | 'unavailable'
+  | 'denied'
+  | 'blocked'
+  | 'locationOff'; // izin var ama telefonun konum servisi kapalı
+
+const locationEnabled = () => {
+  try {
+    return SignalStrength?.isLocationEnabled() ?? true;
+  } catch {
+    return true;
+  }
+};
 
 const FINE = PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION;
 const COARSE = PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION;
@@ -60,8 +76,8 @@ const COARSE = PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION;
 /**
  * Bağlı Wi-Fi ağının adı. Android bunu yalnızca konum izni verilmiş ve konum servisi açıkken
  * veriyor; izin, kullanıcı "Göster"e dokunduğunda istenir (uygulama açılışında sorulmaz).
- * Ad alınamazsa "Tekrar dene" ile yeniden sorgulanabilir; kullanıcı ayarlardan konumu açıp
- * uygulamaya döndüğünde de kendiliğinden yeniden denenir.
+ * Konum servisi kapalıysa "Konumu aç" ile telefonun konum ayarları açılır; kullanıcı konumu açıp
+ * uygulamaya döndüğünde ad kendiliğinden yeniden okunur. Ad yine alınamazsa "Tekrar dene".
  */
 export function useWifiName(info: NetworkInfo) {
   const [ssid, setSsid] = useState<string | null>(null);
@@ -69,6 +85,12 @@ export function useWifiName(info: NetworkInfo) {
   const isWifi = info.type === 'wifi';
 
   const load = useCallback(async () => {
+    // Konum servisi kapalıysa Android adı vermez: kullanıcıyı konumu açmaya yönlendir
+    if (!locationEnabled()) {
+      setSsid(null);
+      setState('locationOff');
+      return;
+    }
     setState('loading');
     try {
       const name = (await SignalStrength?.getWifiName()) ?? null;
@@ -111,7 +133,16 @@ export function useWifiName(info: NetworkInfo) {
     else setState(r[FINE] === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN ? 'blocked' : 'denied');
   }, [load]);
 
-  return { ssid, state, requestPermission, retry: load, openSettings: () => Linking.openSettings() };
+  const openLocationSettings = useCallback(() => {
+    try {
+      if (SignalStrength?.openLocationSettings()) return;
+    } catch {
+      // açılamazsa uygulama ayarları
+    }
+    Linking.openSettings();
+  }, []);
+
+  return { ssid, state, requestPermission, retry: load, openSettings: () => Linking.openSettings(), openLocationSettings };
 }
 
 const TECH_SHORT: Partial<Record<Technology, string>> = {

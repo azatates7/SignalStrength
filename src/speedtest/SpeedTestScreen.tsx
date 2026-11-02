@@ -55,7 +55,9 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
   // Mobil veride bu bağlantıda en az bir test başlatıldı mı (başlatılınca veri uyarısı kalkar)
   const [meteredTested, setMeteredTested] = useState(false);
   const autoPending = useRef(false);
-  const prevType = useRef(info.type);
+  // Bağlantı anahtarı: tip + VPN. VPN açılıp kapanınca da yeni bağlantı sayılır (ölçüm yolu değişir)
+  const connKey = `${info.type}${info.vpn ? '+vpn' : ''}`;
+  const prevConn = useRef(connKey);
 
   // Ekrandan çıkılırsa / uygulama kapanırsa devam eden testi durdur
   useEffect(() => () => tokenRef.current?.cancel(), []);
@@ -67,7 +69,7 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
   useEffect(() => {
     setMeta(undefined);
     setMetaFailed(false);
-  }, [info.type]);
+  }, [connKey]);
   useEffect(() => {
     if (!active || !online || meta || status === 'running') return;
     let alive = true;
@@ -78,7 +80,7 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, online, info.type, meta]);
+  }, [active, online, connKey, meta]);
 
   // Deneme sınırı dolduysa geri sayım
   useEffect(() => {
@@ -94,12 +96,12 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
     if (active) autoPending.current = true;
   }, [active]);
 
-  // Bağlantı tipi değişince eski test geçersiz olur: durdur. Bağlantı koptuysa değerleri temizle;
+  // Bağlantı tipi (veya VPN) değişince eski test geçersiz olur: durdur. Bağlantı koptuysa değerleri temizle;
   // yeni bir bağlantı geldiyse (bağlantı yok → Wi-Fi da dahil) otomatik testi beklemeye al.
   useEffect(() => {
-    const prev = prevType.current;
-    prevType.current = info.type;
-    if (prev === info.type) return;
+    const prev = prevConn.current;
+    prevConn.current = connKey;
+    if (prev === connKey) return;
     tokenRef.current?.cancel();
     tokenRef.current = undefined; // Durdurulan testin geç gelen sonuçları ekrana yazılmasın
     setPhase(undefined);
@@ -113,7 +115,7 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
     }
     setStatus((s) => (s === 'running' ? 'idle' : s));
     autoPending.current = true;
-  }, [info.type]);
+  }, [connKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Bekleyen otomatik testi koşullar uygun olduğunda başlat. Bağlantı geri gelirken Android önce
   // "ağ var, internet yok" sonra "internet var" bildirebildiği için internetin gelmesi de beklenir.
@@ -124,7 +126,7 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
     if (info.metered) return;
     start(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, online, info.type, status, waitSec]);
+  }, [active, online, connKey, status, waitSec]);
 
   async function start(auto = false) {
     // 1 dakikada en fazla 3 test. Otomatik testse süre dolunca kendiliğinden başlar.
@@ -346,6 +348,9 @@ function ConnectionCard({
         </Text>
       </View>
       <Row label={t.conn.type} value={t.net[info.type]} />
+      {info.connected ? (
+        <Row label={t.conn.vpn} value={info.vpn ? t.conn.vpnOn : t.conn.vpnOff} sub={info.vpn ? t.conn.vpnNote : undefined} />
+      ) : null}
       {info.type === 'wifi' ? <WifiNameRow {...wifi} /> : null}
       <Row label={t.conn.isp} value={isp} sub={ispDetail} placeholder={pending} />
       <Row label={t.conn.server} value={server} placeholder={pending} last />
@@ -362,6 +367,7 @@ function WifiNameRow({
   requestPermission,
   retry,
   openSettings,
+  openLocationSettings,
 }: ReturnType<typeof useWifiName>) {
   const { colors: c } = useTheme();
   const { t } = useI18n();
@@ -370,10 +376,12 @@ function WifiNameRow({
       ? { label: t.conn.show, onPress: requestPermission, hint: t.conn.locationHint }
       : state === 'blocked'
         ? { label: t.conn.openSettings, onPress: openSettings, hint: t.conn.locationHint }
-        : state === 'unavailable'
-          ? // İzin var ama ad gelmedi: büyük ihtimalle konum servisi kapalı
-            { label: t.conn.retry, onPress: retry, hint: t.conn.locationOffHint }
-          : undefined;
+        : state === 'locationOff'
+          ? // İzin var ama telefonun konum servisi kapalı: konum ayarlarına yönlendir
+            { label: t.conn.turnOnLocation, onPress: openLocationSettings, hint: t.conn.locationOffHint }
+          : state === 'unavailable'
+            ? { label: t.conn.retry, onPress: retry, hint: t.conn.unavailableHint }
+            : undefined;
 
   return (
     <View style={[styles.row, { borderBottomColor: c.barOff, borderBottomWidth: StyleSheet.hairlineWidth }]}>

@@ -19,8 +19,22 @@ import { ThemeProvider, useTheme } from './src/theme';
 import { LanguageProvider, useI18n } from './src/i18n';
 import { AppFooter } from './src/AppFooter';
 import { PrivacyPolicyProvider } from './src/privacy/PrivacyPolicy';
+import SignalStrength from './modules/signal-strength';
 
 type Tab = 'signal' | 'speed';
+
+// Uygulama ekranın en üstünden (durum çubuğunun altından) çizilir; üst panel saat / pil
+// satırının altından başlamalı. Bazı telefonlarda StatusBar.currentHeight 0 döndüğü için
+// yükseklik native modülden (pencere boşlukları) okunur; ikisinden büyük olan kullanılır.
+function statusBarHeight(): number {
+  let native = 0;
+  try {
+    native = SignalStrength?.getStatusBarHeight() ?? 0;
+  } catch {
+    // okunamazsa aşağıdaki varsayılan
+  }
+  return Math.max(native, RNStatusBar.currentHeight ?? 0) || 28;
+}
 const TABS: Tab[] = ['signal', 'speed'];
 
 export default function App() {
@@ -84,7 +98,7 @@ function Header() {
   const { colors: c, isDark, setMode } = useTheme();
   const { t, lang, toggleLang } = useI18n();
   return (
-    <View style={[styles.header, { paddingTop: (RNStatusBar.currentHeight ?? 24) + 12 }]}>
+    <View style={[styles.header, { paddingTop: statusBarHeight() + 12 }]}>
       <Text style={[styles.appTitle, { color: c.text }]} numberOfLines={1}>
         {t.appName}
       </Text>

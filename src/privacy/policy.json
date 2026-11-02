@@ -47,7 +47,7 @@
         "h3": "2. Bağlantı bilgisi"
       },
       {
-        "p": "Wi-Fi'ye mi mobil veriye mi bağlı olduğunuz ve bağlantının kotalı (mobil veri) olup olmadığı Android'den okunur. Bu bilgi, hız testinin mobil veride kendiliğinden başlamaması ve ekranda bağlantı tipinin gösterilmesi için kullanılır. Telefonunuzdan dışarı gönderilmez."
+        "p": "Wi-Fi'ye mi mobil veriye mi bağlı olduğunuz, bağlantının kotalı (mobil veri) olup olmadığı ve VPN'in açık olup olmadığı Android'den okunur. Bu bilgi, hız testinin mobil veride kendiliğinden başlamaması ve ekranda bağlantı tipinin ve VPN durumunun gösterilmesi için kullanılır. Telefonunuzdan dışarı gönderilmez."
       },
       {
         "h3": "3. Wi-Fi ağ adı ve konum izni (isteğe bağlı)"
@@ -186,7 +186,7 @@
         "h3": "2. Connection information"
       },
       {
-        "p": "Whether you are on Wi-Fi or mobile data, and whether the connection is metered (mobile data), is read from Android. It is used to keep the speed test from starting automatically on mobile data and to show the connection type. It is not sent off your phone."
+        "p": "Whether you are on Wi-Fi or mobile data, whether the connection is metered (mobile data) and whether a VPN is on is read from Android. It is used to keep the speed test from starting automatically on mobile data and to show the connection type and VPN status. It is not sent off your phone."
       },
       {
         "h3": "3. Wi-Fi network name and location permission (optional)"
