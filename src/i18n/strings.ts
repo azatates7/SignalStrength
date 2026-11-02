@@ -13,6 +13,7 @@ export type PhaseKey = 'meta' | 'ping' | 'download' | 'upload';
 const tr = {
   appName: 'Sinyal Ölçer',
   privacy: 'Gizlilik politikası',
+  privacyDialog: { dontShowAgain: 'Bir daha gösterme', ok: 'Tamam' },
   common: {
     error: 'Bir hata oluştu',
     unknown: 'Bilinmiyor',
@@ -135,6 +136,7 @@ export type Strings = typeof tr;
 const en: Strings = {
   appName: 'Signal Strength',
   privacy: 'Privacy policy',
+  privacyDialog: { dontShowAgain: "Don't show again", ok: 'OK' },
   common: {
     error: 'Something went wrong',
     unknown: 'Unknown',

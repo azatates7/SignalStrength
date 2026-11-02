@@ -41,6 +41,8 @@ declare class SignalStrengthNative extends NativeModule<Events> {
   setThemePreference(mode: string): void;
   getLanguagePreference(): string | null;
   setLanguagePreference(lang: string): void;
+  getPrivacyNoticeDismissed(): boolean;
+  setPrivacyNoticeDismissed(value: boolean): void;
   getNetworkInfo(): NetworkInfo;
   startNetworkListening(): void;
   stopNetworkListening(): void;

@@ -1,18 +1,20 @@
 // src/AppFooter.tsx
-// Sayfa altı: "Sinyal Ölçer v6.0" ve gizlilik politikası bağlantısı (tarayıcıda açılır).
-import { Linking, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
-import { appFooter, privacyUrl } from './appInfo';
+// Sayfa altı: "Sinyal Ölçer v6.0" ve gizlilik politikası bağlantısı (uygulama içinde açılır).
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { appFooter } from './appInfo';
+import { usePrivacyPolicy } from './privacy/PrivacyPolicy';
 import { useI18n } from './i18n';
 import { useTheme } from './theme';
 
 export function AppFooter({ style }: { style?: StyleProp<ViewStyle> }) {
   const { colors: c } = useTheme();
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
+  const privacy = usePrivacyPolicy();
   return (
     <View style={[styles.wrap, style]}>
       <Text style={[styles.text, { color: c.textFaint }]}>{appFooter(t.appName)}</Text>
       <Pressable
-        onPress={() => Linking.openURL(privacyUrl(lang)).catch(() => {})}
+        onPress={privacy.open}
         hitSlop={8}
         accessibilityRole="link"
       >

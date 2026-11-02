@@ -18,6 +18,7 @@ export type Palette = {
   segmentActive: string;
   accent: string;      // Ana buton (Testi Başlat)
   onAccent: string;    // Ana buton yazısı
+  overlay: string;     // Açılır pencere arkasındaki karartma
 };
 
 const DARK: Palette = {
@@ -32,6 +33,7 @@ const DARK: Palette = {
   segmentActive: '#334155',
   accent: '#22c55e',
   onAccent: '#052e16',
+  overlay: 'rgba(0, 0, 0, 0.6)',
 };
 
 const LIGHT: Palette = {
@@ -46,6 +48,7 @@ const LIGHT: Palette = {
   segmentActive: '#ffffff',
   accent: '#15803d',
   onAccent: '#ffffff',
+  overlay: 'rgba(15, 23, 42, 0.45)',
 };
 
 // Durum renkleri açık zeminde yazı olarak okunmuyor; açık temada koyu tonları kullanılır

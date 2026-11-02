@@ -93,6 +93,12 @@ class SignalStrengthModule : Module() {
       prefs()?.edit()?.putString(KEY_LANGUAGE, lang)?.apply()
     }
 
+    // Gizlilik politikası açılışta gösterilmesin mi ("Bir daha gösterme" işaretlendiyse true)
+    Function("getPrivacyNoticeDismissed") { prefs()?.getBoolean(KEY_PRIVACY_DISMISSED, false) ?: false }
+    Function("setPrivacyNoticeDismissed") { value: Boolean ->
+      prefs()?.edit()?.putBoolean(KEY_PRIVACY_DISMISSED, value)?.apply()
+    }
+
     // Aktif internet bağlantısı (Wi-Fi / mobil veri / ...) ve değişiklik bildirimleri
     Function("getNetworkInfo") { networkInfo(currentCapabilities()) }
     Function("startNetworkListening") { startNetworkListening() }
@@ -336,6 +342,7 @@ class SignalStrengthModule : Module() {
     private const val PREFS_NAME = "sinyal_olcer"
     private const val KEY_THEME = "theme"
     private const val KEY_LANGUAGE = "language"
+    private const val KEY_PRIVACY_DISMISSED = "privacy_notice_dismissed"
   }
 
   // CellInfo.UNAVAILABLE == Int.MAX_VALUE

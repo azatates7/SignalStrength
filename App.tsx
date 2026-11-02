@@ -18,6 +18,7 @@ import { SpeedTestScreen } from './src/speedtest/SpeedTestScreen';
 import { ThemeProvider, useTheme } from './src/theme';
 import { LanguageProvider, useI18n } from './src/i18n';
 import { AppFooter } from './src/AppFooter';
+import { PrivacyPolicyProvider } from './src/privacy/PrivacyPolicy';
 
 type Tab = 'signal' | 'speed';
 const TABS: Tab[] = ['signal', 'speed'];
@@ -26,7 +27,9 @@ export default function App() {
   return (
     <LanguageProvider>
       <ThemeProvider>
-        <Root />
+        <PrivacyPolicyProvider>
+          <Root />
+        </PrivacyPolicyProvider>
       </ThemeProvider>
     </LanguageProvider>
   );
