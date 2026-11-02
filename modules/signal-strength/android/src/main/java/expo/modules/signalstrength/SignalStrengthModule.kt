@@ -27,6 +27,8 @@ import android.telephony.SubscriptionManager
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.concurrent.atomic.AtomicBoolean
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.modules.Module
@@ -131,10 +133,54 @@ class SignalStrengthModule : Module() {
     // üst panel bu kadar aşağıdan başlamalı. Çentikli / kameralı ekranlarda daha yüksek olabilir.
     Function("getStatusBarHeight") { statusBarHeightDp() }
 
+    // Hız testi ping ölçümü. JS'teki XHR'da ölçülen süreye React Native köprüsünün gecikmesi de
+    // ekleniyordu (ping olduğundan yüksek çıkıyordu); burada istek native tarafta zamanlanır.
+    // İlk istek bağlantı kurulumunu (TCP + TLS) içerdiği için sayılmaz; sonrakiler aynı bağlantıyı
+    // kullanır. Sunucunun işleme süresi (Server-Timing) çıkarılır. Sonuç: ms cinsinden örnekler,
+    // ölçülemezse null (JS bu durumda eski yönteme döner).
+    AsyncFunction("measurePing") { url: String, count: Int, referer: String, promise: Promise ->
+      Thread { promise.resolve(pingSamples(url, count, referer)) }.start()
+    }
+
     OnDestroy {
       runCatching { stopListening() }
       runCatching { stopNetworkListening() }
     }
+  }
+
+  private fun pingSamples(url: String, count: Int, referer: String): List<Double>? {
+    val samples = ArrayList<Double>()
+    try {
+      for (i in 0..count) {
+        val conn = URL(url).openConnection() as HttpURLConnection
+        conn.connectTimeout = 5000
+        conn.readTimeout = 5000
+        conn.useCaches = false
+        conn.setRequestProperty("Referer", referer)
+        val t0 = System.nanoTime()
+        val code = conn.responseCode // İstek gönderilir, yanıtın başlıkları gelince döner
+        val t1 = System.nanoTime()
+        if (code !in 200..299) {
+          conn.disconnect()
+          break
+        }
+        // Gövde (0 bayt) okunup kapatılır; böylece bağlantı bir sonraki istek için açık kalır
+        conn.inputStream.use { it.readBytes() }
+        if (i == 0) continue
+        val serverMs = parseServerTiming(conn.getHeaderField("server-timing"))
+        samples.add(maxOf(0.0, (t1 - t0) / 1_000_000.0 - serverMs))
+      }
+    } catch (e: Exception) {
+      // Ağ hatası: o ana kadarki örnekler yeterliyse kullanılır
+    }
+    return if (samples.size >= 3) samples else null
+  }
+
+  // "cfRequestDuration;dur=12.3" → 12.3
+  private fun parseServerTiming(header: String?): Double {
+    if (header == null) return 0.0
+    val m = Regex("""(?i)(?:^|,\s*)cfReq(?:uest)?Dur(?:ation)?;\s*dur=([0-9.]+)""").find(header)
+    return m?.groupValues?.get(1)?.toDoubleOrNull() ?: 0.0
   }
 
   private fun statusBarHeightDp(): Double {

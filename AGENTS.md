@@ -14,6 +14,7 @@ Expo ships breaking changes every SDK release. APIs you remember are likely rena
 npx expo install <package>  # ALWAYS use instead of npm add — resolves SDK-compatible versions
 npx expo run:android        # dev build on a connected device (hot reload)
 npx tsc --noEmit            # typecheck
+npm test                    # unit tests (Jest, jest-expo preset)
 npx expo-doctor             # diagnose dependency and config issues
 npx expo install --fix      # fix incompatible package versions
 
@@ -22,7 +23,7 @@ npx expo prebuild --clean
 cd android && ./gradlew assembleRelease   # → android/app/build/outputs/apk/release/app-release.apk
 ```
 
-Run the typecheck before declaring any task done. `npx expo-modules-autolinking search` must be run with `-p android` — without it, it lists modules for iOS and the local module (Android-only) will not appear.
+Run the typecheck **and `npm test`** before declaring any task done. Unit tests live next to the code in `__tests__/` folders (`*.test.ts`) and cover pure logic: `levels`, `metrics`, `rateLimit`, `cloudflare` helpers (`parseServerTiming`, `median`, `pingStats`) and the privacy policy JSON (TR/EN same structure, e-mail contact). When you change or add pure logic, add or update its test. Keep native-dependent code out of these modules so they stay testable (`modules/signal-strength` resolves to `null` under Jest). `npx expo-modules-autolinking search` must be run with `-p android` — without it, it lists modules for iOS and the local module (Android-only) will not appear.
 
 ### When `prebuild --clean` is required
 
@@ -45,7 +46,7 @@ Changes to `.ts` / `.tsx` files only need `gradlew assembleRelease` (or hot relo
 - `scripts/build-privacy-page.mjs` — generates `docs/privacy/index.html` from `policy.json` (`node scripts/build-privacy-page.mjs`). Never edit the HTML by hand. The page exists only because Play Console requires a public privacy policy URL; the app itself never opens it.
 - `locales/tr.json` — Turkish launcher name ("Sinyal Ölçer"), wired via `expo.locales` in `app.json` (Expo writes `values-b+tr/strings.xml` on prebuild).
 - `src/speedtest/rateLimit.ts` — max 3 speed tests per rolling minute (in-memory).
-- `src/speedtest/cloudflare.ts` — speed test engine: `fetchMeta()` (ISP + server location from `speed.cloudflare.com/meta`), `runSpeedTest()` (ping → download → upload via `__down` / `__up`, XHR timing, `CancelToken`). Endpoints and timing follow Cloudflare's MIT-licensed `@cloudflare/speedtest`.
+- `src/speedtest/cloudflare.ts` — speed test engine (ping is measured natively by `measurePing` in the Kotlin module — XHR timing included React Native bridge delay and over-reported ping; the XHR loop remains as a fallback): `fetchMeta()` (ISP + server location from `speed.cloudflare.com/meta`), `runSpeedTest()` (ping → download → upload via `__down` / `__up`, XHR timing, `CancelToken`). Endpoints and timing follow Cloudflare's MIT-licensed `@cloudflare/speedtest`.
 - `src/speedtest/useNetwork.ts` — `useNetwork` (active connection: Wi-Fi / mobile data / none, plus `vpn`), `useWifiName` (SSID, opt-in location permission; if the phone's location service is off the state is `locationOff` and "Konumu aç / Turn on location" opens the system location settings via `openLocationSettings()`; the name is re-read when the app returns to the foreground), `useCellularName` (operator + technology, updated live from `onSignalChange` so 4G ↔ 5G changes show without a connection change).
 - `src/speedtest/SpeedTestScreen.tsx` — speed test tab UI (connection card, live gauge, result tiles with ratings, explanations).
 - `src/theme.tsx` — `ThemeProvider` / `useTheme()`: dark and light palettes, `tone()` for status colors, persisted theme mode (`system` | `light` | `dark`).

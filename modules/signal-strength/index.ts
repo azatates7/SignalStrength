@@ -48,6 +48,8 @@ declare class SignalStrengthNative extends NativeModule<Events> {
   isLocationEnabled(): boolean;
   openLocationSettings(): boolean;
   getStatusBarHeight(): number;
+  /** Ping örnekleri (ms); ilk istek sayılmaz. Ölçülemezse null */
+  measurePing(url: string, count: number, referer: string): Promise<number[] | null>;
   startNetworkListening(): void;
   stopNetworkListening(): void;
   /** Bağlı Wi-Fi'nin adı; konum izni yoksa / konum kapalıysa null */

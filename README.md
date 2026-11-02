@@ -115,6 +115,16 @@ JS değişiklikleri telefona anında yansır. Kotlin dosyası değiştiğinde ko
 
 > Emülatör gerçek sinyal ölçemez. Sinyal değerleri emülatörün **Extended controls → Cellular** ekranından elle değiştirilebilir. Gerçek ölçüm için fiziksel bir cihaz gerekir.
 
+## Testler
+
+Birim testleri Jest (`jest-expo`) ile çalışır; testler kodun yanındaki `__tests__/` klasörlerindedir.
+
+```bash
+npm test
+```
+
+Kapsanan: sinyal puanı ve kalite seviyeleri (`levels`), RSRP/RSRQ/SINR değerlendirmesi (`metrics`), dakikada 3 test sınırı (`rateLimit`), ping hesapları (`cloudflare`) ve gizlilik politikası metninin iki dilde aynı yapıda olması.
+
 ## APK oluşturma
 
 ```bash

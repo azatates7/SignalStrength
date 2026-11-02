@@ -2,6 +2,8 @@
 // Cloudflare'in hız testi sunucularıyla (speed.cloudflare.com) ping / indirme / yükleme ölçümü.
 // Uç noktalar ve süre hesabı Cloudflare'in açık kaynak @cloudflare/speedtest (MIT) kütüphanesini izler.
 
+import SignalStrength from '../../modules/signal-strength';
+
 const BASE = 'https://speed.cloudflare.com';
 
 export type Phase = 'meta' | 'ping' | 'download' | 'upload';
@@ -83,7 +85,7 @@ type Timed = {
 
 const now = () => performance.now();
 
-function parseServerTiming(header: string | null): number {
+export function parseServerTiming(header: string | null): number {
   if (!header) return 0;
   const m = header.match(/(?:^|,\s*)cfReq(?:uest)?Dur(?:ation)?;\s*dur=([0-9.]+)/i);
   return m ? Number(m[1]) : 0;
@@ -174,10 +176,20 @@ export async function fetchMeta(): Promise<ConnectionMeta> {
   };
 }
 
-const median = (xs: number[]) => {
+/** Ortanca değer (çift sayıda örnekte ortadaki ikisinin ortalaması); boş listede 0 */
+export const median = (xs: number[]) => {
+  if (!xs.length) return 0;
   const s = [...xs].sort((a, b) => a - b);
-  return s[Math.floor(s.length / 2)] ?? 0;
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
 };
+
+/** Ping = örneklerin ortancası, jitter = ardışık örnekler arasındaki farkların ortalaması */
+export function pingStats(samples: number[]): { pingMs: number; jitterMs: number } {
+  let jitter = 0;
+  for (let i = 1; i < samples.length; i++) jitter += Math.abs(samples[i] - samples[i - 1]);
+  return { pingMs: median(samples), jitterMs: samples.length > 1 ? jitter / (samples.length - 1) : 0 };
+}
 
 // Kısa ölçümler bağlantı kurma gecikmesinden etkilenir; uzun ölçümlerin üst %10'u gerçek hıza yakındır
 const percentile90 = (xs: number[]) => {
@@ -185,18 +197,36 @@ const percentile90 = (xs: number[]) => {
   return s[Math.min(s.length - 1, Math.floor(s.length * 0.9))] ?? 0;
 };
 
+const PING_COUNT = 10;
+
+// Ping native tarafta ölçülür (JS köprüsünün gecikmesi sonuca eklenmez). Native ölçüm
+// yapılamazsa (modül yok, hata) aşağıdaki XHR yöntemine dönülür.
+async function nativePing(): Promise<number[] | null> {
+  try {
+    const r = await SignalStrength?.measurePing(`${BASE}/__down?bytes=0`, PING_COUNT, `${BASE}/`);
+    return r && r.length >= 3 ? r : null;
+  } catch {
+    return null;
+  }
+}
+
 async function measurePing(token: CancelToken, onProgress: (p: Progress) => void) {
+  const native = await nativePing();
+  if (token.cancelled) throw new TestCancelled();
+  if (native) {
+    const stats = pingStats(native);
+    onProgress({ phase: 'ping', pingMs: stats.pingMs });
+    return stats;
+  }
+
   const samples: number[] = [];
-  for (let i = 0; i < 11; i++) {
+  for (let i = 0; i <= PING_COUNT; i++) {
     const r = await request('GET', `${BASE}/__down?bytes=0`, token);
     if (i === 0) continue; // İlk istek bağlantı kurulumunu içerir, sayılmaz
     samples.push(Math.max(0, r.tHeaders - r.tSend - r.serverMs));
     onProgress({ phase: 'ping', pingMs: median(samples) });
   }
-  const pingMs = median(samples);
-  let jitter = 0;
-  for (let i = 1; i < samples.length; i++) jitter += Math.abs(samples[i] - samples[i - 1]);
-  return { pingMs, jitterMs: samples.length > 1 ? jitter / (samples.length - 1) : 0 };
+  return pingStats(samples);
 }
 
 // Boyutlar küçükten büyüğe denenir; bir aktarım ~1 sn'yi geçince daha büyüğüne geçilmez.
