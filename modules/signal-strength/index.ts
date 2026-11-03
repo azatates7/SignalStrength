@@ -29,6 +29,17 @@ export type NetworkInfo = {
   vpn: boolean; // VPN açık (type yine alttaki bağlantıyı gösterir: Wi-Fi / mobil veri)
 };
 
+/** Yerel ağ bilgisi (internet kullanmadan okunur). VPN açıksa alttaki Wi-Fi / mobil ağın bilgisidir. */
+export type IpInfo = {
+  available: boolean;
+  ipv4?: string | null; // Cihazın yerel IP'si, ör. 192.168.1.34
+  ipv6?: string | null;
+  gateway?: string | null; // Modem / ağ geçidi, ör. 192.168.1.1 (mobil veride genelde yok)
+  dns?: string[];
+  // dhcp: modem otomatik verdi (dinamik) · static: elle ayarlı · carrier: mobil operatör atadı
+  assignment?: 'dhcp' | 'static' | 'carrier' | 'unknown';
+};
+
 type Events = {
   onSignalChange: (reading: SignalReading) => void;
   onNetworkChange: (info: NetworkInfo) => void;
@@ -48,6 +59,7 @@ declare class SignalStrengthNative extends NativeModule<Events> {
   isLocationEnabled(): boolean;
   openLocationSettings(): boolean;
   getStatusBarHeight(): number;
+  getIpInfo(): IpInfo;
   /** Ping örnekleri (ms); ilk istek sayılmaz. Ölçülemezse null */
   measurePing(url: string, count: number, referer: string): Promise<number[] | null>;
   startNetworkListening(): void;

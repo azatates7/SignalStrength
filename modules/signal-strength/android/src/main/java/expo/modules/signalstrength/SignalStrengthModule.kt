@@ -28,6 +28,8 @@ import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
 import java.net.HttpURLConnection
+import java.net.Inet4Address
+import java.net.Inet6Address
 import java.net.URL
 import java.util.concurrent.atomic.AtomicBoolean
 import expo.modules.kotlin.Promise
@@ -133,6 +135,10 @@ class SignalStrengthModule : Module() {
     // üst panel bu kadar aşağıdan başlamalı. Çentikli / kameralı ekranlarda daha yüksek olabilir.
     Function("getStatusBarHeight") { statusBarHeightDp() }
 
+    // "Bağlantı Bilgisi" sekmesi: yerel IP, ağ geçidi (modem), DNS ve IP'nin nasıl atandığı.
+    // İnternet kullanmaz; Android'in ağ ayarlarından okunur.
+    Function("getIpInfo") { runCatching { ipInfo() }.getOrElse { mapOf("available" to false) } }
+
     // Hız testi ping ölçümü. JS'teki XHR'da ölçülen süreye React Native köprüsünün gecikmesi de
     // ekleniyordu (ping olduğundan yüksek çıkıyordu); burada istek native tarafta zamanlanır.
     // İlk istek bağlantı kurulumunu (TCP + TLS) içerdiği için sayılmaz; sonrakiler aynı bağlantıyı
@@ -146,6 +152,57 @@ class SignalStrengthModule : Module() {
       runCatching { stopListening() }
       runCatching { stopNetworkListening() }
     }
+  }
+
+  private fun ipInfo(): Map<String, Any?> {
+    val cm = connectivity ?: return mapOf("available" to false)
+    val active = cm.activeNetwork ?: return mapOf("available" to false)
+    // VPN açıksa yerel IP / modem bilgisi VPN'in değil, alttaki gerçek ağın (Wi-Fi / mobil) bilgisidir
+    val network = if (cm.getNetworkCapabilities(active)?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true) {
+      @Suppress("DEPRECATION")
+      cm.allNetworks.firstOrNull { n ->
+        val c = cm.getNetworkCapabilities(n)
+        c != null && !c.hasTransport(NetworkCapabilities.TRANSPORT_VPN) &&
+          c.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+      } ?: active
+    } else active
+    val caps = cm.getNetworkCapabilities(network)
+    val lp = cm.getLinkProperties(network) ?: return mapOf("available" to false)
+
+    val addresses = lp.linkAddresses.map { it.address }
+    val ipv4 = addresses.filterIsInstance<Inet4Address>().firstOrNull()?.hostAddress
+    val ipv6 = addresses.filterIsInstance<Inet6Address>()
+      .filter { !it.isLinkLocalAddress } // fe80:: adresleri yalnızca yerel bağlantı içindir
+      .firstNotNullOfOrNull { it.hostAddress?.substringBefore('%') }
+    // Varsayılan yolun ağ geçidi = modem / yönlendirici. Mobil veride genelde yoktur.
+    val gateways = lp.routes.filter { it.isDefaultRoute }.mapNotNull { it.gateway }.filter { !it.isAnyLocalAddress }
+    val gateway = (gateways.firstOrNull { it is Inet4Address } ?: gateways.firstOrNull())
+      ?.hostAddress?.substringBefore('%')
+    val dns = lp.dnsServers.mapNotNull { it.hostAddress?.substringBefore('%') }.distinct()
+
+    // IP nasıl atanmış: modem otomatik verdiyse (DHCP) dinamik, elle girildiyse statik.
+    // Mobil veride IP'yi her zaman operatör atar.
+    val assignment = when {
+      caps?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true -> "carrier"
+      ipv4 == null -> "unknown"
+      Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> if (lp.dhcpServerAddress != null) "dhcp" else "static"
+      caps?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true -> {
+        val wifi = appContext.reactContext?.applicationContext
+          ?.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+        @Suppress("DEPRECATION")
+        val server = runCatching { wifi?.dhcpInfo?.serverAddress }.getOrNull()
+        when (server) { null -> "unknown"; 0 -> "static"; else -> "dhcp" }
+      }
+      else -> "unknown"
+    }
+    return mapOf(
+      "available" to true,
+      "ipv4" to ipv4,
+      "ipv6" to ipv6,
+      "gateway" to gateway,
+      "dns" to dns,
+      "assignment" to assignment,
+    )
   }
 
   private fun pingSamples(url: String, count: Int, referer: String): List<Double>? {

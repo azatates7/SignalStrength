@@ -38,6 +38,11 @@
     ],
     "locales": {
       "tr": "./locales/tr.json"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6108930e-06ff-4a11-a9b3-5a13b0f3e344"
+      }
     }
   }
 }

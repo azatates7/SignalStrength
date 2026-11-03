@@ -4,7 +4,7 @@
     "meta": [
       [
         "Yürürlük tarihi",
-        "2 Kasım 2026"
+        "4 Kasım 2026"
       ],
       [
         "Uygulama",
@@ -48,6 +48,9 @@
       },
       {
         "p": "Wi-Fi'ye mi mobil veriye mi bağlı olduğunuz, bağlantının kotalı (mobil veri) olup olmadığı ve VPN'in açık olup olmadığı Android'den okunur. Bu bilgi, hız testinin mobil veride kendiliğinden başlamaması ve ekranda bağlantı tipinin ve VPN durumunun gösterilmesi için kullanılır. Telefonunuzdan dışarı gönderilmez."
+      },
+      {
+        "p": "\"Bağlantı Bilgisi\" sekmesinde cihazın yerel IP adresi, modem (ağ geçidi) adresi, DNS sunucuları ve IP'nin nasıl atandığı (statik / otomatik) Android'den okunur. Dış IP adresiniz, hız testindeki gibi Cloudflare'den alınır. Bu bilgiler **yalnızca ekranda gösterilir**; kaydedilmez ve hiçbir yere gönderilmez."
       },
       {
         "h3": "3. Wi-Fi ağ adı ve konum izni (isteğe bağlı)"
@@ -143,7 +146,7 @@
     "meta": [
       [
         "Effective date",
-        "November 2, 2026"
+        "November 4, 2026"
       ],
       [
         "App",
@@ -187,6 +190,9 @@
       },
       {
         "p": "Whether you are on Wi-Fi or mobile data, whether the connection is metered (mobile data) and whether a VPN is on is read from Android. It is used to keep the speed test from starting automatically on mobile data and to show the connection type and VPN status. It is not sent off your phone."
+      },
+      {
+        "p": "On the \"Connection Info\" tab, the device's local IP address, router (gateway) address, DNS servers and how the IP was assigned (static / automatic) are read from Android. Your public IP address is obtained from Cloudflare, as in the speed test. This information is **only displayed on screen**; it is not stored or sent anywhere."
       },
       {
         "h3": "3. Wi-Fi network name and location permission (optional)"

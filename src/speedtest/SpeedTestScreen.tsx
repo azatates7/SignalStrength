@@ -348,9 +348,6 @@ function ConnectionCard({
         </Text>
       </View>
       <Row label={t.conn.type} value={t.net[info.type]} />
-      {info.connected ? (
-        <Row label={t.conn.vpn} value={info.vpn ? t.conn.vpnOn : t.conn.vpnOff} sub={info.vpn ? t.conn.vpnNote : undefined} />
-      ) : null}
       {info.type === 'wifi' ? <WifiNameRow {...wifi} /> : null}
       <Row label={t.conn.isp} value={isp} sub={ispDetail} placeholder={pending} />
       <Row label={t.conn.server} value={server} placeholder={pending} last />

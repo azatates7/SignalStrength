@@ -15,13 +15,14 @@ import { useSignalStrength } from './src/signal/useSignalStrength';
 import { BAR_COUNT, MAX_SCORE, qualityKey, techLabel, toScore } from './src/signal/levels';
 import { METRICS, rate, type MetricInfo } from './src/signal/metrics';
 import { SpeedTestScreen } from './src/speedtest/SpeedTestScreen';
+import { ConnectionInfoScreen } from './src/info/ConnectionInfoScreen';
 import { ThemeProvider, useTheme } from './src/theme';
 import { LanguageProvider, useI18n } from './src/i18n';
 import { AppFooter } from './src/AppFooter';
 import { PrivacyPolicyProvider } from './src/privacy/PrivacyPolicy';
 import SignalStrength from './modules/signal-strength';
 
-type Tab = 'signal' | 'speed';
+type Tab = 'signal' | 'speed' | 'info';
 
 // Uygulama ekranın en üstünden (durum çubuğunun altından) çizilir; üst panel saat / pil
 // satırının altından başlamalı. Bazı telefonlarda StatusBar.currentHeight 0 döndüğü için
@@ -35,7 +36,7 @@ function statusBarHeight(): number {
   }
   return Math.max(native, RNStatusBar.currentHeight ?? 0) || 28;
 }
-const TABS: Tab[] = ['signal', 'speed'];
+const TABS: Tab[] = ['signal', 'speed', 'info'];
 
 export default function App() {
   return (
@@ -66,7 +67,7 @@ function Root() {
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <Header />
       <TabBar tab={tab} onChange={goTo} />
-      {/* Sola / sağa kaydırarak sekme değiştirme. İki sayfa da bağlı kalır;
+      {/* Sola / sağa kaydırarak sekme değiştirme. Bütün sayfalar bağlı kalır;
           sekme değişince devam eden hız testi kesilmez */}
       <ScrollView
         ref={pager}
@@ -87,6 +88,11 @@ function Root() {
         <View style={[styles.tabPage, { width }]}>
           <ErrorBoundary>
             <SpeedTestScreen active={tab === 'speed'} />
+          </ErrorBoundary>
+        </View>
+        <View style={[styles.tabPage, { width }]}>
+          <ErrorBoundary>
+            <ConnectionInfoScreen active={tab === 'info'} />
           </ErrorBoundary>
         </View>
       </ScrollView>
@@ -144,7 +150,14 @@ function TabBar({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
           >
-            <Text style={[styles.segmentText, { color: active ? c.text : c.textMuted }]}>{t.tabs[key]}</Text>
+            <Text
+              style={[styles.segmentText, { color: active ? c.text : c.textMuted }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.75}
+            >
+              {t.tabs[key]}
+            </Text>
           </Pressable>
         );
       })}
@@ -360,8 +373,8 @@ const styles = StyleSheet.create({
   cardDesc: { fontSize: 14, lineHeight: 20, marginTop: 12 },
   cardIdeal: { fontSize: 13, marginTop: 8 },
   segment: { flexDirection: 'row', borderRadius: 12, padding: 4 },
-  segmentItem: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 9 },
-  segmentText: { fontSize: 14, fontWeight: '600' },
+  segmentItem: { flex: 1, alignItems: 'center', paddingVertical: 10, paddingHorizontal: 4, borderRadius: 9 },
+  segmentText: { fontSize: 13, fontWeight: '600' },
   errorDetail: { fontSize: 13, textAlign: 'center', marginTop: 12 },
   versionCentered: { position: 'absolute', bottom: 32 },
 });

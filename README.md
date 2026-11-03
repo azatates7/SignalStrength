@@ -17,14 +17,15 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 - **Telefonun çubuk göstergesi:** Android'in 0–4 seviyesi, telefonun üst çubuğuna benzeyen küçük bir simgeyle gösterilir.
 - **Hız testi:** Wi-Fi veya mobil veri bağlıysa ping, indirme ve yükleme hızını ölçer. Bağlantı tipi, servis sağlayıcı ve test sunucusunun konumu da gösterilir. Ölçüm Cloudflare sunucularıyla yapılır.
 - **Otomatik başlayan test:** "Hız Testi" sekmesi açılınca test kendiliğinden başlar. Dakikada en fazla 3 test yapılabilir.
-- **İki sekme:** "Bağlantı Kontrol" (sinyal) ve "Hız Testi". Sekmeler arasında sola / sağa kaydırarak geçilebilir.
+- **Üç sekme:** "Bağlantı Kontrol" (sinyal), "Hız Testi" ve "Bağlantı Bilgisi". Sekmeler arasında sola / sağa kaydırarak geçilebilir.
 - **Bağlantı değişince yeni test:** Wi-Fi ile mobil ağ arasında geçişte ve bağlantı geri geldiğinde hız testi kendiliğinden tekrarlanır. Bağlantı kopunca değerler temizlenir.
 - **Türkçe / İngilizce:** Uygulama telefon dilinde açılır (Türkçe değilse İngilizce). Üst paneldeki dil butonu o anki dili gösterir (Türkçe → "TR", İngilizce → "EN"); dokununca bütün metinler anında diğer dile geçer ve seçim hatırlanır. Ana ekrandaki uygulama adı telefon diline göre "Sinyal Ölçer" / "Signal Strength" olur.
 - **Son test zamanı:** "Tekrar Test Et" butonunun altında son testin tarihi ve saati görünür.
 - **Tek dokunuşla tema:** Üst paneldeki buton o anki temayı gösterir (koyu temada 🌙, açık temada ☀️); dokununca açık ve koyu tema arasında geçiş yapar. Uzun basınca telefonun temasına döner. Seçim hatırlanır.
 - **Gereksiz izin istemez:** Telefon izni gerekmez. Konum izni yalnızca Wi-Fi adını görmek için, kullanıcı "Göster"e dokunduğunda istenir (Android bunu zorunlu tutuyor). Sinyal sekmesi internet kullanmaz. İnternet yalnızca kullanıcı hız testini başlattığında kullanılır. Uygulama hiçbir veri toplamaz veya saklamaz.
 - **Mobil veride veri koruması:** Hız testi mobil veride kendiliğinden başlamaz. Ne kadar veri kullanacağını anlatan bir bilgi kutusu gösterilir, test kullanıcı başlatınca çalışır ve en fazla yaklaşık 100 MB kullanır. Wi-Fi'de test otomatik başlar.
-- **VPN kontrolü:** Hız Testi kartında VPN'in açık olup olmadığı gösterilir. VPN açıkken hızın VPN sunucusu üzerinden ölçüldüğü belirtilir; VPN açılıp kapanınca test yenilenir.
+- **Bağlantı Bilgisi sekmesi:** Cihazın yerel IP'si, IPv6, modem / ağ geçidi IP'si, dış (internet) IP, DNS ve statik IP var/yok bilgisi. Statik IP bilgisi telefonun yerel IP'si içindir; servis sağlayıcının sabit dış IP verip vermediği telefondan anlaşılamaz.
+- **VPN kontrolü:** Bağlantı Bilgisi sekmesinde VPN'in açık olup olmadığı gösterilir. VPN açıkken dış IP'nin ve hız testinin VPN sunucusu üzerinden olduğu belirtilir; VPN açılıp kapanınca hız testi yenilenir.
 - **Konum kapalıysa yönlendirme:** Wi-Fi adı için konum izni verilmiş ama telefonun konum servisi kapalıysa "Konumu aç" butonu konum ayarlarını açar; geri dönünce ad kendiliğinden okunur.
 - **Çift SIM desteği:** Sinyal, teknoloji ve operatör, mobil verinin kullanıldığı SIM'den okunur. Veri SIM'i değiştirilince uygulama yeni SIM'e geçer.
 - **Canlı bağlantı bilgisi:** Hız Testi kartındaki `Turkcell · 4G (LTE)` bilgisi sinyal değiştikçe güncellenir (ör. 4G → 5G geçişi hemen görünür).
@@ -73,6 +74,8 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 │  │  ├─ strings.ts            Bütün metinler (Türkçe / İngilizce)
 │  │  └─ index.tsx             Dil seçimi (LanguageProvider, useI18n)
 │  ├─ theme.tsx                Açık/koyu renk paletleri, tema tercihi (ThemeProvider)
+│  ├─ info/
+│  │  └─ ConnectionInfoScreen.tsx  Bağlantı Bilgisi sekmesi (IP, modem, DNS, statik IP, VPN)
 │  ├─ speedtest/
 │  │  ├─ cloudflare.ts         Hız testi motoru (ping, indirme, yükleme, sunucu bilgisi)
 │  │  ├─ useNetwork.ts         Aktif bağlantıyı (Wi-Fi / mobil veri) izleyen hook

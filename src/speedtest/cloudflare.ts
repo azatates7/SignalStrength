@@ -15,6 +15,7 @@ export type ConnectionMeta = {
   serverCity?: string;  // Test sunucusunun şehri
   serverCode?: string;  // Sunucu kodu (IATA), ör. "IST"
   serverCountry?: string;
+  clientIp?: string;    // İnternetteki (dış) IP adresi; VPN açıksa VPN sunucusunun IP'si
 };
 
 export type SpeedResult = {
@@ -173,6 +174,7 @@ export async function fetchMeta(): Promise<ConnectionMeta> {
     serverCode: code,
     serverCity: colo.city, // Türkçe/İngilizce ad ekranda sunucu kodundan üretilir (cityName)
     serverCountry: colo.cca2,
+    clientIp: typeof j.clientIp === 'string' ? j.clientIp : undefined,
   };
 }
 
