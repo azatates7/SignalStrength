@@ -30,7 +30,7 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 - **Wi-Fi sinyal gücü:** Wi-Fi'ye bağlıyken Bağlantı Bilgisi sekmesinde Wi-Fi sinyali (dBm ve durum etiketi), bant (2.4 / 5 / 6 GHz), kanal, bağlantı hızı ve Wi-Fi standardı (ör. Wi-Fi 6) gösterilir. Konum izni gerekmez.
 - **Canlı sinyal grafiği:** Mobil ve Wi-Fi sinyalinin son 2 dakikası çizgi grafikle gösterilir; telefonla dolaşarak sinyalin en iyi olduğu yer bulunabilir. Hiçbir şey saklanmaz.
 - **Hız testi geçmişi:** Son 20 test (tarih, bağlantı tipi, sağlayıcı, indirme, yükleme, ping) yalnızca telefonda saklanır; "Temizle" ile silinir.
-- **Sonucu paylaş:** Test sonucu "İndirme 245 Mbps · Yükleme 38 Mbps · Ping 12 ms" gibi bir metin olarak WhatsApp vb. ile paylaşılabilir.
+- **Sonucu paylaş:** Test sonucu bir resim kartı olarak (indirme, yükleme, ping, sağlayıcı, tarih) WhatsApp vb. ile paylaşılır. "Metin olarak paylaş" ile aynı bilgi metin olarak da gönderilebilir.
 - **Çift SIM desteği:** Sinyal, teknoloji ve operatör, mobil verinin kullanıldığı SIM'den okunur. Veri SIM'i değiştirilince uygulama yeni SIM'e geçer.
 - **Canlı bağlantı bilgisi:** Hız Testi kartındaki `Turkcell · 4G (LTE)` bilgisi sinyal değiştikçe güncellenir (ör. 4G → 5G geçişi hemen görünür).
 - **Pil dostu:** Uygulama arka plandayken sinyal ve ağ dinleyicileri durur, öne gelince güncel değer okunup yeniden başlar.
@@ -83,6 +83,7 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 │  ├─ speedtest/
 │  │  ├─ history.ts            Hız testi geçmişi (son 20 test, telefonda)
 │  │  ├─ share.ts              Paylaşılan sonuç metni
+│  │  ├─ ShareCard.tsx         Paylaşılan sonuç resmi
 │  │  ├─ format.ts             Hız ve tarih biçimi
 │  │  ├─ cloudflare.ts         Hız testi motoru (ping, indirme, yükleme, sunucu bilgisi)
 │  │  ├─ useNetwork.ts         Aktif bağlantıyı (Wi-Fi / mobil veri) izleyen hook

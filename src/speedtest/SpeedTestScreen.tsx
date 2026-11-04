@@ -1,6 +1,7 @@
+// src/speedtest/SpeedTestScreen.tsx
 // "Hız Testi" sekmesi: bağlantı bilgisi, ping / indirme / yükleme ölçümü.
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Share, StyleSheet, Text, View, type ViewInstance } from 'react-native';
 import type { NetworkInfo } from '../../modules/signal-strength';
 import { AppFooter } from '../AppFooter';
 import { useI18n, type Lang, type Strings } from '../i18n';
@@ -23,6 +24,9 @@ import { formatDateTime, formatMbps } from './format';
 import { addEntry, loadHistory, saveHistory, type HistoryEntry } from './history';
 import { MAX_TESTS, recordStart, waitMs } from './rateLimit';
 import { buildShareText } from './share';
+import { ShareCard } from './ShareCard';
+import * as Sharing from 'expo-sharing';
+import { captureRef } from 'react-native-view-shot';
 import { useCellularName, useNetwork, useWifiName, type WifiNameState } from './useNetwork';
 
 // Kotalı bağlantıda (mobil veri) yön başına en fazla bu kadar veri harcanır
@@ -60,6 +64,25 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
   // Son 20 test (telefonda saklanır) ve bu oturumdaki son başarılı test (paylaşmak için)
   const [history, setHistory] = useState<HistoryEntry[]>(loadHistory);
   const [lastEntry, setLastEntry] = useState<HistoryEntry>();
+  const shareRef = useRef<ViewInstance>(null);
+  const [sharing, setSharing] = useState(false);
+
+  const shareText = (e: HistoryEntry) => Share.share({ message: buildShareText(e, t, lang, locale) }).catch(() => {});
+
+  // Sonuç kartı PNG'ye çevrilip paylaşılır; resim oluşturulamazsa metin olarak paylaşılır
+  async function shareImage(e: HistoryEntry) {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      const uri = await captureRef(shareRef, { format: 'png', quality: 1, result: 'tmpfile' });
+      if (!(await Sharing.isAvailableAsync())) throw new Error('sharing unavailable');
+      await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: t.speed.share });
+    } catch {
+      await shareText(e);
+    } finally {
+      setSharing(false);
+    }
+  }
   // Bağlantı anahtarı: tip + VPN. VPN açılıp kapanınca da yeni bağlantı sayılır (ölçüm yolu değişir)
   const connKey = `${info.type}${info.vpn ? '+vpn' : ''}`;
   const prevConn = useRef(connKey);
@@ -303,13 +326,20 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
         </Text>
       </Pressable>
       {status === 'done' && lastEntry ? (
-        <Pressable
-          onPress={() => Share.share({ message: buildShareText(lastEntry, t, lang, locale) }).catch(() => {})}
-          style={({ pressed }) => [styles.button, styles.secondaryButton, { backgroundColor: c.segment, opacity: pressed ? 0.7 : 1 }]}
-          accessibilityRole="button"
-        >
-          <Text style={[styles.secondaryText, { color: c.text }]}>{t.speed.share}</Text>
-        </Pressable>
+        <>
+          <Pressable
+            onPress={() => shareImage(lastEntry)}
+            disabled={sharing}
+            style={({ pressed }) => [styles.button, styles.secondaryButton, { backgroundColor: c.segment, opacity: pressed || sharing ? 0.7 : 1 }]}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.secondaryText, { color: c.text }]}>{t.speed.share}</Text>
+          </Pressable>
+          <Pressable onPress={() => shareText(lastEntry)} hitSlop={8} style={styles.textShare} accessibilityRole="button">
+            <Text style={[styles.historyAction, { color: c.accent }]}>{t.speed.shareAsText}</Text>
+          </Pressable>
+          <ShareCard entry={lastEntry} viewRef={shareRef} />
+        </>
       ) : null}
       {lastTestAt && !running ? (
         <Text style={[styles.note, { color: c.textMuted }]}>{t.speed.lastTest(formatDateTime(lastTestAt, locale))}</Text>
@@ -626,6 +656,7 @@ const styles = StyleSheet.create({
   buttonText: { fontSize: 17, fontWeight: '700' },
   note: { fontSize: 13, textAlign: 'center', marginBottom: 8, lineHeight: 18 },
   secondaryButton: { paddingVertical: 12 },
+  textShare: { alignItems: 'center', marginBottom: 10 },
   secondaryText: { fontSize: 15, fontWeight: '700' },
   historyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 4 },
   historyTitleBox: { flexShrink: 1 },

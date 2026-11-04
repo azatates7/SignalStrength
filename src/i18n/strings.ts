@@ -1,4 +1,4 @@
-// Uygulamadaki bütün kullanıcı metinleri (Türkçe / İngilizce).
+// Uygulamadaki bütün kullanıcı metinleri (Türkçe / İngilizce). 
 // Yeni metin eklerken iki dile de eklenmeli; TypeScript eksik olanı hata olarak gösterir.
 
 export type Lang = 'tr' | 'en';
@@ -122,6 +122,7 @@ const tr = {
     explainUpload: 'İnternete veri gönderme hızı: fotoğraf/video paylaşma, görüntülü görüşme. İdeal: 10 Mbps ve üzeri.',
     source: 'Ölçüm sunucusu: Cloudflare (speed.cloudflare.com)',
     share: 'Sonucu paylaş',
+    shareAsText: 'Metin olarak paylaş',
     shareHeading: 'Hız testi',
   },
   history: {
@@ -292,6 +293,7 @@ const en: Strings = {
     explainUpload: 'How fast you send data: sharing photos/videos, video calls. Ideal: 10 Mbps or higher.',
     source: 'Test server: Cloudflare (speed.cloudflare.com)',
     share: 'Share result',
+    shareAsText: 'Share as text',
     shareHeading: 'Speed test',
   },
   history: {
