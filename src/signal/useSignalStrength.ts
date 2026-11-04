@@ -1,4 +1,3 @@
-// src/signal/useSignalStrength.ts
 import { useEffect, useState } from 'react';
 import { AppState } from 'react-native';
 import SignalStrength, { type SignalReading } from '../../modules/signal-strength';

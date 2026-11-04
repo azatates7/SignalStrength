@@ -1,4 +1,3 @@
-// src/speedtest/rateLimit.ts
 // Hız testi sınırı: 1 dakika içinde en fazla 3 test (kayan pencere).
 // Sınır uygulama açık kaldığı sürece geçerlidir; uygulama tamamen kapatılınca sıfırlanır.
 

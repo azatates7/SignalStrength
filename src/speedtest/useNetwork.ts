@@ -1,4 +1,3 @@
-// src/speedtest/useNetwork.ts
 // Aktif internet bağlantısını (Wi-Fi / mobil veri / yok) izleyen hook.
 import { useCallback, useEffect, useState } from 'react';
 import { AppState, Linking, PermissionsAndroid } from 'react-native';
@@ -24,8 +23,7 @@ export function useNetwork(): { info: NetworkInfo; error?: string } {
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
-    // Pil için: uygulama arka plandayken ağ değişiklikleri dinlenmez; öne gelince güncel bağlantı
-    // okunur (arada Wi-Fi ↔ mobil değiştiyse ekran ve otomatik test buna göre güncellenir)
+    // Pil için: uygulama arka plandayken ağ değişiklikleri dinlenmez; öne gelince güncel bağlantı okunur (arada Wi-Fi ↔ mobil değiştiyse ekran ve otomatik test buna göre güncellenir)
     const appSub = AppState.addEventListener('change', (state) => {
       try {
         if (state === 'active') {

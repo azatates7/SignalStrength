@@ -1,4 +1,3 @@
-// src/speedtest/SpeedTestScreen.tsx
 // "Hız Testi" sekmesi: bağlantı bilgisi, ping / indirme / yükleme ölçümü.
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -89,15 +88,12 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
     return () => clearInterval(id);
   }, [waitSec > 0]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Otomatik test: sekme açılınca, bağlantı tipi değişince (Wi-Fi ↔ mobil) ve bağlantı geri
-  // gelince test kendiliğinden başlar. "autoPending" bekleyen bir otomatik test olduğunu tutar;
-  // bağlantı hazır olunca (internet var, test sürmüyor, deneme sınırı dolmamış) çalıştırılır.
+  // Otomatik test: sekme açılınca, bağlantı tipi değişince (Wi-Fi ↔ mobil) ve bağlantı geri gelince test kendiliğinden başlar. "autoPending" bekleyen bir otomatik test olduğunu tutar; bağlantı hazır olunca (internet var, test sürmüyor, deneme sınırı dolmamış) çalıştırılır.
   useEffect(() => {
     if (active) autoPending.current = true;
   }, [active]);
 
-  // Bağlantı tipi (veya VPN) değişince eski test geçersiz olur: durdur. Bağlantı koptuysa değerleri temizle;
-  // yeni bir bağlantı geldiyse (bağlantı yok → Wi-Fi da dahil) otomatik testi beklemeye al.
+  // Bağlantı tipi (veya VPN) değişince eski test geçersiz olur: durdur. Bağlantı koptuysa değerleri temizle; yeni bir bağlantı geldiyse (bağlantı yok → Wi-Fi da dahil) otomatik testi beklemeye al.
   useEffect(() => {
     const prev = prevConn.current;
     prevConn.current = connKey;
@@ -117,8 +113,7 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
     autoPending.current = true;
   }, [connKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Bekleyen otomatik testi koşullar uygun olduğunda başlat. Bağlantı geri gelirken Android önce
-  // "ağ var, internet yok" sonra "internet var" bildirebildiği için internetin gelmesi de beklenir.
+  // Bekleyen otomatik testi koşullar uygun olduğunda başlat. Bağlantı geri gelirken Android önce "ağ var, internet yok" sonra "internet var" bildirebildiği için internetin gelmesi de beklenir.
   useEffect(() => {
     if (!autoPending.current || !active || !online || status === 'running' || waitSec > 0) return;
     autoPending.current = false;

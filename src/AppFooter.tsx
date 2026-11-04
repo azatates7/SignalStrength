@@ -1,5 +1,4 @@
-// src/AppFooter.tsx
-// Sayfa altı: "Sinyal Ölçer v6.0" ve gizlilik politikası bağlantısı (uygulama içinde açılır).
+// Sayfa altındaki "Sinyal Ölçer v?.?.?" ve gizlilik politikası bağlantısı (uygulama içinde açılır).
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { appFooter } from './appInfo';
 import { usePrivacyPolicy } from './privacy/PrivacyPolicy';

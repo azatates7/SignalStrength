@@ -24,9 +24,7 @@ import SignalStrength from './modules/signal-strength';
 
 type Tab = 'signal' | 'speed' | 'info';
 
-// Uygulama ekranın en üstünden (durum çubuğunun altından) çizilir; üst panel saat / pil
-// satırının altından başlamalı. Bazı telefonlarda StatusBar.currentHeight 0 döndüğü için
-// yükseklik native modülden (pencere boşlukları) okunur; ikisinden büyük olan kullanılır.
+// Uygulama ekranın en üstünden (durum çubuğunun altından) çizilir; üst panel saat / pil satırının altından başlamalı. Bazı telefonlarda StatusBar.currentHeight 0 döndüğü için yükseklik native modülden (pencere boşlukları) okunur; ikisinden büyük olan kullanılır.
 function statusBarHeight(): number {
   let native = 0;
   try {

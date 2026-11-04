@@ -1,6 +1,4 @@
-// src/i18n/index.tsx
-// Uygulama dili (Türkçe / İngilizce). Başlangıçta telefon dili kullanılır; kullanıcı üst
-// paneldeki dil butonuyla değiştirirse seçim kaydedilir ve sonraki açılışlarda o dil gelir.
+// Uygulama dili (Türkçe / İngilizce). Başlangıçta telefon dili kullanılır; kullanıcı üst paneldeki dil butonuyla değiştirirse seçim kaydedilir ve sonraki açılışlarda o dil gelir.
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import SignalStrength from '../../modules/signal-strength';
 import { LOCALE, STRINGS, type Lang, type Strings } from './strings';

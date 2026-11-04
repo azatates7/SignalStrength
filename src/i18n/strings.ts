@@ -1,4 +1,3 @@
-// src/i18n/strings.ts
 // Uygulamadaki bütün kullanıcı metinleri (Türkçe / İngilizce).
 // Yeni metin eklerken iki dile de eklenmeli; TypeScript eksik olanı hata olarak gösterir.
 

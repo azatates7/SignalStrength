@@ -1,6 +1,4 @@
-// src/signal/metrics.ts
-// Teknik ölçümlerin birimi ve değerlendirme eşikleri. Ekrandaki ad, açıklama ve ideal aralık
-// metinleri src/i18n/strings.ts → metrics içinde (Türkçe / İngilizce).
+// Teknik ölçümlerin birimi ve değerlendirme eşikleri. Ekrandaki ad, açıklama ve ideal aralık metinleri src/i18n/strings.ts → metrics içinde (Türkçe / İngilizce).
 // Tüm ölçümlerde değer büyüdükçe (sıfıra yaklaştıkça) durum iyileşir.
 import type { MetricKey, RatingKey } from '../i18n/strings';
 

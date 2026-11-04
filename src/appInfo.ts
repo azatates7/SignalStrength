@@ -1,4 +1,3 @@
-// src/appInfo.ts
 // Uygulama içindeki ad ve sürüm yazısı. Ad seçili dile göre gelir (src/i18n/strings.ts → appName).
 // Ana ekrandaki (launcher) ad telefon diline göre app.json "locales" ile ayarlanır.
 import { expo } from '../app.json';

@@ -1,4 +1,3 @@
-// src/theme.tsx
 // Açık / koyu tema renkleri ve kullanıcının tema tercihi (Sistem / Açık / Koyu).
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
@@ -64,7 +63,6 @@ type ThemeValue = {
   setMode: (mode: ThemeMode) => void;
   isDark: boolean;
   colors: Palette;
-  /** Durum rengini (yeşil/sarı/kırmızı) temaya göre okunur hale getirir */
   tone: (color: string) => string;
 };
 

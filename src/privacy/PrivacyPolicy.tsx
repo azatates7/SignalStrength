@@ -1,7 +1,5 @@
-// src/privacy/PrivacyPolicy.tsx
 // Gizlilik politikası uygulamanın içinde, açılır pencere (pop-up) olarak gösterilir:
-// - İlk açılışta kendiliğinden açılır. "Bir daha gösterme" işaretlenip kapatılırsa bir daha
-//   kendiliğinden açılmaz (seçim telefonda saklanır); işaretlenmezse sonraki açılışta yine gelir.
+// - İlk açılışta kendiliğinden açılır. "Bir daha gösterme" işaretlenip kapatılırsa bir daha kendiliğinden açılmaz (seçim telefonda saklanır); işaretlenmezse sonraki açılışta yine gelir.
 // - Sayfa altındaki "Gizlilik politikası" bağlantısıyla her zaman açılabilir.
 // Metin: src/privacy/policy.json (Türkçe / İngilizce). Web sayfası da aynı dosyadan üretilir
 // (scripts/build-privacy-page.mjs → docs/privacy/index.html).

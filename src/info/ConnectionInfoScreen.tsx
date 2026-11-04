@@ -1,7 +1,5 @@
-// src/info/ConnectionInfoScreen.tsx
 // "Bağlantı Bilgisi" sekmesi: yerel IP, modem (ağ geçidi) IP, dış IP, DNS, statik IP ve VPN durumu.
-// Yerel bilgiler internet kullanmadan Android'den okunur; dış IP, sekme açıkken Cloudflare'in
-// /meta isteğinden (~1 KB, hız testi sekmesindekiyle aynı) alınır.
+// Yerel bilgiler internet kullanmadan Android'den okunur; dış IP, sekme açıkken Cloudflare'in meta isteğinden (~1 KB, hız testi sekmesindekiyle aynı) alınır.
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import SignalStrength, { type IpInfo } from '../../modules/signal-strength';
