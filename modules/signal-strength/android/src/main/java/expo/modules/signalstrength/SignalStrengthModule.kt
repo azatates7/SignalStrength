@@ -137,6 +137,18 @@ class SignalStrengthModule : Module() {
 
     // "Bağlantı Bilgisi" sekmesi: yerel IP, ağ geçidi (modem), DNS ve IP'nin nasıl atandığı.
     // İnternet kullanmaz; Android'in ağ ayarlarından okunur.
+    // Wi-Fi sinyali: güç (dBm), frekans (bant / kanal), bağlantı hızı, Wi-Fi standardı.
+    // Konum izni gerekmez (izin yalnızca ağ adı için gerekiyor). Wi-Fi'ye bağlı değilse null.
+    Function("getWifiSignal") { runCatching { wifiSignal() }.getOrNull() }
+
+    // Hız testi geçmişi (JSON). Yalnızca telefonda, tema tercihiyle aynı yerde saklanır.
+    Function("getSpeedHistory") { prefs()?.getString(KEY_SPEED_HISTORY, null) }
+    Function("setSpeedHistory") { json: String? ->
+      val editor = prefs()?.edit() ?: return@Function
+      if (json == null) editor.remove(KEY_SPEED_HISTORY) else editor.putString(KEY_SPEED_HISTORY, json)
+      editor.apply()
+    }
+
     Function("getIpInfo") { runCatching { ipInfo() }.getOrElse { mapOf("available" to false) } }
 
     // Hız testi ping ölçümü. JS'teki XHR'da ölçülen süreye React Native köprüsünün gecikmesi de
@@ -152,6 +164,42 @@ class SignalStrengthModule : Module() {
       runCatching { stopListening() }
       runCatching { stopNetworkListening() }
     }
+  }
+
+  private fun connectedWifiInfo(): WifiInfo? {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+      // Android 12+: bilgi ağın özelliklerinden okunur (VPN açıksa alttaki Wi-Fi ağından)
+      val cm = connectivity ?: return null
+      @Suppress("DEPRECATION")
+      val networks = listOfNotNull(cm.activeNetwork) + cm.allNetworks.toList()
+      for (n in networks) {
+        val caps = cm.getNetworkCapabilities(n) ?: continue
+        if (!caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) continue
+        (caps.transportInfo as? WifiInfo)?.let { return it }
+      }
+      return null
+    }
+    val wifi = appContext.reactContext?.applicationContext?.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+    @Suppress("DEPRECATION")
+    val info = wifi?.connectionInfo ?: return null
+    @Suppress("DEPRECATION")
+    return if (info.networkId == -1) null else info // -1: bağlı değil
+  }
+
+  private fun wifiSignal(): Map<String, Any?>? {
+    val info = connectedWifiInfo() ?: return null
+    val rssi = info.rssi
+    if (rssi <= -127 || rssi >= 0) return null // geçersiz okuma
+    fun mbps(v: Int) = if (v > 0) v else null
+    return mapOf(
+      "rssi" to rssi,
+      "frequency" to mbps(info.frequency), // MHz
+      "linkSpeed" to mbps(info.linkSpeed), // Mbps
+      "txLinkSpeed" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) mbps(info.txLinkSpeedMbps) else null,
+      "rxLinkSpeed" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) mbps(info.rxLinkSpeedMbps) else null,
+      // ScanResult.WIFI_STANDARD_*: 1 eski (a/b/g), 4 = 802.11n, 5 = ac, 6 = ax, 8 = be; 0 bilinmiyor
+      "standard" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) info.wifiStandard.takeIf { it > 0 } else null,
+    )
   }
 
   private fun ipInfo(): Map<String, Any?> {
@@ -491,6 +539,7 @@ class SignalStrengthModule : Module() {
     private const val KEY_THEME = "theme"
     private const val KEY_LANGUAGE = "language"
     private const val KEY_PRIVACY_DISMISSED = "privacy_notice_dismissed"
+    private const val KEY_SPEED_HISTORY = "speed_history"
   }
 
   // CellInfo.UNAVAILABLE == Int.MAX_VALUE

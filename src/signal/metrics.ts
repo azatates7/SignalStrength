@@ -21,6 +21,8 @@ export const METRICS = {
   rsrq: { key: 'rsrq', unit: 'dB', thresholds: [-10, -15, -20] },
   sinr: { key: 'sinr', unit: 'dB', thresholds: [20, 13, 0] },
   systemLevel: { key: 'systemLevel', unit: '/ 4', thresholds: [4, 3, 2] },
+  // Wi-Fi RSSI: −55 ve üzeri mükemmel, −67'ye kadar iyi (görüntülü görüşme için yeterli), −75'e kadar orta
+  wifi: { key: 'wifi', unit: 'dBm', thresholds: [-55, -67, -75] },
 } satisfies Record<MetricKey, MetricInfo>;
 
 export function rate(value: number, [excellent, good, fair]: MetricInfo['thresholds']): Rating {

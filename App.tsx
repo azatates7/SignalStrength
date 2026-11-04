@@ -15,6 +15,11 @@ import { useSignalStrength } from './src/signal/useSignalStrength';
 import { BAR_COUNT, MAX_SCORE, qualityKey, techLabel, toScore } from './src/signal/levels';
 import { METRICS, rate, type MetricInfo } from './src/signal/metrics';
 import { SpeedTestScreen } from './src/speedtest/SpeedTestScreen';
+import { useNetwork } from './src/speedtest/useNetwork';
+import { WifiCard } from './src/signal/WifiCard';
+import { useSampleHistory } from './src/signal/useSampleHistory';
+import { useWifiSignal } from './src/signal/useWifiSignal';
+import { SignalChart } from './src/ui/SignalChart';
 import { ConnectionInfoScreen } from './src/info/ConnectionInfoScreen';
 import { ThemeProvider, useTheme } from './src/theme';
 import { LanguageProvider, useI18n } from './src/i18n';
@@ -185,8 +190,14 @@ function ErrorView({ detail }: { detail?: string }) {
 
 function SignalScreen() {
   const reading = useSignalStrength();
-  const { colors: c } = useTheme();
+  const { colors: c, tone } = useTheme();
   const { t } = useI18n();
+  const { info } = useNetwork();
+  // Wi-Fi'ye bağlıyken Wi-Fi sinyali de gösterilir (VPN açıkken de; bağlantı tipi yine Wi-Fi)
+  const wifi = useWifiSignal(info.type === 'wifi');
+  // Canlı grafikler: son 2 dakika, saniyede bir örnek
+  const mobileHistory = useSampleHistory(reading?.available ? reading.dbm : null);
+  const wifiHistory = useSampleHistory(wifi?.rssi);
 
   if (Platform.OS !== 'android') {
     return <Centered text={t.signal.androidOnly} />;
@@ -195,14 +206,35 @@ function SignalScreen() {
   if (reading.reason === 'error') {
     return <ErrorView detail={reading.errorMessage} />;
   }
-  if (!reading.available) {
-    const reason =
-      reading.reason === 'no_service'
-        ? t.signal.noService
-        : reading.reason === 'unsupported_os'
-          ? t.signal.unsupportedOs
-          : t.signal.noData;
-    return <Centered text={reason} />;
+  const reason = !reading.available
+    ? reading.reason === 'no_service'
+      ? t.signal.noService
+      : reading.reason === 'unsupported_os'
+        ? t.signal.unsupportedOs
+        : t.signal.noData
+    : undefined;
+  // Mobil sinyal yok ve Wi-Fi de yoksa eski tam ekran mesaj
+  if (reason && !wifi) return <Centered text={reason} />;
+
+  const wifiSection = wifi ? (
+    <>
+      <Text style={[styles.sectionTitle, { color: c.textMuted }]}>{t.signal.wifiSection}</Text>
+      <WifiCard signal={wifi} history={wifiHistory} />
+    </>
+  ) : null;
+
+  // Mobil sinyal yok ama Wi-Fi var (ör. SIM'siz tablet): mesaj + Wi-Fi kartı
+  if (reason) {
+    return (
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={[styles.card, { backgroundColor: c.card }]}>
+          <Text style={[styles.cardTitle, { color: c.text }]}>{t.signal.mobileUnavailable}</Text>
+          <Text style={[styles.cardDesc, { color: c.textSoft }]}>{reason}</Text>
+        </View>
+        {wifiSection}
+        <AppFooter />
+      </ScrollView>
+    );
   }
 
   const score = toScore(reading);
@@ -223,7 +255,10 @@ function SignalScreen() {
         <Text style={[styles.quality, { color: c.textSoft }]}>
           {t.quality[qualityKey(score)]} · {score}/{MAX_SCORE}
         </Text>
+        <SignalChart values={mobileHistory} color={tone(barColor(score))} />
       </View>
+
+      {wifiSection}
 
       <Text style={[styles.sectionTitle, { color: c.textMuted }]}>{t.signal.details}</Text>
       <MetricCard info={METRICS.rsrp} value={reading.rsrp} />

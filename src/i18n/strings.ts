@@ -5,7 +5,7 @@ export type Lang = 'tr' | 'en';
 
 export type RatingKey = 'excellent' | 'good' | 'fair' | 'poor';
 export type QualityKey = 'none' | 'veryPoor' | 'poor' | 'fair' | 'good' | 'excellent';
-export type MetricKey = 'rsrp' | 'rsrq' | 'sinr' | 'systemLevel';
+export type MetricKey = 'rsrp' | 'rsrq' | 'sinr' | 'systemLevel' | 'wifi';
 export type NetTypeKey = 'wifi' | 'cellular' | 'ethernet' | 'vpn' | 'other' | 'none';
 export type PhaseKey = 'meta' | 'ping' | 'download' | 'upload';
 
@@ -39,6 +39,17 @@ const tr = {
     noData: 'Sinyal bilgisi alınamadı',
     unsupportedOs: 'Bu uygulama Android 9 ve üzeri sürümlerde çalışır',
     details: 'Detaylar',
+    chartTitle: 'Son 2 dakika',
+    chartRange: (min: number, max: number) => `En düşük ${min} · En yüksek ${max} dBm`,
+    wifiSection: 'Wi-Fi',
+    mobileUnavailable: 'Mobil sinyal',
+  },
+  wifi: {
+    band: 'Bant',
+    channel: 'Kanal',
+    linkSpeed: 'Bağlantı hızı',
+    linkSpeedHint: 'Telefon ile modem arası; internet hızınız değildir',
+    standard: 'Standart',
   },
   metrics: {
     rsrp: {
@@ -64,6 +75,12 @@ const tr = {
       techName: 'Android seviyesi',
       description: "Telefonun üst çubuğunda gördüğünüz sinyal çubuğu sayısı. Üstteki 0–100 puan aynı sinyali doğrudan dBm'den hesapladığı için daha hassastır.",
       ideal: 'İdeal: 3–4 çubuk · Zayıf: 0–1 çubuk',
+    },
+    wifi: {
+      title: 'Wi-Fi sinyal gücü',
+      techName: 'RSSI',
+      description: 'Modemden telefona ulaşan Wi-Fi sinyalinin gücü. Modeme uzaklık, duvarlar ve çevredeki diğer ağlar etkiler; sıfıra ne kadar yakınsa sinyal o kadar güçlüdür.',
+      ideal: 'İdeal: −55 dBm ve üzeri · Zayıf: −75 dBm altı',
     },
   } satisfies Record<MetricKey, { title: string; techName: string; description: string; ideal: string }>,
   net: {
@@ -106,6 +123,15 @@ const tr = {
     explainDownload: 'İnternetten veri alma hızı: video izleme, sayfa açma, dosya indirme. İdeal: 25 Mbps ve üzeri.',
     explainUpload: 'İnternete veri gönderme hızı: fotoğraf/video paylaşma, görüntülü görüşme. İdeal: 10 Mbps ve üzeri.',
     source: 'Ölçüm sunucusu: Cloudflare (speed.cloudflare.com)',
+    share: 'Sonucu paylaş',
+    shareHeading: 'Hız testi',
+  },
+  history: {
+    title: 'Son testler',
+    clear: 'Temizle',
+    showAll: (n: number) => `Tümünü göster (${n})`,
+    showLess: 'Daha az göster',
+    note: 'Yalnızca bu telefonda saklanır',
   },
   conn: {
     connected: 'İnternete bağlı',
@@ -185,6 +211,17 @@ const en: Strings = {
     noData: 'Signal information unavailable',
     unsupportedOs: 'This app requires Android 9 or later',
     details: 'Details',
+    chartTitle: 'Last 2 minutes',
+    chartRange: (min, max) => `Low ${min} · High ${max} dBm`,
+    wifiSection: 'Wi-Fi',
+    mobileUnavailable: 'Mobile signal',
+  },
+  wifi: {
+    band: 'Band',
+    channel: 'Channel',
+    linkSpeed: 'Link speed',
+    linkSpeedHint: 'Between phone and router; not your internet speed',
+    standard: 'Standard',
   },
   metrics: {
     rsrp: {
@@ -210,6 +247,12 @@ const en: Strings = {
       techName: 'Android level',
       description: 'The number of signal bars shown in your status bar. The 0–100 score above is calculated directly from dBm, so it is more precise.',
       ideal: 'Ideal: 3–4 bars · Poor: 0–1 bars',
+    },
+    wifi: {
+      title: 'Wi-Fi signal strength',
+      techName: 'RSSI',
+      description: 'Strength of the Wi-Fi signal reaching your phone from the router. Distance, walls and nearby networks affect it; the closer to zero, the stronger the signal.',
+      ideal: 'Ideal: −55 dBm or higher · Poor: below −75 dBm',
     },
   },
   net: {
@@ -252,6 +295,15 @@ const en: Strings = {
     explainDownload: 'How fast you receive data: watching videos, opening pages, downloading files. Ideal: 25 Mbps or higher.',
     explainUpload: 'How fast you send data: sharing photos/videos, video calls. Ideal: 10 Mbps or higher.',
     source: 'Test server: Cloudflare (speed.cloudflare.com)',
+    share: 'Share result',
+    shareHeading: 'Speed test',
+  },
+  history: {
+    title: 'Recent tests',
+    clear: 'Clear',
+    showAll: (n) => `Show all (${n})`,
+    showLess: 'Show less',
+    note: 'Stored only on this phone',
   },
   conn: {
     connected: 'Connected to the internet',

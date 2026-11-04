@@ -41,7 +41,7 @@
         "h3": "1. Mobil şebeke ve sinyal bilgisi"
       },
       {
-        "p": "Sinyal gücü (dBm, RSRP, RSRQ, SINR), bağlantı teknolojisi (2G/3G/4G/5G) ve operatör adı Android'den okunur. Bu bilgiler **yalnızca ekranda gösterilir**; telefonunuzdan dışarı gönderilmez ve saklanmaz. Çift SIM'li telefonlarda mobil verinin kullanıldığı SIM'in bilgisi okunur."
+        "p": "Sinyal gücü (dBm, RSRP, RSRQ, SINR), bağlantı teknolojisi (2G/3G/4G/5G) ve operatör adı Android'den okunur. Bu bilgiler **yalnızca ekranda gösterilir**; telefonunuzdan dışarı gönderilmez ve saklanmaz. Çift SIM'li telefonlarda mobil verinin kullanıldığı SIM'in bilgisi okunur. Wi-Fi'ye bağlıyken Wi-Fi sinyal gücü, bant, kanal ve bağlantı hızı da okunur ve aynı şekilde yalnızca ekranda gösterilir."
       },
       {
         "h3": "2. Bağlantı bilgisi"
@@ -76,11 +76,14 @@
         "list": [
           "Telefonunuz Cloudflare'e ölçüm için veri gönderir ve alır. Her internet bağlantısında olduğu gibi Cloudflare, **IP adresinizi** ve isteğin teknik bilgilerini (zaman, istek boyutu gibi) görür.",
           "Cloudflare'den servis sağlayıcınızın adı (ör. D-SMART, Turkcell) ve test sunucusunun konumu alınır ve **yalnızca ekranda gösterilir**.",
-          "Test sonuçları (ping, indirme, yükleme) **yalnızca telefonunuzda, uygulama açıkken** tutulur; uygulama kapanınca silinir ve hiçbir sunucuya kaydedilmez."
+          "Test sonuçları (ping, indirme, yükleme) **hiçbir sunucuya kaydedilmez**; son 20 test yalnızca telefonunuzda saklanır (bkz. \"Telefonda saklanan bilgiler\")."
         ]
       },
       {
         "p": "Cloudflare'in bu bilgileri nasıl işlediği Cloudflare'in kendi gizlilik politikasına tabidir: https://www.cloudflare.com/privacypolicy/"
+      },
+      {
+        "p": "**Sonucu paylaş** butonu, test sonucunu yalnızca sizin seçtiğiniz uygulamaya (ör. WhatsApp) metin olarak gönderir. Paylaşım siz dokunmadan yapılmaz; metne IP adresi veya Wi-Fi adı eklenmez."
       },
       {
         "p": "Hız testi Wi-Fi'de \"Hız Testi\" sekmesi açıldığında kendiliğinden başlar. **Mobil veride kendiliğinden başlamaz**, siz başlatırsınız; bir test mobil verinizden en fazla yaklaşık 100 MB kullanabilir."
@@ -89,7 +92,7 @@
         "h2": "Telefonda saklanan bilgiler"
       },
       {
-        "p": "Uygulama telefonunuzda yalnızca şu tercihleri saklar: seçtiğiniz **tema** (açık/koyu), **dil** (Türkçe/İngilizce) ve bu bildirimin **tekrar gösterilmemesi** seçimi. Bu bilgiler telefonunuzdan dışarı gönderilmez ve uygulamayı kaldırdığınızda silinir."
+        "p": "Uygulama telefonunuzda yalnızca şunları saklar: seçtiğiniz **tema** (açık/koyu), **dil** (Türkçe/İngilizce), bu bildirimin **tekrar gösterilmemesi** seçimi ve **son 20 hız testinin sonucu** (tarih, bağlantı tipi, servis sağlayıcı adı, ping, indirme ve yükleme hızı; IP adresi ve Wi-Fi adı saklanmaz). Bu bilgiler telefonunuzdan dışarı gönderilmez. Test geçmişini \"Temizle\" ile istediğiniz zaman silebilirsiniz; uygulamayı kaldırdığınızda hepsi silinir."
       },
       {
         "h2": "Uygulamanın kullandığı izinler"
@@ -183,7 +186,7 @@
         "h3": "1. Mobile network and signal information"
       },
       {
-        "p": "Signal strength (dBm, RSRP, RSRQ, SINR), connection technology (2G/3G/4G/5G) and the operator name are read from Android. This information is **only displayed on screen**; it is not sent off your phone and is not stored. On dual-SIM phones, the SIM used for mobile data is read."
+        "p": "Signal strength (dBm, RSRP, RSRQ, SINR), connection technology (2G/3G/4G/5G) and the operator name are read from Android. This information is **only displayed on screen**; it is not sent off your phone and is not stored. On dual-SIM phones, the SIM used for mobile data is read. When connected to Wi-Fi, the Wi-Fi signal strength, band, channel and link speed are also read and likewise only displayed on screen."
       },
       {
         "h3": "2. Connection information"
@@ -218,11 +221,14 @@
         "list": [
           "Your phone sends and receives data to/from Cloudflare for the measurement. As with any internet connection, Cloudflare sees your **IP address** and technical request information (such as time and request size).",
           "Your service provider's name (e.g. D-SMART, Turkcell) and the test server location are obtained from Cloudflare and **only displayed on screen**.",
-          "Test results (ping, download, upload) are kept **only on your phone while the app is open**; they are deleted when the app closes and are never saved to a server."
+          "Test results (ping, download, upload) are **never saved to a server**; the last 20 tests are stored only on your phone (see \"Information stored on your phone\")."
         ]
       },
       {
         "p": "How Cloudflare processes this information is governed by Cloudflare's privacy policy: https://www.cloudflare.com/privacypolicy/"
+      },
+      {
+        "p": "The **Share result** button sends the test result as text only to the app you choose (e.g. WhatsApp). Nothing is shared unless you tap it; the text never includes your IP address or Wi-Fi name."
       },
       {
         "p": "On Wi-Fi, the speed test starts automatically when you open the \"Speed Test\" tab. **On mobile data it does not start automatically**; you start it yourself, and one test can use up to about 100 MB of mobile data."
@@ -231,7 +237,7 @@
         "h2": "Information stored on your phone"
       },
       {
-        "p": "The app stores only these preferences on your phone: your chosen **theme** (light/dark), **language** (Turkish/English) and whether this notice should **not be shown again**. They are never sent off your phone and are deleted when you uninstall the app."
+        "p": "The app stores only the following on your phone: your chosen **theme** (light/dark), **language** (Turkish/English), whether this notice should **not be shown again**, and the **results of the last 20 speed tests** (date, connection type, provider name, ping, download and upload speed; no IP address or Wi-Fi name). This is never sent off your phone. You can delete the test history at any time with \"Clear\"; everything is deleted when you uninstall the app."
       },
       {
         "h2": "Permissions used"

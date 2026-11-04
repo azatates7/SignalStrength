@@ -4,5 +4,5 @@ import { expo } from '../app.json';
 
 export const APP_VERSION = `v${expo.version.split('.').slice(0, 2).join('.')}`;
 
-// Ör. "Sinyal Ölçer v8.0" / "Signal Strength v8.0"
+// Ör. "Sinyal Ölçer v?.?" / "Signal Strength v?.?"
 export const appFooter = (appName: string) => `${appName} ${APP_VERSION}`;

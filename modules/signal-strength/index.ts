@@ -1,4 +1,3 @@
-// modules/signal-strength/index.ts
 import { NativeModule, requireOptionalNativeModule } from 'expo';
 
 export type Technology = 'NR' | 'LTE' | 'WCDMA' | 'TDSCDMA' | 'GSM' | 'CDMA' | 'UNKNOWN';
@@ -40,6 +39,16 @@ export type IpInfo = {
   assignment?: 'dhcp' | 'static' | 'carrier' | 'unknown';
 };
 
+/** Bağlı Wi-Fi ağının sinyali (konum izni gerekmez) */
+export type WifiSignal = {
+  rssi: number; // dBm, ör. -58
+  frequency?: number | null; // MHz, ör. 5180 (bant ve kanal bundan hesaplanır)
+  linkSpeed?: number | null; // Mbps
+  txLinkSpeed?: number | null; // Android 10+
+  rxLinkSpeed?: number | null; // Android 10+
+  standard?: number | null; // Android 11+: 1 eski, 4 = Wi-Fi 4 (n), 5 = Wi-Fi 5 (ac), 6 = Wi-Fi 6 (ax), 8 = Wi-Fi 7 (be)
+};
+
 type Events = {
   onSignalChange: (reading: SignalReading) => void;
   onNetworkChange: (info: NetworkInfo) => void;
@@ -60,6 +69,9 @@ declare class SignalStrengthNative extends NativeModule<Events> {
   openLocationSettings(): boolean;
   getStatusBarHeight(): number;
   getIpInfo(): IpInfo;
+  getWifiSignal(): WifiSignal | null;
+  getSpeedHistory(): string | null;
+  setSpeedHistory(json: string | null): void;
   /** Ping örnekleri (ms); ilk istek sayılmaz. Ölçülemezse null */
   measurePing(url: string, count: number, referer: string): Promise<number[] | null>;
   startNetworkListening(): void;

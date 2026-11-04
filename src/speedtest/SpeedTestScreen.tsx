@@ -1,6 +1,6 @@
 // "Hız Testi" sekmesi: bağlantı bilgisi, ping / indirme / yükleme ölçümü.
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import type { NetworkInfo } from '../../modules/signal-strength';
 import { AppFooter } from '../AppFooter';
 import { useI18n, type Lang, type Strings } from '../i18n';
@@ -19,7 +19,10 @@ import {
   type SpeedErrorInfo,
   type SpeedResult,
 } from './cloudflare';
+import { formatDateTime, formatMbps } from './format';
+import { addEntry, loadHistory, saveHistory, type HistoryEntry } from './history';
 import { MAX_TESTS, recordStart, waitMs } from './rateLimit';
+import { buildShareText } from './share';
 import { useCellularName, useNetwork, useWifiName, type WifiNameState } from './useNetwork';
 
 // Kotalı bağlantıda (mobil veri) yön başına en fazla bu kadar veri harcanır
@@ -54,6 +57,9 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
   // Mobil veride bu bağlantıda en az bir test başlatıldı mı (başlatılınca veri uyarısı kalkar)
   const [meteredTested, setMeteredTested] = useState(false);
   const autoPending = useRef(false);
+  // Son 20 test (telefonda saklanır) ve bu oturumdaki son başarılı test (paylaşmak için)
+  const [history, setHistory] = useState<HistoryEntry[]>(loadHistory);
+  const [lastEntry, setLastEntry] = useState<HistoryEntry>();
   // Bağlantı anahtarı: tip + VPN. VPN açılıp kapanınca da yeni bağlantı sayılır (ölçüm yolu değişir)
   const connKey = `${info.type}${info.vpn ? '+vpn' : ''}`;
   const prevConn = useRef(connKey);
@@ -88,12 +94,15 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
     return () => clearInterval(id);
   }, [waitSec > 0]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Otomatik test: sekme açılınca, bağlantı tipi değişince (Wi-Fi ↔ mobil) ve bağlantı geri gelince test kendiliğinden başlar. "autoPending" bekleyen bir otomatik test olduğunu tutar; bağlantı hazır olunca (internet var, test sürmüyor, deneme sınırı dolmamış) çalıştırılır.
+  // Otomatik test: sekme açılınca, bağlantı tipi değişince (Wi-Fi ↔ mobil) ve bağlantı geri
+  // gelince test kendiliğinden başlar. "autoPending" bekleyen bir otomatik test olduğunu tutar;
+  // bağlantı hazır olunca (internet var, test sürmüyor, deneme sınırı dolmamış) çalıştırılır.
   useEffect(() => {
     if (active) autoPending.current = true;
   }, [active]);
 
-  // Bağlantı tipi (veya VPN) değişince eski test geçersiz olur: durdur. Bağlantı koptuysa değerleri temizle; yeni bir bağlantı geldiyse (bağlantı yok → Wi-Fi da dahil) otomatik testi beklemeye al.
+  // Bağlantı tipi (veya VPN) değişince eski test geçersiz olur: durdur. Bağlantı koptuysa değerleri temizle;
+  // yeni bir bağlantı geldiyse (bağlantı yok → Wi-Fi da dahil) otomatik testi beklemeye al.
   useEffect(() => {
     const prev = prevConn.current;
     prevConn.current = connKey;
@@ -113,7 +122,8 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
     autoPending.current = true;
   }, [connKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Bekleyen otomatik testi koşullar uygun olduğunda başlat. Bağlantı geri gelirken Android önce "ağ var, internet yok" sonra "internet var" bildirebildiği için internetin gelmesi de beklenir.
+  // Bekleyen otomatik testi koşullar uygun olduğunda başlat. Bağlantı geri gelirken Android önce
+  // "ağ var, internet yok" sonra "internet var" bildirebildiği için internetin gelmesi de beklenir.
   useEffect(() => {
     if (!autoPending.current || !active || !online || status === 'running' || waitSec > 0) return;
     autoPending.current = false;
@@ -142,6 +152,7 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
     if (info.metered) setMeteredTested(true);
     setError(undefined);
     setValues({});
+    setLastEntry(undefined);
     setLiveMbps(undefined);
     setPhase('meta');
     try {
@@ -167,7 +178,24 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
       if (!current()) return;
       setValues(result);
       setStatus('done');
-      setLastTestAt(Date.now());
+      const at = Date.now();
+      setLastTestAt(at);
+      const entry: HistoryEntry = {
+        at,
+        type: info.type,
+        vpn: info.vpn || undefined,
+        isp: m?.isp,
+        pingMs: result.pingMs,
+        jitterMs: result.jitterMs,
+        downloadMbps: result.downloadMbps,
+        uploadMbps: result.uploadMbps,
+      };
+      setLastEntry(entry);
+      setHistory((h) => {
+        const next = addEntry(h, entry);
+        saveHistory(next);
+        return next;
+      });
     } catch (e) {
       if (!current()) return;
       if (e instanceof TestCancelled) {
@@ -274,6 +302,15 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
                 : t.speed.start}
         </Text>
       </Pressable>
+      {status === 'done' && lastEntry ? (
+        <Pressable
+          onPress={() => Share.share({ message: buildShareText(lastEntry, t, lang, locale) }).catch(() => {})}
+          style={({ pressed }) => [styles.button, styles.secondaryButton, { backgroundColor: c.segment, opacity: pressed ? 0.7 : 1 }]}
+          accessibilityRole="button"
+        >
+          <Text style={[styles.secondaryText, { color: c.text }]}>{t.speed.share}</Text>
+        </Pressable>
+      ) : null}
       {lastTestAt && !running ? (
         <Text style={[styles.note, { color: c.textMuted }]}>{t.speed.lastTest(formatDateTime(lastTestAt, locale))}</Text>
       ) : null}
@@ -291,6 +328,14 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
         <Text style={[styles.note, { color: c.textMuted }]}>{t.speed.dataUsed(Math.round(values.bytesUsed / 1e6))}</Text>
       ) : null}
 
+
+      <HistoryCard
+        entries={history}
+        onClear={() => {
+          setHistory([]);
+          saveHistory([]);
+        }}
+      />
 
       <View style={[styles.card, { backgroundColor: c.card }]}>
         <Explain title={t.speed.ping} text={t.speed.explainPing} />
@@ -477,26 +522,56 @@ function Explain({ title, text, last }: { title: string; text: string; last?: bo
 }
 
 // 10'un altındaki hızlarda bir ondalık basamak; Türkçede ondalık ayırıcı virgül
-function formatMbps(v: number | undefined, lang: Lang) {
-  if (v === undefined || !Number.isFinite(v)) return '—';
-  if (v >= 10) return String(Math.round(v));
-  const s = v.toFixed(1);
-  return lang === 'tr' ? s.replace('.', ',') : s;
-}
-
-// Ör. "30 Eki 2026 14:05" / "30 Oct 2026, 14:05"
-function formatDateTime(ts: number, locale: string) {
-  try {
-    return new Date(ts).toLocaleString(locale, {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  } catch {
-    return new Date(ts).toISOString().slice(0, 16).replace('T', ' ');
-  }
+function HistoryCard({ entries, onClear }: { entries: HistoryEntry[]; onClear: () => void }) {
+  const { colors: c } = useTheme();
+  const { t, lang, locale } = useI18n();
+  const [expanded, setExpanded] = useState(false);
+  if (!entries.length) return null;
+  const shown = expanded ? entries : entries.slice(0, 5);
+  return (
+    <View style={[styles.card, { backgroundColor: c.card }]}>
+      <View style={styles.historyHeader}>
+        <View style={styles.historyTitleBox}>
+          <Text style={[styles.historyTitle, { color: c.text }]}>{t.history.title}</Text>
+          <Text style={[styles.wifiHint, styles.historyNote, { color: c.textFaint }]}>{t.history.note}</Text>
+        </View>
+        <Pressable onPress={onClear} hitSlop={8} accessibilityRole="button">
+          <Text style={[styles.historyAction, { color: c.accent }]}>{t.history.clear}</Text>
+        </Pressable>
+      </View>
+      {shown.map((e, i) => (
+        <View
+          key={e.at}
+          style={[styles.historyRow, i < shown.length - 1 && { borderBottomColor: c.barOff, borderBottomWidth: StyleSheet.hairlineWidth }]}
+        >
+          <View style={styles.historyLeft}>
+            <Text style={[styles.historyWhen, { color: c.text }]} numberOfLines={1}>
+              {formatDateTime(e.at, locale)}
+            </Text>
+            <Text style={[styles.wifiHint, styles.historyNote, { color: c.textMuted }]} numberOfLines={1}>
+              {[t.net[e.type] + (e.vpn ? ' (VPN)' : ''), e.isp].filter(Boolean).join(' · ')}
+            </Text>
+          </View>
+          <View style={styles.historyRight}>
+            <Text style={[styles.historyValue, { color: c.text }]} numberOfLines={1}>
+              ↓ {formatMbps(e.downloadMbps, lang)} · ↑ {formatMbps(e.uploadMbps, lang)}
+              <Text style={{ color: c.textMuted }}> Mbps</Text>
+            </Text>
+            <Text style={[styles.wifiHint, { color: c.textMuted }]} numberOfLines={1}>
+              {t.speed.ping} {Math.round(e.pingMs)} ms
+            </Text>
+          </View>
+        </View>
+      ))}
+      {entries.length > 5 ? (
+        <Pressable onPress={() => setExpanded((v) => !v)} hitSlop={8} style={styles.historyMore} accessibilityRole="button">
+          <Text style={[styles.historyAction, { color: c.accent }]}>
+            {expanded ? t.history.showLess : t.history.showAll(entries.length)}
+          </Text>
+        </Pressable>
+      ) : null}
+    </View>
+  );
 }
 
 function formatError(e: SpeedErrorInfo, t: Strings) {
@@ -550,6 +625,19 @@ const styles = StyleSheet.create({
   button: { borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginBottom: 8 },
   buttonText: { fontSize: 17, fontWeight: '700' },
   note: { fontSize: 13, textAlign: 'center', marginBottom: 8, lineHeight: 18 },
+  secondaryButton: { paddingVertical: 12 },
+  secondaryText: { fontSize: 15, fontWeight: '700' },
+  historyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 4 },
+  historyTitleBox: { flexShrink: 1 },
+  historyTitle: { fontSize: 16, fontWeight: '700' },
+  historyNote: { textAlign: 'left' },
+  historyAction: { fontSize: 14, fontWeight: '600' },
+  historyRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 10 },
+  historyLeft: { flexShrink: 1 },
+  historyWhen: { fontSize: 14, fontWeight: '600' },
+  historyRight: { alignItems: 'flex-end' },
+  historyValue: { fontSize: 14, fontWeight: '600', fontVariant: ['tabular-nums'] },
+  historyMore: { alignItems: 'center', paddingTop: 10 },
   explainGap: { marginBottom: 12 },
   explainTitle: { fontSize: 14, fontWeight: '600' },
   explainText: { fontSize: 13, lineHeight: 19, marginTop: 2 },
