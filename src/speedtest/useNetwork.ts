@@ -175,7 +175,7 @@ export function useCellularName(info: NetworkInfo): { operator?: string; tech?: 
     let sub: { remove(): void } | undefined;
     try {
       apply(SignalStrength?.getCurrent());
-      // Sinyal dinleyicisi "Bağlantı Kontrol" sekmesi tarafından çalıştırılır; burada sadece olaylar izlenir
+      // Sinyal dinleyicisi "Mobil Hat Kontrol" sekmesi tarafından çalıştırılır; burada sadece olaylar izlenir
       sub = SignalStrength?.addListener('onSignalChange', apply);
     } catch {
       setValue({});

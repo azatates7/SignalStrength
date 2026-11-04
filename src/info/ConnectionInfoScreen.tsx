@@ -1,4 +1,4 @@
-// "Bağlantı Bilgisi" sekmesi: yerel IP, modem (ağ geçidi) IP, dış IP, DNS, statik IP ve VPN durumu.
+// "Bağlantı Bilgisi" sekmesi: yerel IP, modem (ağ geçidi) IP, dış IP, DNS, statik IP, Wi-Fi sinyali ve VPN durumu.
 // Yerel bilgiler internet kullanmadan Android'den okunur; dış IP, sekme açıkken Cloudflare'in meta isteğinden (~1 KB, hız testi sekmesindekiyle aynı) alınır.
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -7,6 +7,9 @@ import { AppFooter } from '../AppFooter';
 import { useI18n, type Strings } from '../i18n';
 import { fetchMeta } from '../speedtest/cloudflare';
 import { useNetwork } from '../speedtest/useNetwork';
+import { WifiCard } from '../signal/WifiCard';
+import { useSampleHistory } from '../signal/useSampleHistory';
+import { useWifiSignal } from '../signal/useWifiSignal';
 import { useTheme } from '../theme';
 
 function readIpInfo(): IpInfo {
@@ -39,6 +42,9 @@ export function ConnectionInfoScreen({ active }: { active: boolean }) {
   const [publicFailed, setPublicFailed] = useState(false);
   const [reload, setReload] = useState(0);
   const connKey = `${info.type}${info.vpn ? '+vpn' : ''}`;
+  // Wi-Fi'ye bağlıyken Wi-Fi sinyali (2 sn'de bir okunur) ve son 2 dakikanın grafiği
+  const wifi = useWifiSignal(info.type === 'wifi');
+  const wifiHistory = useSampleHistory(wifi?.rssi);
 
   // Ağ değişince (Wi-Fi ↔ mobil, VPN aç/kapa) yerel bilgiler yeniden okunur, dış IP sıfırlanır
   useEffect(() => {
@@ -102,6 +108,8 @@ export function ConnectionInfoScreen({ active }: { active: boolean }) {
           last
         />
       </View>
+
+      {wifi ? <WifiCard signal={wifi} history={wifiHistory} /> : null}
 
       <View style={[styles.card, { backgroundColor: c.card }]}>
         <View style={styles.vpnHeader}>

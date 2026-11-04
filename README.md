@@ -17,7 +17,7 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 - **Telefonun çubuk göstergesi:** Android'in 0–4 seviyesi, telefonun üst çubuğuna benzeyen küçük bir simgeyle gösterilir.
 - **Hız testi:** Wi-Fi veya mobil veri bağlıysa ping, indirme ve yükleme hızını ölçer. Bağlantı tipi, servis sağlayıcı ve test sunucusunun konumu da gösterilir. Ölçüm Cloudflare sunucularıyla yapılır.
 - **Otomatik başlayan test:** "Hız Testi" sekmesi açılınca test kendiliğinden başlar. Dakikada en fazla 3 test yapılabilir.
-- **Üç sekme:** "Bağlantı Kontrol" (sinyal), "Hız Testi" ve "Bağlantı Bilgisi". Sekmeler arasında sola / sağa kaydırarak geçilebilir.
+- **Üç sekme:** "Mobil Hat Kontrol" (mobil sinyal), "Hız Testi" ve "Bağlantı Bilgisi". Sekmeler arasında sola / sağa kaydırarak geçilebilir.
 - **Bağlantı değişince yeni test:** Wi-Fi ile mobil ağ arasında geçişte ve bağlantı geri geldiğinde hız testi kendiliğinden tekrarlanır. Bağlantı kopunca değerler temizlenir.
 - **Türkçe / İngilizce:** Uygulama telefon dilinde açılır (Türkçe değilse İngilizce). Üst paneldeki dil butonu o anki dili gösterir (Türkçe → "TR", İngilizce → "EN"); dokununca bütün metinler anında diğer dile geçer ve seçim hatırlanır. Ana ekrandaki uygulama adı telefon diline göre "Sinyal Ölçer" / "Signal Strength" olur.
 - **Son test zamanı:** "Tekrar Test Et" butonunun altında son testin tarihi ve saati görünür.
@@ -27,6 +27,10 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 - **Bağlantı Bilgisi sekmesi:** Cihazın yerel IP'si, IPv6, modem / ağ geçidi IP'si, dış (internet) IP, DNS ve statik IP var/yok bilgisi. Statik IP bilgisi telefonun yerel IP'si içindir; servis sağlayıcının sabit dış IP verip vermediği telefondan anlaşılamaz.
 - **VPN kontrolü:** Bağlantı Bilgisi sekmesinde VPN'in açık olup olmadığı gösterilir. VPN açıkken dış IP'nin ve hız testinin VPN sunucusu üzerinden olduğu belirtilir; VPN açılıp kapanınca hız testi yenilenir.
 - **Konum kapalıysa yönlendirme:** Wi-Fi adı için konum izni verilmiş ama telefonun konum servisi kapalıysa "Konumu aç" butonu konum ayarlarını açar; geri dönünce ad kendiliğinden okunur.
+- **Wi-Fi sinyal gücü:** Wi-Fi'ye bağlıyken Bağlantı Bilgisi sekmesinde Wi-Fi sinyali (dBm ve durum etiketi), bant (2.4 / 5 / 6 GHz), kanal, bağlantı hızı ve Wi-Fi standardı (ör. Wi-Fi 6) gösterilir. Konum izni gerekmez.
+- **Canlı sinyal grafiği:** Mobil ve Wi-Fi sinyalinin son 2 dakikası çizgi grafikle gösterilir; telefonla dolaşarak sinyalin en iyi olduğu yer bulunabilir. Hiçbir şey saklanmaz.
+- **Hız testi geçmişi:** Son 20 test (tarih, bağlantı tipi, sağlayıcı, indirme, yükleme, ping) yalnızca telefonda saklanır; "Temizle" ile silinir.
+- **Sonucu paylaş:** Test sonucu "İndirme 245 Mbps · Yükleme 38 Mbps · Ping 12 ms" gibi bir metin olarak WhatsApp vb. ile paylaşılabilir.
 - **Çift SIM desteği:** Sinyal, teknoloji ve operatör, mobil verinin kullanıldığı SIM'den okunur. Veri SIM'i değiştirilince uygulama yeni SIM'e geçer.
 - **Canlı bağlantı bilgisi:** Hız Testi kartındaki `Turkcell · 4G (LTE)` bilgisi sinyal değiştikçe güncellenir (ör. 4G → 5G geçişi hemen görünür).
 - **Pil dostu:** Uygulama arka plandayken sinyal ve ağ dinleyicileri durur, öne gelince güncel değer okunup yeniden başlar.
@@ -77,10 +81,20 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 │  ├─ info/
 │  │  └─ ConnectionInfoScreen.tsx  Bağlantı Bilgisi sekmesi (IP, modem, DNS, statik IP, VPN)
 │  ├─ speedtest/
+│  │  ├─ history.ts            Hız testi geçmişi (son 20 test, telefonda)
+│  │  ├─ share.ts              Paylaşılan sonuç metni
+│  │  ├─ format.ts             Hız ve tarih biçimi
 │  │  ├─ cloudflare.ts         Hız testi motoru (ping, indirme, yükleme, sunucu bilgisi)
 │  │  ├─ useNetwork.ts         Aktif bağlantıyı (Wi-Fi / mobil veri) izleyen hook
 │  │  └─ SpeedTestScreen.tsx   Hız testi sekmesi
+│  ├─ ui/
+│  │  ├─ Sparkline.tsx         Kütüphanesiz çizgi grafik
+│  │  └─ SignalChart.tsx       "Son 2 dakika" sinyal grafiği
 │  └─ signal/
+│     ├─ WifiCard.tsx          Wi-Fi sinyal kartı
+│     ├─ useWifiSignal.ts      Wi-Fi sinyalini 2 sn'de bir okuyan hook
+│     ├─ useSampleHistory.ts   Grafik için son 2 dakikanın örnekleri
+│     ├─ wifi.ts               Frekans → bant / kanal, Wi-Fi standardı
 │     ├─ useSignalStrength.ts  Native modülü dinleyen React hook'u
 │     ├─ levels.ts             dBm → 0–100 puan hesabı, teknoloji etiketleri
 │     └─ metrics.ts            RSRP/RSRQ/SINR açıklamaları, ideal aralıklar, durum eşikleri
@@ -126,7 +140,7 @@ Birim testleri Jest (`jest-expo`) ile çalışır; testler kodun yanındaki `__t
 npm test
 ```
 
-Kapsanan: sinyal puanı ve kalite seviyeleri (`levels`), RSRP/RSRQ/SINR değerlendirmesi (`metrics`), dakikada 3 test sınırı (`rateLimit`), ping hesapları (`cloudflare`) ve gizlilik politikası metninin iki dilde aynı yapıda olması.
+Kapsanan: sinyal puanı ve kalite seviyeleri (`levels`), RSRP/RSRQ/SINR/Wi-Fi değerlendirmesi (`metrics`), Wi-Fi bant/kanal/standart (`wifi`), test geçmişi (`history`), paylaşılan metin (`share`), dakikada 3 test sınırı (`rateLimit`), ping hesapları (`cloudflare`) ve gizlilik politikası metninin iki dilde aynı yapıda olması.
 
 ## APK oluşturma
 
@@ -146,6 +160,10 @@ APK şu konumda oluşur: `android/app/build/outputs/apk/release/app-release.apk`
 Sadece `.ts` / `.tsx` dosyaları değiştiyse doğrudan `gradlew assembleRelease` çalıştırmak yeterli.
 
 > Bu yöntemle üretilen APK debug anahtarıyla imzalanır ve test için uygundur. Play Store için aşağıdaki EAS adımlarını kullanın.
+
+## Uygulama boyutu (R8)
+
+Release derlemede kod küçültme (R8) ve kullanılmayan kaynakların temizlenmesi açık (`app.json` → `expo-build-properties`). Sadece release derlemeyi etkiler; `expo run:android` ile alınan debug derleme değişmez. Native kod değiştikten sonra uygulamayı mutlaka **release** derlemeyle telefonda deneyin.
 
 ## Play Store'a yayınlama
 

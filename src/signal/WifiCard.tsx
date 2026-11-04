@@ -1,4 +1,4 @@
-// "Bağlantı Kontrol" sekmesinde, Wi-Fi'ye bağlıyken görünen Wi-Fi sinyal kartı.
+// "Bağlantı Bilgisi" sekmesinde, Wi-Fi'ye bağlıyken görünen Wi-Fi sinyal kartı.
 import { StyleSheet, Text, View } from 'react-native';
 import type { WifiSignal } from '../../modules/signal-strength';
 import { useI18n } from '../i18n';

@@ -22,7 +22,7 @@ const tr = {
     toDark: 'Koyu temaya geç',
     switchLanguage: 'Switch to English', // Butona dokununca geçilecek dilde yazılır
   },
-  tabs: { signal: 'Bağlantı Kontrol', speed: 'Hız Testi', info: 'Bağlantı Bilgisi' },
+  tabs: { signal: 'Mobil Hat Kontrol', speed: 'Hız Testi', info: 'Bağlantı Bilgisi' },
   rating: { excellent: 'Mükemmel', good: 'İyi', fair: 'Orta', poor: 'Zayıf' } satisfies Record<RatingKey, string>,
   quality: {
     none: 'Sinyal yok',
@@ -41,8 +41,6 @@ const tr = {
     details: 'Detaylar',
     chartTitle: 'Son 2 dakika',
     chartRange: (min: number, max: number) => `En düşük ${min} · En yüksek ${max} dBm`,
-    wifiSection: 'Wi-Fi',
-    mobileUnavailable: 'Mobil sinyal',
   },
   wifi: {
     band: 'Bant',
@@ -194,7 +192,7 @@ const en: Strings = {
     toDark: 'Switch to dark theme',
     switchLanguage: 'Türkçeye geç',
   },
-  tabs: { signal: 'Connection', speed: 'Speed Test', info: 'Connection Info' },
+  tabs: { signal: 'Mobile Signal', speed: 'Speed Test', info: 'Connection Info' },
   rating: { excellent: 'Excellent', good: 'Good', fair: 'Fair', poor: 'Poor' },
   quality: {
     none: 'No signal',
@@ -213,8 +211,6 @@ const en: Strings = {
     details: 'Details',
     chartTitle: 'Last 2 minutes',
     chartRange: (min, max) => `Low ${min} · High ${max} dBm`,
-    wifiSection: 'Wi-Fi',
-    mobileUnavailable: 'Mobile signal',
   },
   wifi: {
     band: 'Band',

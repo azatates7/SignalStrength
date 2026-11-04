@@ -1,4 +1,3 @@
-// scripts/build-privacy-page.mjs
 // Gizlilik politikasının web sayfasını uygulamadaki metinden üretir.
 // Kaynak: src/privacy/policy.json → Çıktı: docs/privacy/index.html
 // Kullanım: node scripts/build-privacy-page.mjs   (policy.json her değiştiğinde çalıştırın)
