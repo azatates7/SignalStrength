@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Açık tema (uygulamanın açık paletiyle aynı) -->
+<resources>
+  <color name="ss_widget_bg">#FFFFFF</color>
+  <color name="ss_widget_text">#0F172A</color>
+  <color name="ss_widget_muted">#64748B</color>
+  <color name="ss_widget_faint">#94A3B8</color>
+  <color name="ss_widget_off">#CBD5E1</color>
+  <color name="ss_widget_good">#15803D</color>
+</resources>

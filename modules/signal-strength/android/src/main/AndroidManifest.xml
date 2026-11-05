@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bu modülün manifesti uygulamanın manifestiyle otomatik birleştirilir (prebuild gerekmez). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <application>
+    <!-- Ana ekran widget'ı: mobil sinyal gücü -->
+    <receiver
+      android:name="expo.modules.signalstrength.SignalWidgetProvider"
+      android:exported="true"
+      android:label="@string/ss_widget_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/ss_widget_signal_info" />
+    </receiver>
+  </application>
+</manifest>

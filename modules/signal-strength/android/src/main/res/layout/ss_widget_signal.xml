@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget görünümü. RemoteViews yalnızca LinearLayout / TextView / ImageView gibi temel
+     bileşenleri destekler; sinyal çubukları kodda resim olarak çizilir. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/ss_widget_root"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@drawable/ss_widget_bg"
+  android:gravity="center_vertical"
+  android:orientation="horizontal"
+  android:paddingStart="14dp"
+  android:paddingTop="8dp"
+  android:paddingEnd="8dp"
+  android:paddingBottom="8dp">
+
+  <ImageView
+    android:id="@+id/ss_widget_bars"
+    android:layout_width="64dp"
+    android:layout_height="28dp"
+    android:contentDescription="@null"
+    android:scaleType="fitCenter"
+    android:src="@drawable/ss_widget_bars_preview" />
+
+  <LinearLayout
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="12dp"
+    android:layout_weight="1"
+    android:orientation="vertical">
+
+    <TextView
+      android:id="@+id/ss_widget_dbm"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:maxLines="1"
+      android:text="-81 dBm"
+      android:textColor="@color/ss_widget_text"
+      android:textSize="20sp"
+      android:textStyle="bold" />
+
+    <TextView
+      android:id="@+id/ss_widget_operator"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:ellipsize="end"
+      android:maxLines="1"
+      android:text="Turkcell · 4G (LTE)"
+      android:textColor="@color/ss_widget_muted"
+      android:textSize="12sp" />
+
+    <TextView
+      android:id="@+id/ss_widget_quality"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:ellipsize="end"
+      android:maxLines="1"
+      android:text="88/100"
+      android:textColor="@color/ss_widget_muted"
+      android:textSize="12sp" />
+  </LinearLayout>
+
+  <LinearLayout
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <ImageView
+      android:id="@+id/ss_widget_refresh"
+      android:layout_width="36dp"
+      android:layout_height="36dp"
+      android:contentDescription="@string/ss_widget_refresh"
+      android:padding="8dp"
+      android:src="@drawable/ss_widget_refresh" />
+
+    <TextView
+      android:id="@+id/ss_widget_time"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:maxLines="1"
+      android:textColor="@color/ss_widget_faint"
+      android:textSize="10sp" />
+  </LinearLayout>
+</LinearLayout>

@@ -41,7 +41,7 @@
         "h3": "1. Mobil şebeke ve sinyal bilgisi"
       },
       {
-        "p": "Sinyal gücü (dBm, RSRP, RSRQ, SINR), bağlantı teknolojisi (2G/3G/4G/5G) ve operatör adı Android'den okunur. Bu bilgiler **yalnızca ekranda gösterilir**; telefonunuzdan dışarı gönderilmez ve saklanmaz. Çift SIM'li telefonlarda mobil verinin kullanıldığı SIM'in bilgisi okunur. Wi-Fi'ye bağlıyken Wi-Fi sinyal gücü, bant, kanal ve bağlantı hızı da okunur ve aynı şekilde yalnızca ekranda gösterilir."
+        "p": "Sinyal gücü (dBm, RSRP, RSRQ, SINR), bağlantı teknolojisi (2G/3G/4G/5G) ve operatör adı Android'den okunur. Bu bilgiler **yalnızca ekranda gösterilir**; telefonunuzdan dışarı gönderilmez ve saklanmaz. Çift SIM'li telefonlarda mobil verinin kullanıldığı SIM'in bilgisi okunur. Wi-Fi'ye bağlıyken Wi-Fi sinyal gücü, bant, kanal ve bağlantı hızı da okunur ve aynı şekilde yalnızca ekranda gösterilir. Ana ekrana widget eklerseniz sinyal gücü, puan, operatör ve teknoloji widget'ta da aynı şekilde, yalnızca telefonunuzda gösterilir."
       },
       {
         "h3": "2. Bağlantı bilgisi"
@@ -186,7 +186,7 @@
         "h3": "1. Mobile network and signal information"
       },
       {
-        "p": "Signal strength (dBm, RSRP, RSRQ, SINR), connection technology (2G/3G/4G/5G) and the operator name are read from Android. This information is **only displayed on screen**; it is not sent off your phone and is not stored. On dual-SIM phones, the SIM used for mobile data is read. When connected to Wi-Fi, the Wi-Fi signal strength, band, channel and link speed are also read and likewise only displayed on screen."
+        "p": "Signal strength (dBm, RSRP, RSRQ, SINR), connection technology (2G/3G/4G/5G) and the operator name are read from Android. This information is **only displayed on screen**; it is not sent off your phone and is not stored. On dual-SIM phones, the SIM used for mobile data is read. When connected to Wi-Fi, the Wi-Fi signal strength, band, channel and link speed are also read and likewise only displayed on screen. If you add the home screen widget, the signal strength, score, operator and technology are shown there too, likewise only on your phone."
       },
       {
         "h3": "2. Connection information"

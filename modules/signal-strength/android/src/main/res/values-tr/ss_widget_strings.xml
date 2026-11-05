@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="ss_widget_label">Sinyal Ölçer</string>
+  <string name="ss_widget_description">Mobil sinyal gücü (dBm, 0–100 puan, operatör)</string>
+  <string name="ss_widget_refresh">Yenile</string>
+</resources>

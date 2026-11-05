@@ -31,6 +31,7 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 - **Canlı sinyal grafiği:** Mobil ve Wi-Fi sinyalinin son 2 dakikası çizgi grafikle gösterilir; telefonla dolaşarak sinyalin en iyi olduğu yer bulunabilir. Hiçbir şey saklanmaz.
 - **Hız testi geçmişi:** Son 20 test (tarih, bağlantı tipi, sağlayıcı, indirme, yükleme, ping) yalnızca telefonda saklanır; "Temizle" ile silinir.
 - **Sonucu paylaş:** Test sonucu bir resim kartı olarak (indirme, yükleme, ping, sağlayıcı, tarih) WhatsApp vb. ile paylaşılır. "Metin olarak paylaş" ile aynı bilgi metin olarak da gönderilebilir.
+- **Ana ekran widget'ı:** Uygulamayı açmadan mobil sinyal gücü, 0–100 puan, operatör ve teknoloji. Eklemek için ana ekranda boş bir yere uzun basın → *Widget'lar* → *Sinyal Ölçer*. Android widget'ı en sık 30 dakikada bir günceller; ⟳ butonu anında yeniler, uygulama açıkken de kendiliğinden güncellenir.
 - **Çift SIM desteği:** Sinyal, teknoloji ve operatör, mobil verinin kullanıldığı SIM'den okunur. Veri SIM'i değiştirilince uygulama yeni SIM'e geçer.
 - **Canlı bağlantı bilgisi:** Hız Testi kartındaki `Turkcell · 4G (LTE)` bilgisi sinyal değiştikçe güncellenir (ör. 4G → 5G geçişi hemen görünür).
 - **Pil dostu:** Uygulama arka plandayken sinyal ve ağ dinleyicileri durur, öne gelince güncel değer okunup yeniden başlar.
@@ -103,7 +104,8 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
    ├─ expo-module.config.json
    ├─ index.ts                 Modülün TypeScript arayüzü
    └─ android/src/main/java/expo/modules/signalstrength/
-      └─ SignalStrengthModule.kt
+      ├─ SignalStrengthModule.kt
+      └─ SignalWidgetProvider.kt   Ana ekran widget'ı
 ```
 
 `android/` klasörü `npx expo prebuild` ile her seferinde yeniden üretiliyor. Bu yüzden repoda tutulmuyor ve elle düzenlenmemeli.

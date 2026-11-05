@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Varsayılan 3x1 hücre; yatay / dikey boyutlandırılabilir. Android en sık 30 dk'da bir günceller
+     (daha sıkı güncelleme pil nedeniyle izin verilmez); ⟳ butonu ve açık uygulama anında günceller. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+  android:minWidth="180dp"
+  android:minHeight="50dp"
+  android:minResizeWidth="150dp"
+  android:minResizeHeight="40dp"
+  android:targetCellWidth="3"
+  android:targetCellHeight="1"
+  android:resizeMode="horizontal|vertical"
+  android:updatePeriodMillis="1800000"
+  android:initialLayout="@layout/ss_widget_signal"
+  android:previewLayout="@layout/ss_widget_signal"
+  android:description="@string/ss_widget_description"
+  android:widgetCategory="home_screen" />

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget seçicideki önizleme için sabit çubuklar; gerçek çubuklar kodda çizilir -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+  android:width="68dp"
+  android:height="30dp"
+  android:viewportWidth="68"
+  android:viewportHeight="30">
+  <path android:fillColor="@color/ss_widget_good" android:pathData="M0,24.0h5v6.0h-5zM7,21.6h5v8.4h-5zM14,19.2h5v10.8h-5zM21,16.8h5v13.2h-5zM28,14.4h5v15.6h-5zM35,12.0h5v18.0h-5zM42,9.6h5v20.4h-5zM49,7.2h5v22.8h-5z" />
+  <path android:fillColor="@color/ss_widget_off" android:pathData="M56,4.8h5v25.2h-5zM63,2.4h5v27.6h-5z" />
+</vector>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="ss_widget_label">Signal Strength</string>
+  <string name="ss_widget_description">Mobile signal strength (dBm, 0–100 score, operator)</string>
+  <string name="ss_widget_refresh">Refresh</string>
+</resources>

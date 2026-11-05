@@ -99,6 +99,8 @@ class SignalStrengthModule : Module() {
     Function("getLanguagePreference") { prefs()?.getString(KEY_LANGUAGE, null) }
     Function("setLanguagePreference") { lang: String ->
       prefs()?.edit()?.putString(KEY_LANGUAGE, lang)?.apply()
+      // Widget metinleri uygulamada seçilen dili izler
+      appContext.reactContext?.let { SignalWidgetProvider.updateAll(it.applicationContext) }
     }
 
     // Gizlilik politikası açılışta gösterilmesin mi ("Bir daha gösterme" işaretlendiyse true)
@@ -423,6 +425,8 @@ class SignalStrengthModule : Module() {
       )
     }
     runCatching { sendEvent("onSignalChange", payload) }
+    // Ana ekran widget'ı varsa o da güncellensin (en fazla 10 sn'de bir)
+    appContext.reactContext?.let { SignalWidgetProvider.updateThrottled(it.applicationContext) }
   }
 
   private fun startListening() {
