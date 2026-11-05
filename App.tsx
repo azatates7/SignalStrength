@@ -1,6 +1,7 @@
-import { Component, useRef, useState, type ReactNode } from 'react';
+import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import {
+  Linking,
   Platform,
   Pressable,
   StatusBar as RNStatusBar,
@@ -11,18 +12,18 @@ import {
   useWindowDimensions,
   type ScrollViewInstance,
 } from 'react-native';
-import { useSignalStrength } from './src/signal/useSignalStrength';
-import { BAR_COUNT, MAX_SCORE, qualityKey, techLabel, toScore } from './src/signal/levels';
-import { METRICS, rate, type MetricInfo } from './src/signal/metrics';
+import { useSignalStrength } from './src/signal/UseSignalStrength';
+import { BAR_COUNT, MAX_SCORE, qualityKey, techLabel, toScore } from './src/signal/Levels';
+import { METRICS, rate, type MetricInfo } from './src/signal/Metrics';
 import { SpeedTestScreen } from './src/speedtest/SpeedTestScreen';
-import { useSampleHistory } from './src/signal/useSampleHistory';
+import { useSampleHistory } from './src/signal/UseSampleHistory';
 import { SignalChart } from './src/ui/SignalChart';
 import { ConnectionInfoScreen } from './src/info/ConnectionInfoScreen';
-import { ThemeProvider, useTheme } from './src/theme';
-import { LanguageProvider, useI18n } from './src/i18n';
+import { ThemeProvider, useTheme } from './src/Theme';
+import { LanguageProvider, useI18n } from './src/i18n/Index';
 import { AppFooter } from './src/AppFooter';
 import { PrivacyPolicyProvider } from './src/privacy/PrivacyPolicy';
-import SignalStrength from './modules/signal-strength';
+import SignalStrength from './modules/signal-strength/Index';
 
 type Tab = 'signal' | 'speed' | 'info';
 
@@ -59,10 +60,29 @@ function Root() {
   const pager = useRef<ScrollViewInstance>(null);
 
   // Sekmeye dokununca ilgili sayfaya kaydır
-  const goTo = (t: Tab) => {
+  const goTo = (t: Tab, animated = true) => {
     setTab(t);
-    pager.current?.scrollTo({ x: TABS.indexOf(t) * width, animated: true });
+    pager.current?.scrollTo({ x: TABS.indexOf(t) * width, animated });
   };
+
+  // Ana ekrandaki hız testi widget'ı uygulamayı signalstrength://speedtest[?start=1] ile açar:
+  // Hız Testi sekmesine geç, "start=1" ise testi başlat. Uygulama kapalıyken (ilk adres) ve
+  // açıkken (url olayı) ikisi de karşılanır.
+  const [startRequest, setStartRequest] = useState(0);
+  const widthRef = useRef(width);
+  widthRef.current = width;
+  useEffect(() => {
+    const handle = (url?: string | null) => {
+      if (!url || !url.startsWith('signalstrength://speedtest')) return;
+      setTab('speed');
+      // Sayfa düzeni hazır olduktan sonra kaydır (açılışta ScrollView henüz ölçülmemiş olabilir)
+      setTimeout(() => pager.current?.scrollTo({ x: TABS.indexOf('speed') * widthRef.current, animated: false }), 50);
+      if (/[?&]start=1\b/.test(url)) setStartRequest((n) => n + 1);
+    };
+    Linking.getInitialURL().then(handle).catch(() => {});
+    const sub = Linking.addEventListener('url', (e) => handle(e.url));
+    return () => sub.remove();
+  }, []);
 
   return (
     <View style={[styles.screen, { backgroundColor: c.background }]}>
@@ -89,7 +109,7 @@ function Root() {
         </View>
         <View style={[styles.tabPage, { width }]}>
           <ErrorBoundary>
-            <SpeedTestScreen active={tab === 'speed'} />
+            <SpeedTestScreen active={tab === 'speed'} startRequest={startRequest} />
           </ErrorBoundary>
         </View>
         <View style={[styles.tabPage, { width }]}>

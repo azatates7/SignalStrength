@@ -1,5 +1,5 @@
 // Hız ve tarih biçimleri (ekran, geçmiş listesi ve paylaşılan metin aynı biçimi kullanır).
-import type { Lang } from '../i18n';
+import type { Lang } from '../i18n/Index';
 
 /** 245.3 → "245", 8.46 → "8,5" (Türkçe) / "8.5" (İngilizce); bilinmiyorsa "—" */
 export function formatMbps(v: number | undefined, lang: Lang) {

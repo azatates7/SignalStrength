@@ -1,7 +1,7 @@
 // Wi-Fi'ye bağlıyken Wi-Fi sinyalini 2 saniyede bir okur (internet kullanmaz, izin gerekmez) uygulama arka plandayken okunmaz.
 import { useEffect, useState } from 'react';
 import { AppState } from 'react-native';
-import SignalStrength, { type WifiSignal } from '../../modules/signal-strength';
+import SignalStrength, { type WifiSignal } from '../../modules/signal-strength/Index';
 
 const read = (): WifiSignal | null => {
   try {

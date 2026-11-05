@@ -1,6 +1,6 @@
 // Hız testi geçmişi: son 20 test, yalnızca telefonda (native SharedPreferences, tema tercihinin yanında).
 // Sunucuya hiçbir şey gönderilmez. IP adresi ve Wi-Fi adı saklanmaz.
-import SignalStrength, { type NetworkType } from '../../modules/signal-strength';
+import SignalStrength, { type NetworkType } from '../../modules/signal-strength/Index';
 
 export const MAX_HISTORY = 20;
 

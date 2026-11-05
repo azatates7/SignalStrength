@@ -1,6 +1,6 @@
 // Android'in 0-4 seviyesi yerine dBm'den 0-100 arası bir sinyal puanı hesaplar.
-import type { SignalReading, Technology } from '../../modules/signal-strength';
-import type { QualityKey } from '../i18n/strings';
+import type { SignalReading, Technology } from '../../modules/signal-strength/Index';
+import type { QualityKey } from '../i18n/Strings';
 
 export const MAX_SCORE = 100;
 export const BAR_COUNT = 10; // Ekrandaki çubuk sayısı (her çubuk 10 puan)

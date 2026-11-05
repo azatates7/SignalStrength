@@ -41,7 +41,7 @@
         "h3": "1. Mobil şebeke ve sinyal bilgisi"
       },
       {
-        "p": "Sinyal gücü (dBm, RSRP, RSRQ, SINR), bağlantı teknolojisi (2G/3G/4G/5G) ve operatör adı Android'den okunur. Bu bilgiler **yalnızca ekranda gösterilir**; telefonunuzdan dışarı gönderilmez ve saklanmaz. Çift SIM'li telefonlarda mobil verinin kullanıldığı SIM'in bilgisi okunur. Wi-Fi'ye bağlıyken Wi-Fi sinyal gücü, bant, kanal ve bağlantı hızı da okunur ve aynı şekilde yalnızca ekranda gösterilir. Ana ekrana widget eklerseniz sinyal gücü, puan, operatör ve teknoloji widget'ta da aynı şekilde, yalnızca telefonunuzda gösterilir."
+        "p": "Sinyal gücü (dBm, RSRP, RSRQ, SINR), bağlantı teknolojisi (2G/3G/4G/5G) ve operatör adı Android'den okunur. Bu bilgiler **yalnızca ekranda gösterilir**; telefonunuzdan dışarı gönderilmez ve saklanmaz. Çift SIM'li telefonlarda mobil verinin kullanıldığı SIM'in bilgisi okunur. Wi-Fi'ye bağlıyken Wi-Fi sinyal gücü, bant, kanal ve bağlantı hızı da okunur ve aynı şekilde yalnızca ekranda gösterilir. Ana ekrana widget eklerseniz sinyal gücü, puan, operatör ve teknoloji (sinyal widget'ı) ile son hız testi sonucu (hız testi widget'ı) widget'ta da aynı şekilde, yalnızca telefonunuzda gösterilir. Hız testi widget'ındaki \"Başlat\" yalnızca uygulamayı açar; test uygulamada, sizin dokunmanızla başlar."
       },
       {
         "h3": "2. Bağlantı bilgisi"
@@ -92,7 +92,7 @@
         "h2": "Telefonda saklanan bilgiler"
       },
       {
-        "p": "Uygulama telefonunuzda yalnızca şunları saklar: seçtiğiniz **tema** (açık/koyu), **dil** (Türkçe/İngilizce), bu bildirimin **tekrar gösterilmemesi** seçimi ve **son 20 hız testinin sonucu** (tarih, bağlantı tipi, servis sağlayıcı adı, ping, indirme ve yükleme hızı; IP adresi ve Wi-Fi adı saklanmaz). Bu bilgiler telefonunuzdan dışarı gönderilmez. Test geçmişini \"Temizle\" ile istediğiniz zaman silebilirsiniz; uygulamayı kaldırdığınızda hepsi silinir."
+        "p": "Uygulama telefonunuzda yalnızca şunları saklar: seçtiğiniz **tema** (açık/koyu), **dil** (Türkçe/İngilizce), bu bildirimin **tekrar gösterilmemesi** seçimi, widget'ların **açık/koyu tema** seçimi ve **son 20 hız testinin sonucu** (tarih, bağlantı tipi, servis sağlayıcı adı, ping, indirme ve yükleme hızı; IP adresi ve Wi-Fi adı saklanmaz). Bu bilgiler telefonunuzdan dışarı gönderilmez. Test geçmişini \"Temizle\" ile istediğiniz zaman silebilirsiniz; uygulamayı kaldırdığınızda hepsi silinir."
       },
       {
         "h2": "Uygulamanın kullandığı izinler"
@@ -186,7 +186,7 @@
         "h3": "1. Mobile network and signal information"
       },
       {
-        "p": "Signal strength (dBm, RSRP, RSRQ, SINR), connection technology (2G/3G/4G/5G) and the operator name are read from Android. This information is **only displayed on screen**; it is not sent off your phone and is not stored. On dual-SIM phones, the SIM used for mobile data is read. When connected to Wi-Fi, the Wi-Fi signal strength, band, channel and link speed are also read and likewise only displayed on screen. If you add the home screen widget, the signal strength, score, operator and technology are shown there too, likewise only on your phone."
+        "p": "Signal strength (dBm, RSRP, RSRQ, SINR), connection technology (2G/3G/4G/5G) and the operator name are read from Android. This information is **only displayed on screen**; it is not sent off your phone and is not stored. On dual-SIM phones, the SIM used for mobile data is read. When connected to Wi-Fi, the Wi-Fi signal strength, band, channel and link speed are also read and likewise only displayed on screen. If you add the home screen widgets, the signal strength, score, operator and technology (signal widget) and the last speed test result (speed test widget) are shown there too, likewise only on your phone. The \"Start\" button on the speed test widget only opens the app; the test runs in the app, started by your tap."
       },
       {
         "h3": "2. Connection information"
@@ -237,7 +237,7 @@
         "h2": "Information stored on your phone"
       },
       {
-        "p": "The app stores only the following on your phone: your chosen **theme** (light/dark), **language** (Turkish/English), whether this notice should **not be shown again**, and the **results of the last 20 speed tests** (date, connection type, provider name, ping, download and upload speed; no IP address or Wi-Fi name). This is never sent off your phone. You can delete the test history at any time with \"Clear\"; everything is deleted when you uninstall the app."
+        "p": "The app stores only the following on your phone: your chosen **theme** (light/dark), **language** (Turkish/English), whether this notice should **not be shown again**, the widgets' **light/dark theme** choice, and the **results of the last 20 speed tests** (date, connection type, provider name, ping, download and upload speed; no IP address or Wi-Fi name). This is never sent off your phone. You can delete the test history at any time with \"Clear\"; everything is deleted when you uninstall the app."
       },
       {
         "h2": "Permissions used"

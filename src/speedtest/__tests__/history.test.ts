@@ -1,4 +1,4 @@
-import { MAX_HISTORY, addEntry, parseHistory, type HistoryEntry } from '../history';
+import { MAX_HISTORY, addEntry, parseHistory, type HistoryEntry } from '../History';
 
 const entry = (at: number, extra: Partial<HistoryEntry> = {}): HistoryEntry => ({
   at,

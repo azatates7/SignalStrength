@@ -14,5 +14,18 @@
         android:name="android.appwidget.provider"
         android:resource="@xml/ss_widget_signal_info" />
     </receiver>
+
+    <!-- Ana ekran widget'ı: hız testi (son sonuç + Başlat) -->
+    <receiver
+      android:name="expo.modules.signalstrength.SpeedWidgetProvider"
+      android:exported="true"
+      android:label="@string/ss_widget_speed_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/ss_widget_speed_info" />
+    </receiver>
   </application>
 </manifest>

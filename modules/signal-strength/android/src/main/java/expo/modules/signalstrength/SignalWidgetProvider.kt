@@ -6,7 +6,6 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -26,12 +25,11 @@ import android.telephony.TelephonyManager
 import android.widget.RemoteViews
 import java.text.DateFormat
 import java.util.Date
-import java.util.Locale
 
 /**
  * Ana ekran widget'ı: mobil sinyal gücü (dBm), 0–100 puan, operatör ve teknoloji.
  *
- * Güncelleme: Android en sık 30 dakikada bir (updatePeriodMillis), ⟳ butonuna basınca hemen,
+ * Tema: widget'taki ☀️/🌙 butonu (WidgetStyle). Güncelleme: Android en sık 30 dakikada bir, ⟳ ile hemen,
  * uygulama açıkken de sinyal değiştikçe (en fazla 10 sn'de bir). İnternet ve izin kullanmaz.
  *
  * Puan ve kalite eşikleri src/signal/levels.ts ile aynıdır; birini değiştirirseniz diğerini de güncelleyin.
@@ -44,7 +42,10 @@ class SignalWidgetProvider : AppWidgetProvider() {
 
   override fun onReceive(context: Context, intent: Intent) {
     super.onReceive(context, intent)
-    if (intent.action == ACTION_REFRESH) updateAll(context)
+    when (intent.action) {
+      ACTION_REFRESH -> updateAll(context)
+      WidgetStyle.ACTION_TOGGLE_THEME -> WidgetStyle.toggleTheme(context)
+    }
   }
 
   companion object {
@@ -76,17 +77,18 @@ class SignalWidgetProvider : AppWidgetProvider() {
     // --- Görünüm ---
 
     private fun build(context: Context): RemoteViews {
-      val tr = isTurkish(context)
-      val dark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
-        Configuration.UI_MODE_NIGHT_YES
+      val tr = WidgetStyle.isTurkish(context)
+      val dark = WidgetStyle.isDark(context)
+      val p = WidgetStyle.palette(dark)
       val views = RemoteViews(context.packageName, R.layout.ss_widget_signal)
+      val time = DateFormat.getTimeInstance(DateFormat.SHORT, WidgetStyle.locale(context)).format(Date())
       val r = read(context)
 
       if (r == null) {
         views.setTextViewText(R.id.ss_widget_dbm, "—")
         views.setTextViewText(R.id.ss_widget_operator, if (tr) "Şebeke yok" else "No network")
-        views.setTextViewText(R.id.ss_widget_quality, if (tr) "SIM yok / uçak modu" else "No SIM / airplane mode")
-        views.setImageViewBitmap(R.id.ss_widget_bars, bars(context, 0, dark))
+        views.setTextViewText(R.id.ss_widget_quality, (if (tr) "SIM yok / uçak modu" else "No SIM / airplane mode") + " · $time")
+        views.setImageViewBitmap(R.id.ss_widget_bars, bars(context, 0, dark, p.barOff))
       } else {
         val score = score(r)
         views.setTextViewText(R.id.ss_widget_dbm, r.dbm?.let { "$it dBm" } ?: "${r.level}/4")
@@ -94,11 +96,17 @@ class SignalWidgetProvider : AppWidgetProvider() {
           R.id.ss_widget_operator,
           listOfNotNull(r.operator, techLabel(r.tech, tr)).joinToString(" · ")
         )
-        views.setTextViewText(R.id.ss_widget_quality, "${quality(score, tr)} · $score/100")
-        views.setImageViewBitmap(R.id.ss_widget_bars, bars(context, score, dark))
+        views.setTextViewText(R.id.ss_widget_quality, "${quality(score, tr)} · $score/100 · $time")
+        views.setImageViewBitmap(R.id.ss_widget_bars, bars(context, score, dark, p.barOff))
       }
-      val locale = if (tr) Locale("tr", "TR") else Locale.getDefault()
-      views.setTextViewText(R.id.ss_widget_time, DateFormat.getTimeInstance(DateFormat.SHORT, locale).format(Date()))
+
+      // Tema: arka plan, yazı ve simge renkleri
+      views.setInt(R.id.ss_widget_root, "setBackgroundResource", p.background)
+      views.setTextColor(R.id.ss_widget_dbm, p.text)
+      views.setTextColor(R.id.ss_widget_operator, p.muted)
+      views.setTextColor(R.id.ss_widget_quality, p.muted)
+      views.setInt(R.id.ss_widget_refresh, "setColorFilter", p.muted)
+      WidgetStyle.bindThemeButton(context, views, R.id.ss_widget_theme, SignalWidgetProvider::class.java, dark)
 
       // Widget'a dokununca uygulama açılır, ⟳ ile hemen yenilenir
       context.packageManager.getLaunchIntentForPackage(context.packageName)?.let { launch ->
@@ -116,7 +124,7 @@ class SignalWidgetProvider : AppWidgetProvider() {
     }
 
     // Uygulamadaki gibi 10 çubuk; renk puana göre (kırmızı / sarı / yeşil)
-    private fun bars(context: Context, score: Int, dark: Boolean): Bitmap {
+    private fun bars(context: Context, score: Int, dark: Boolean, offColor: Int): Bitmap {
       val d = context.resources.displayMetrics.density
       val count = 10
       val barW = 5f * d
@@ -127,7 +135,7 @@ class SignalWidgetProvider : AppWidgetProvider() {
       val canvas = Canvas(bmp)
       val filled = Math.round(score / 10f)
       val on = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor(barColor(score, dark)) }
-      val off = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor(if (dark) "#334155" else "#CBD5E1") }
+      val off = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = offColor }
       for (i in 0 until count) {
         val barH = h * (0.25f + 0.75f * i / (count - 1))
         val left = i * (barW + gap)
@@ -143,14 +151,7 @@ class SignalWidgetProvider : AppWidgetProvider() {
       else -> if (dark) "#22C55E" else "#15803D"
     }
 
-    // --- Metinler (uygulamada seçilen dil; seçilmediyse telefon dili) ---
-
-    private fun isTurkish(context: Context): Boolean {
-      val saved = runCatching {
-        context.getSharedPreferences("sinyal_olcer", Context.MODE_PRIVATE).getString("language", null)
-      }.getOrNull()
-      return (saved ?: Locale.getDefault().language) == "tr"
-    }
+    // --- Metinler (dil: WidgetStyle.isTurkish) ---
 
     private fun quality(score: Int, tr: Boolean) = when {
       score == 0 -> if (tr) "Sinyal yok" else "No signal"

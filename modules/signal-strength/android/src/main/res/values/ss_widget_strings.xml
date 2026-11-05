@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="ss_widget_label">Signal Strength</string>
+  <string name="ss_widget_label">Signal Strength · Mobile signal</string>
   <string name="ss_widget_description">Mobile signal strength (dBm, 0–100 score, operator)</string>
   <string name="ss_widget_refresh">Refresh</string>
+  <string name="ss_widget_theme">Light / dark theme</string>
+  <string name="ss_widget_speed_label">Signal Strength · Speed test</string>
+  <string name="ss_widget_speed_description">Last speed test result and a Start button</string>
+  <string name="ss_widget_speed_title">Speed test</string>
+  <string name="ss_widget_start">Start</string>
 </resources>

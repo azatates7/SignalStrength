@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="ss_widget_label">Sinyal Ölçer</string>
+  <string name="ss_widget_label">Sinyal Ölçer · Mobil sinyal</string>
   <string name="ss_widget_description">Mobil sinyal gücü (dBm, 0–100 puan, operatör)</string>
   <string name="ss_widget_refresh">Yenile</string>
+  <string name="ss_widget_theme">Açık / koyu tema</string>
+  <string name="ss_widget_speed_label">Sinyal Ölçer · Hız testi</string>
+  <string name="ss_widget_speed_description">Son hız testi sonucu ve Başlat butonu</string>
+  <string name="ss_widget_speed_title">Hız testi</string>
+  <string name="ss_widget_start">Başlat</string>
 </resources>

@@ -1,7 +1,7 @@
 // Cloudflare'in hız testi sunucularıyla (speed.cloudflare.com) ping / indirme / yükleme ölçümü.
 // Uç noktalar ve süre hesabı Cloudflare'in açık kaynak @cloudflare/speedtest (MIT) kütüphanesini izler.
 
-import SignalStrength from '../../modules/signal-strength';
+import SignalStrength from '../../modules/signal-strength/Index';
 
 const BASE = 'https://speed.cloudflare.com';
 

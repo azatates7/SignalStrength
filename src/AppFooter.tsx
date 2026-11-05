@@ -1,9 +1,9 @@
 // Sayfa altındaki "Sinyal Ölçer v?.?.?" ve gizlilik politikası bağlantısı (uygulama içinde açılır).
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
-import { appFooter } from './appInfo';
+import { appFooter } from './AppInfo';
 import { usePrivacyPolicy } from './privacy/PrivacyPolicy';
-import { useI18n } from './i18n';
-import { useTheme } from './theme';
+import { useI18n } from './i18n/Index';
+import { useTheme } from './Theme';
 
 export function AppFooter({ style }: { style?: StyleProp<ViewStyle> }) {
   const { colors: c } = useTheme();

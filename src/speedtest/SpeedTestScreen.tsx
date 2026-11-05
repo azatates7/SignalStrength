@@ -1,14 +1,13 @@
-// src/speedtest/SpeedTestScreen.tsx
 // "Hız Testi" sekmesi: bağlantı bilgisi, ping / indirme / yükleme ölçümü.
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Share, StyleSheet, Text, View, type ViewInstance } from 'react-native';
-import type { NetworkInfo } from '../../modules/signal-strength';
+import type { NetworkInfo } from '../../modules/signal-strength/Index';
 import { AppFooter } from '../AppFooter';
-import { useI18n, type Lang, type Strings } from '../i18n';
-import { cityName } from '../i18n/strings';
-import { techLabel } from '../signal/levels';
-import { rate, type Rating } from '../signal/metrics';
-import { useTheme } from '../theme';
+import { useI18n, type Lang, type Strings } from '../i18n/Index';
+import { cityName } from '../i18n/Strings';
+import { techLabel } from '../signal/Levels';
+import { rate, type Rating } from '../signal/Metrics';
+import { useTheme } from '../Theme';
 import {
   CancelToken,
   TestCancelled,
@@ -19,15 +18,15 @@ import {
   type Phase,
   type SpeedErrorInfo,
   type SpeedResult,
-} from './cloudflare';
-import { formatDateTime, formatMbps } from './format';
-import { addEntry, loadHistory, saveHistory, type HistoryEntry } from './history';
-import { MAX_TESTS, recordStart, waitMs } from './rateLimit';
-import { buildShareText } from './share';
+} from './Cloudflare';
+import { formatDateTime, formatMbps } from './Format';
+import { addEntry, loadHistory, saveHistory, type HistoryEntry } from './History';
+import { MAX_TESTS, recordStart, waitMs } from './RateLimit';
+import { buildShareText } from './Share';
 import { ShareCard } from './ShareCard';
 import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
-import { useCellularName, useNetwork, useWifiName, type WifiNameState } from './useNetwork';
+import { useCellularName, useNetwork, useWifiName, type WifiNameState } from './UseNetwork';
 
 // Kotalı bağlantıda (mobil veri) yön başına en fazla bu kadar veri harcanır
 const METERED_LIMIT = 50e6;
@@ -43,8 +42,9 @@ type Status = 'idle' | 'running' | 'done' | 'error';
 /**
  * active: sekme şu an görünür mü. Sekme açıldığında test kendiliğinden başlar;
  * sağlayıcı bilgisi de yalnızca sekme açıkken alınır.
+ * startRequest: her artışında test başlatılır (ana ekrandaki hız testi widget'ının "Başlat" butonu).
  */
-export function SpeedTestScreen({ active }: { active: boolean }) {
+export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean; startRequest?: number }) {
   const { colors: c, tone } = useTheme();
   const { t, lang, locale } = useI18n();
   const { info } = useNetwork();
@@ -124,6 +124,12 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
     if (active) autoPending.current = true;
   }, [active]);
 
+  // Widget'taki "Başlat": kullanıcı istediği için mobil veride de başlar. Test zaten sürüyorsa yok sayılır.
+  const manualPending = useRef(false);
+  useEffect(() => {
+    if (startRequest > 0 && status !== 'running') manualPending.current = true;
+  }, [startRequest]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Bağlantı tipi (veya VPN) değişince eski test geçersiz olur: durdur. Bağlantı koptuysa değerleri temizle;
   // yeni bir bağlantı geldiyse (bağlantı yok → Wi-Fi da dahil) otomatik testi beklemeye al.
   useEffect(() => {
@@ -148,13 +154,21 @@ export function SpeedTestScreen({ active }: { active: boolean }) {
   // Bekleyen otomatik testi koşullar uygun olduğunda başlat. Bağlantı geri gelirken Android önce
   // "ağ var, internet yok" sonra "internet var" bildirebildiği için internetin gelmesi de beklenir.
   useEffect(() => {
-    if (!autoPending.current || !active || !online || status === 'running' || waitSec > 0) return;
+    if (!active || !online || status === 'running') return;
+    // Widget'tan gelen istek: hemen (deneme sınırı doluysa start() bekleme süresini gösterir)
+    if (manualPending.current) {
+      manualPending.current = false;
+      autoPending.current = false;
+      start();
+      return;
+    }
+    if (!autoPending.current || waitSec > 0) return;
     autoPending.current = false;
     // Mobil veride (kotalı bağlantı) test kendiliğinden başlamaz; kullanıcı uyarıyı görüp kendisi başlatır
     if (info.metered) return;
     start(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, online, connKey, status, waitSec]);
+  }, [active, online, connKey, status, waitSec, startRequest]);
 
   async function start(auto = false) {
     // 1 dakikada en fazla 3 test. Otomatik testse süre dolunca kendiliğinden başlar.

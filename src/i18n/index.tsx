@@ -1,9 +1,9 @@
 // Uygulama dili (Türkçe / İngilizce). Başlangıçta telefon dili kullanılır; kullanıcı üst paneldeki dil butonuyla değiştirirse seçim kaydedilir ve sonraki açılışlarda o dil gelir.
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import SignalStrength from '../../modules/signal-strength';
-import { LOCALE, STRINGS, type Lang, type Strings } from './strings';
+import SignalStrength from '../../modules/signal-strength/Index';
+import { LOCALE, STRINGS, type Lang, type Strings } from './Strings';
 
-export type { Lang, Strings } from './strings';
+export type { Lang, Strings } from './Strings';
 
 function deviceLang(): Lang {
   try {

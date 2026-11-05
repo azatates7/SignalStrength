@@ -1,5 +1,5 @@
 // rateLimit modül içinde durum tuttuğu için her testte modül yeniden yüklenir
-type RateLimit = typeof import('../rateLimit');
+type RateLimit = typeof import('../RateLimit');
 let rl: RateLimit;
 
 beforeEach(() => {

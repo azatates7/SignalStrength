@@ -1,11 +1,11 @@
 // "Bağlantı Bilgisi" sekmesinde, Wi-Fi'ye bağlıyken görünen Wi-Fi sinyal kartı.
 import { StyleSheet, Text, View } from 'react-native';
-import type { WifiSignal } from '../../modules/signal-strength';
-import { useI18n } from '../i18n';
-import { useTheme } from '../theme';
+import type { WifiSignal } from '../../modules/signal-strength/Index';
+import { useI18n } from '../i18n/Index';
+import { useTheme } from '../Theme';
 import { SignalChart } from '../ui/SignalChart';
-import { METRICS, rate } from './metrics';
-import { wifiBand, wifiChannel, wifiStandardLabel } from './wifi';
+import { METRICS, rate } from './Metrics';
+import { wifiBand, wifiChannel, wifiStandardLabel } from './Wifi';
 
 export function WifiCard({ signal, history }: { signal: WifiSignal; history: number[] }) {
   const { colors: c, tone } = useTheme();

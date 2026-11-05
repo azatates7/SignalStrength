@@ -2,15 +2,15 @@
 // Yerel bilgiler internet kullanmadan Android'den okunur; dış IP, sekme açıkken Cloudflare'in meta isteğinden (~1 KB, hız testi sekmesindekiyle aynı) alınır.
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import SignalStrength, { type IpInfo } from '../../modules/signal-strength';
+import SignalStrength, { type IpInfo } from '../../modules/signal-strength/Index';
 import { AppFooter } from '../AppFooter';
-import { useI18n, type Strings } from '../i18n';
-import { fetchMeta } from '../speedtest/cloudflare';
-import { useNetwork } from '../speedtest/useNetwork';
+import { useI18n, type Strings } from '../i18n/Index';
+import { fetchMeta } from '../speedtest/Cloudflare';
+import { useNetwork } from '../speedtest/UseNetwork';
 import { WifiCard } from '../signal/WifiCard';
-import { useSampleHistory } from '../signal/useSampleHistory';
-import { useWifiSignal } from '../signal/useWifiSignal';
-import { useTheme } from '../theme';
+import { useSampleHistory } from '../signal/UseSampleHistory';
+import { useWifiSignal } from '../signal/UseWifiSignal';
+import { useTheme } from '../Theme';
 
 function readIpInfo(): IpInfo {
   try {

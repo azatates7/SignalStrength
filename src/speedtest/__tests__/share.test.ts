@@ -1,5 +1,5 @@
-import { STRINGS } from '../../i18n/strings';
-import { buildShareText } from '../share';
+import { STRINGS } from '../../i18n/Strings';
+import { buildShareText } from '../Share';
 
 const base = { at: Date.UTC(2026, 10, 4, 11, 5), type: 'wifi' as const, isp: 'D-SMART', pingMs: 12.4, downloadMbps: 245.3, uploadMbps: 38.2 };
 

@@ -1,7 +1,7 @@
 // Aktif internet bağlantısını (Wi-Fi / mobil veri / yok) izleyen hook.
 import { useCallback, useEffect, useState } from 'react';
 import { AppState, Linking, PermissionsAndroid } from 'react-native';
-import SignalStrength, { type NetworkInfo, type SignalReading, type Technology } from '../../modules/signal-strength';
+import SignalStrength, { type NetworkInfo, type SignalReading, type Technology } from '../../modules/signal-strength/Index';
 
 const NONE: NetworkInfo = { connected: false, validated: false, type: 'none', metered: false, vpn: false };
 

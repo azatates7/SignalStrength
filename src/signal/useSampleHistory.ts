@@ -2,7 +2,7 @@
 // Hiçbir şey saklanmaz; uygulama arka plandayken örnek alınmaz.
 import { useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
-import { pushSample } from './wifi';
+import { pushSample } from './Wifi';
 
 export const HISTORY_SECONDS = 120;
 

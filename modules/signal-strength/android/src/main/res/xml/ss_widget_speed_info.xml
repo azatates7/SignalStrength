@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hız testi widget'ı: varsayılan 3x1. İçerik testten sonra ve 30 dk'da bir güncellenir;
+     test widget'ın içinde değil, uygulamada çalışır ("Başlat" uygulamayı açar). -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+  android:minWidth="180dp"
+  android:minHeight="50dp"
+  android:minResizeWidth="150dp"
+  android:minResizeHeight="40dp"
+  android:targetCellWidth="3"
+  android:targetCellHeight="1"
+  android:resizeMode="horizontal|vertical"
+  android:updatePeriodMillis="1800000"
+  android:initialLayout="@layout/ss_widget_speed"
+  android:previewLayout="@layout/ss_widget_speed"
+  android:description="@string/ss_widget_speed_description"
+  android:widgetCategory="home_screen" />

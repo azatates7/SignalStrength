@@ -1,4 +1,4 @@
-import { METRICS, rate } from '../metrics';
+import { METRICS, rate } from '../Metrics';
 
 describe('rate', () => {
   it.each([

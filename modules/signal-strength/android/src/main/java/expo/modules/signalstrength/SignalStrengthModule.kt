@@ -93,6 +93,8 @@ class SignalStrengthModule : Module() {
     Function("getThemePreference") { prefs()?.getString(KEY_THEME, null) }
     Function("setThemePreference") { mode: String ->
       prefs()?.edit()?.putString(KEY_THEME, mode)?.apply()
+      // Widget'ta ayrıca tema seçilmediyse widget'lar uygulamanın temasını izler
+      appContext.reactContext?.let { WidgetStyle.updateAllWidgets(it.applicationContext) }
     }
 
     // Dil tercihi ("tr" | "en"); kullanıcı seçmediyse null (telefon dili kullanılır)
@@ -100,7 +102,7 @@ class SignalStrengthModule : Module() {
     Function("setLanguagePreference") { lang: String ->
       prefs()?.edit()?.putString(KEY_LANGUAGE, lang)?.apply()
       // Widget metinleri uygulamada seçilen dili izler
-      appContext.reactContext?.let { SignalWidgetProvider.updateAll(it.applicationContext) }
+      appContext.reactContext?.let { WidgetStyle.updateAllWidgets(it.applicationContext) }
     }
 
     // Gizlilik politikası açılışta gösterilmesin mi ("Bir daha gösterme" işaretlendiyse true)
@@ -149,6 +151,8 @@ class SignalStrengthModule : Module() {
       val editor = prefs()?.edit() ?: return@Function
       if (json == null) editor.remove(KEY_SPEED_HISTORY) else editor.putString(KEY_SPEED_HISTORY, json)
       editor.apply()
+      // Hız testi widget'ı son sonucu göstersin
+      appContext.reactContext?.let { SpeedWidgetProvider.updateAll(it.applicationContext) }
     }
 
     Function("getIpInfo") { runCatching { ipInfo() }.getOrElse { mapOf("available" to false) } }

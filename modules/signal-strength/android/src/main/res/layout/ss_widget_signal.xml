@@ -54,11 +54,12 @@
       android:layout_height="wrap_content"
       android:ellipsize="end"
       android:maxLines="1"
-      android:text="88/100"
+      android:text="Mükemmel · 88/100 · 14:05"
       android:textColor="@color/ss_widget_muted"
       android:textSize="12sp" />
   </LinearLayout>
 
+  <!-- Sağ sütun: yenile + tema (☀️ / 🌙) -->
   <LinearLayout
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
@@ -67,18 +68,19 @@
 
     <ImageView
       android:id="@+id/ss_widget_refresh"
-      android:layout_width="36dp"
-      android:layout_height="36dp"
+      android:layout_width="34dp"
+      android:layout_height="34dp"
       android:contentDescription="@string/ss_widget_refresh"
-      android:padding="8dp"
+      android:padding="7dp"
       android:src="@drawable/ss_widget_refresh" />
 
-    <TextView
-      android:id="@+id/ss_widget_time"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:maxLines="1"
-      android:textColor="@color/ss_widget_faint"
-      android:textSize="10sp" />
+    <ImageView
+      android:id="@+id/ss_widget_theme"
+      android:layout_width="34dp"
+      android:layout_height="34dp"
+      android:contentDescription="@string/ss_widget_theme"
+      android:padding="8dp"
+      android:src="@drawable/ss_widget_sun"
+      android:tint="@color/ss_widget_muted" />
   </LinearLayout>
 </LinearLayout>

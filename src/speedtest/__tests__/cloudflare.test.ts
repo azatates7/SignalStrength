@@ -1,4 +1,4 @@
-import { median, parseServerTiming, pingStats } from '../cloudflare';
+import { median, parseServerTiming, pingStats } from '../Cloudflare';
 
 describe('parseServerTiming', () => {
   it('Cloudflare sunucu süresini okur', () => {

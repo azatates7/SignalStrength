@@ -1,4 +1,4 @@
-import { pushSample, wifiBand, wifiChannel, wifiStandardLabel } from '../wifi';
+import { pushSample, wifiBand, wifiChannel, wifiStandardLabel } from '../Wifi';
 
 describe('wifiBand / wifiChannel', () => {
   it.each([

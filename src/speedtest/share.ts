@@ -3,9 +3,9 @@
 //   İndirme 245 Mbps · Yükleme 38 Mbps · Ping 12 ms
 //   D-SMART · Wi-Fi · 4 Kas 2026 14:05
 // IP adresi ve Wi-Fi adı metne eklenmez.
-import type { Lang, Strings } from '../i18n';
-import { formatDateTime, formatMbps } from './format';
-import type { HistoryEntry } from './history';
+import type { Lang, Strings } from '../i18n/Index';
+import { formatDateTime, formatMbps } from './Format';
+import type { HistoryEntry } from './History';
 
 export function buildShareText(e: HistoryEntry, t: Strings, lang: Lang, locale: string): string {
   const values = [

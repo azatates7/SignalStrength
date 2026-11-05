@@ -1,7 +1,7 @@
 // Açık / koyu tema renkleri ve kullanıcının tema tercihi (Sistem / Açık / Koyu).
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
-import SignalStrength from '../modules/signal-strength';
+import SignalStrength from '../modules/signal-strength/Index';
 
 export type ThemeMode = 'system' | 'light' | 'dark';
 

@@ -2,6 +2,7 @@
   "expo": {
     "name": "Signal Strength",
     "slug": "signal-strength",
+    "scheme": "signalstrength",
     "version": "9.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

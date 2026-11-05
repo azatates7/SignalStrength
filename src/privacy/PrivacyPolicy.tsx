@@ -5,9 +5,9 @@
 // (scripts/build-privacy-page.mjs → docs/privacy/index.html).
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import SignalStrength from '../../modules/signal-strength';
-import { useI18n } from '../i18n';
-import { useTheme } from '../theme';
+import SignalStrength from '../../modules/signal-strength/Index';
+import { useI18n } from '../i18n/Index';
+import { useTheme } from '../Theme';
 import POLICY from './policy.json';
 
 type Block = { p?: string; h2?: string; h3?: string; list?: string[]; table?: string[][] };

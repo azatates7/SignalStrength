@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AppState } from 'react-native';
-import SignalStrength, { type SignalReading } from '../../modules/signal-strength';
+import SignalStrength, { type SignalReading } from '../../modules/signal-strength/Index';
 
 const failure = (message: string): SignalReading => ({
   available: false,
