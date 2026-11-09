@@ -27,5 +27,20 @@
         android:name="android.appwidget.provider"
         android:resource="@xml/ss_widget_speed_info" />
     </receiver>
+
+    <!-- Hızlı Ayarlar kutucuğu: mobil sinyal gücü -->
+    <service
+      android:name="expo.modules.signalstrength.SignalTileService"
+      android:exported="true"
+      android:icon="@drawable/ss_tile_signal"
+      android:label="@string/ss_tile_label"
+      android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter>
+        <action android:name="android.service.quicksettings.action.QS_TILE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+        android:value="false" />
+    </service>
   </application>
 </manifest>

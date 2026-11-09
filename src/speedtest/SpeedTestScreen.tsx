@@ -27,6 +27,16 @@ import { ShareCard } from './ShareCard';
 import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
 import { useCellularName, useNetwork, useWifiName, type WifiNameState } from './UseNetwork';
+import { StabilityCard } from './StabilityCard';
+import { UsageCard } from './UsageCard';
+import { averagesByType, downloadTrend, type Average } from './Summary';
+import { shareHistory } from './ExportHistory';
+import { Sparkline } from '../ui/Sparkline';
+
+// Canlı grafik: en fazla 5 örnek/sn, yön başına en fazla 150 örnek
+const SAMPLE_EVERY_MS = 200;
+const MAX_SAMPLES = 150;
+type Series = { download: number[]; upload: number[] };
 
 // Kotalı bağlantıda (mobil veri) yön başına en fazla bu kadar veri harcanır
 const METERED_LIMIT = 50e6;
@@ -55,6 +65,10 @@ export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean;
   const [metaFailed, setMetaFailed] = useState(false);
   const [phase, setPhase] = useState<Phase>();
   const [liveMbps, setLiveMbps] = useState<number>();
+  const [series, setSeries] = useState<Series>({ download: [], upload: [] });
+  const lastSampleAt = useRef(0);
+  // Kararlılık testi sürerken hız testi başlamaz (ikisi aynı anda ölçüm yapmasın)
+  const [stabilityRunning, setStabilityRunning] = useState(false);
   const [values, setValues] = useState<Partial<SpeedResult>>({});
   const tokenRef = useRef<CancelToken | undefined>(undefined);
   const [waitSec, setWaitSec] = useState(0); // Deneme sınırı dolduysa kalan süre
@@ -154,7 +168,7 @@ export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean;
   // Bekleyen otomatik testi koşullar uygun olduğunda başlat. Bağlantı geri gelirken Android önce
   // "ağ var, internet yok" sonra "internet var" bildirebildiği için internetin gelmesi de beklenir.
   useEffect(() => {
-    if (!active || !online || status === 'running') return;
+    if (!active || !online || status === 'running' || stabilityRunning) return;
     // Widget'tan gelen istek: hemen (deneme sınırı doluysa start() bekleme süresini gösterir)
     if (manualPending.current) {
       manualPending.current = false;
@@ -168,7 +182,7 @@ export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean;
     if (info.metered) return;
     start(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, online, connKey, status, waitSec, startRequest]);
+  }, [active, online, connKey, status, waitSec, startRequest, stabilityRunning]);
 
   async function start(auto = false) {
     // 1 dakikada en fazla 3 test. Otomatik testse süre dolunca kendiliğinden başlar.
@@ -191,6 +205,7 @@ export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean;
     setValues({});
     setLastEntry(undefined);
     setLiveMbps(undefined);
+    setSeries({ download: [], upload: [] });
     setPhase('meta');
     try {
       // Servis sağlayıcı ve sunucu bilgisi; alınamazsa test yine de yapılır
@@ -203,7 +218,16 @@ export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean;
         (p) => {
           if (!current()) return;
           setPhase(p.phase);
-          if (p.mbps !== undefined) setLiveMbps(p.mbps);
+          if (p.mbps !== undefined) {
+            setLiveMbps(p.mbps);
+            const dir = p.phase === 'upload' ? 'upload' : p.phase === 'download' ? 'download' : undefined;
+            const now = Date.now();
+            if (dir && now - lastSampleAt.current >= SAMPLE_EVERY_MS) {
+              lastSampleAt.current = now;
+              const mbps = p.mbps;
+              setSeries((sr) => ({ ...sr, [dir]: [...sr[dir], mbps].slice(-MAX_SAMPLES) }));
+            }
+          }
           if (p.pingMs !== undefined) setValues((v) => ({ ...v, pingMs: p.pingMs }));
           if (p.partial) {
             setValues((v) => ({ ...v, ...p.partial }));
@@ -282,6 +306,7 @@ export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean;
           </Text>
         </Text>
         {running ? <ActivityIndicator color={c.textMuted} style={styles.spinner} /> : null}
+        <LiveChart series={series} phase={running ? phase : undefined} done={status === 'done'} />
       </View>
 
       <View style={styles.tiles}>
@@ -322,7 +347,7 @@ export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean;
 
       <Pressable
         onPress={running ? () => tokenRef.current?.cancel() : () => start()}
-        disabled={!running && (!online || waitSec > 0)}
+        disabled={!running && (!online || waitSec > 0 || stabilityRunning)}
         style={({ pressed }) => [
           styles.button,
           { backgroundColor: running || !online || waitSec > 0 ? c.segment : c.accent, opacity: pressed ? 0.8 : 1 },
@@ -371,6 +396,10 @@ export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean;
       {status === 'done' && values.bytesUsed ? (
         <Text style={[styles.note, { color: c.textMuted }]}>{t.speed.dataUsed(Math.round(values.bytesUsed / 1e6))}</Text>
       ) : null}
+
+      {status === 'done' && values.downloadMbps !== undefined ? <UsageCard result={values} /> : null}
+
+      <StabilityCard online={online} disabled={running} onRunningChange={setStabilityRunning} />
 
 
       <HistoryCard
@@ -570,6 +599,7 @@ function HistoryCard({ entries, onClear }: { entries: HistoryEntry[]; onClear: (
   const { colors: c } = useTheme();
   const { t, lang, locale } = useI18n();
   const [expanded, setExpanded] = useState(false);
+  const [exportError, setExportError] = useState(false);
   if (!entries.length) return null;
   const shown = expanded ? entries : entries.slice(0, 5);
   return (
@@ -613,6 +643,94 @@ function HistoryCard({ entries, onClear }: { entries: HistoryEntry[]; onClear: (
             {expanded ? t.history.showLess : t.history.showAll(entries.length)}
           </Text>
         </Pressable>
+      ) : null}
+
+      <HistorySummary entries={entries} />
+
+      <View style={styles.exportRow}>
+        <Text style={[styles.historyNote, styles.wifiHint, { color: c.textMuted }]}>{t.history.export}:</Text>
+        {(['xlsx', 'csv'] as const).map((format) => (
+          <Pressable
+            key={format}
+            onPress={() => {
+              setExportError(false);
+              shareHistory(entries, format, t, locale).catch(() => setExportError(true));
+            }}
+            hitSlop={8}
+            style={[styles.exportButton, { backgroundColor: c.background }]}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.historyAction, { color: c.text }]}>
+              {format === 'xlsx' ? t.history.exportXlsx : t.history.exportCsv}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      {exportError ? <Text style={[styles.wifiHint, styles.historyNote, { color: c.textSoft }]}>{t.history.exportFailed}</Text> : null}
+    </View>
+  );
+}
+
+// Geçmiş özeti: indirme hızı trendi ve Wi-Fi / mobil ortalamaları
+function HistorySummary({ entries }: { entries: HistoryEntry[] }) {
+  const { colors: c } = useTheme();
+  const { t, lang } = useI18n();
+  const trend = downloadTrend(entries);
+  const avg = averagesByType(entries);
+  const line = (label: string, a?: Average) =>
+    a ? (
+      <View key={label} style={styles.avgRow}>
+        <Text style={[styles.historyWhen, { color: c.text }]}>
+          {label} <Text style={[styles.wifiHint, { color: c.textMuted }]}>({t.history.avgCount(a.count)})</Text>
+        </Text>
+        <Text style={[styles.historyValue, { color: c.text }]}>
+          ↓ {formatMbps(a.downloadMbps, lang)} · ↑ {formatMbps(a.uploadMbps, lang)}
+          <Text style={{ color: c.textMuted }}> · {Math.round(a.pingMs)} ms</Text>
+        </Text>
+      </View>
+    ) : null;
+  if (trend.length < 2 && !avg.wifi && !avg.cellular) return null;
+  return (
+    <View style={[styles.summary, { borderTopColor: c.barOff }]}>
+      {trend.length >= 2 ? (
+        <>
+          <Text style={[styles.wifiHint, styles.historyNote, { color: c.textMuted }]}>{t.history.trend}</Text>
+          <Sparkline values={trend} color={c.accent} gridColor={c.barOff} floor={0} minSpan={1} height={48} />
+        </>
+      ) : null}
+      <Text style={[styles.wifiHint, styles.historyNote, styles.avgTitle, { color: c.textMuted }]}>{t.history.averages}</Text>
+      {line(t.net.wifi, avg.wifi)}
+      {line(t.net.cellular, avg.cellular)}
+    </View>
+  );
+}
+
+// Test sırasında: o anki yönün canlı hız çizgisi. Test bitince: indirme ve yükleme çizgileri.
+function LiveChart({ series, phase, done }: { series: Series; phase?: Phase; done: boolean }) {
+  const { colors: c, tone } = useTheme();
+  const { t } = useI18n();
+  const blue = tone('#3b82f6');
+  if (phase === 'download' || phase === 'upload') {
+    return (
+      <View style={styles.liveChart}>
+        <Sparkline values={series[phase]} color={phase === 'download' ? c.accent : blue} gridColor={c.barOff} floor={0} minSpan={1} height={56} />
+      </View>
+    );
+  }
+  if (!done || (series.download.length < 2 && series.upload.length < 2)) return null;
+  return (
+    <View style={styles.liveChart}>
+      {series.download.length >= 2 ? (
+        <>
+          <Text style={[styles.chartLabel, { color: c.textMuted }]}>↓ {t.speed.download}</Text>
+          <Sparkline values={series.download} color={c.accent} gridColor={c.barOff} floor={0} minSpan={1} height={40} />
+        </>
+      ) : null}
+      {series.upload.length >= 2 ? (
+        <>
+          <Text style={[styles.chartLabel, { color: c.textMuted }]}>↑ {t.speed.upload}</Text>
+          <Sparkline values={series.upload} color={blue} gridColor={c.barOff} floor={0} minSpan={1} height={40} />
+        </>
       ) : null}
     </View>
   );
@@ -683,6 +801,13 @@ const styles = StyleSheet.create({
   historyRight: { alignItems: 'flex-end' },
   historyValue: { fontSize: 14, fontWeight: '600', fontVariant: ['tabular-nums'] },
   historyMore: { alignItems: 'center', paddingTop: 10 },
+  summary: { marginTop: 12, paddingTop: 12, borderTopWidth: StyleSheet.hairlineWidth, gap: 4 },
+  avgTitle: { marginTop: 8 },
+  avgRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8, paddingVertical: 4, flexWrap: 'wrap' },
+  exportRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 14, flexWrap: 'wrap' },
+  exportButton: { borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
+  liveChart: { alignSelf: 'stretch', marginTop: 12, gap: 2 },
+  chartLabel: { fontSize: 12, fontWeight: '600', marginTop: 4 },
   explainGap: { marginBottom: 12 },
   explainTitle: { fontSize: 14, fontWeight: '600' },
   explainText: { fontSize: 13, lineHeight: 19, marginTop: 2 },

@@ -1,5 +1,6 @@
 // Gizlilik politikası uygulamanın içinde, açılır pencere (pop-up) olarak gösterilir:
-// - İlk açılışta kendiliğinden açılır. "Bir daha gösterme" işaretlenip kapatılırsa bir daha kendiliğinden açılmaz (seçim telefonda saklanır); işaretlenmezse sonraki açılışta yine gelir.
+// - İlk açılışta kendiliğinden açılır. "Bir daha gösterme" işaretlenip kapatılırsa bir daha
+//   kendiliğinden açılmaz (seçim telefonda saklanır); işaretlenmezse sonraki açılışta yine gelir.
 // - Sayfa altındaki "Gizlilik politikası" bağlantısıyla her zaman açılabilir.
 // Metin: src/privacy/policy.json (Türkçe / İngilizce). Web sayfası da aynı dosyadan üretilir
 // (scripts/build-privacy-page.mjs → docs/privacy/index.html).
@@ -8,6 +9,7 @@ import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'r
 import SignalStrength from '../../modules/signal-strength/Index';
 import { useI18n } from '../i18n/Index';
 import { useTheme } from '../Theme';
+import { PRIVACY_POLICY_DATE, formatMonth } from '../AppInfo';
 import POLICY from './policy.json';
 
 type Block = { p?: string; h2?: string; h3?: string; list?: string[]; table?: string[][] };
@@ -92,7 +94,7 @@ function PrivacyDialog({
             {policy.meta.map(([k, v]) => (
               <Text key={k} style={[styles.meta, { color: c.textSoft }]}>
                 <Text style={styles.bold}>{k}: </Text>
-                <Inline text={v} />
+                <Inline text={v.replace('{date}', formatMonth(PRIVACY_POLICY_DATE, lang))} />
               </Text>
             ))}
             {policy.blocks.map((b, i) => (

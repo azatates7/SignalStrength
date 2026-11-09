@@ -4,7 +4,7 @@
     "meta": [
       [
         "Yürürlük tarihi",
-        "Kasım 2026"
+        "{date}"
       ],
       [
         "Uygulama",
@@ -41,7 +41,7 @@
         "h3": "1. Mobil şebeke ve sinyal bilgisi"
       },
       {
-        "p": "Sinyal gücü (dBm, RSRP, RSRQ, SINR), bağlantı teknolojisi (2G/3G/4G/5G) ve operatör adı Android'den okunur. Bu bilgiler **yalnızca ekranda gösterilir**; telefonunuzdan dışarı gönderilmez ve saklanmaz. Çift SIM'li telefonlarda mobil verinin kullanıldığı SIM'in bilgisi okunur. Wi-Fi'ye bağlıyken Wi-Fi sinyal gücü, bant, kanal ve bağlantı hızı da okunur ve aynı şekilde yalnızca ekranda gösterilir. Ana ekrana widget eklerseniz sinyal gücü, puan, operatör ve teknoloji (sinyal widget'ı) ile son hız testi sonucu (hız testi widget'ı) widget'ta da aynı şekilde, yalnızca telefonunuzda gösterilir. Hız testi widget'ındaki \"Başlat\" yalnızca uygulamayı açar; test uygulamada, sizin dokunmanızla başlar."
+        "p": "Sinyal gücü (dBm, RSRP, RSRQ, SINR), bağlantı teknolojisi (2G/3G/4G/5G) ve operatör adı Android'den okunur. Bu bilgiler **yalnızca ekranda gösterilir**; telefonunuzdan dışarı gönderilmez ve saklanmaz. Çift SIM'li telefonlarda mobil verinin kullanıldığı SIM'in bilgisi okunur. Wi-Fi'ye bağlıyken Wi-Fi sinyal gücü, bant, kanal ve bağlantı hızı da okunur ve aynı şekilde yalnızca ekranda gösterilir. Ana ekrana widget eklerseniz sinyal gücü, puan, operatör ve teknoloji (sinyal widget'ı) ile son hız testi sonucu (hız testi widget'ı) widget'ta da aynı şekilde, yalnızca telefonunuzda gösterilir. Hız testi widget'ındaki \"Başlat\" yalnızca uygulamayı açar; test uygulamada, sizin dokunmanızla başlar. Hızlı Ayarlar kutucuğunu eklerseniz sinyal gücü ve operatör orada da yalnızca telefonunuzda gösterilir."
       },
       {
         "h3": "2. Bağlantı bilgisi"
@@ -83,7 +83,13 @@
         "p": "Cloudflare'in bu bilgileri nasıl işlediği Cloudflare'in kendi gizlilik politikasına tabidir: https://www.cloudflare.com/privacypolicy/"
       },
       {
+        "p": "**Bağlantı kararlılığı testi** de aynı Cloudflare sunucusuna 30 saniye boyunca yarım saniyede bir küçük bir istek gönderir (toplam birkaç on KB). Yalnızca siz başlattığınızda çalışır; sonuçlar kaydedilmez."
+      },
+      {
         "p": "**Sonucu paylaş** butonu, test sonucunu yalnızca sizin seçtiğiniz uygulamaya (ör. WhatsApp) resim veya metin olarak gönderir. Resim, paylaşım için telefonun geçici klasöründe oluşturulur. Paylaşım siz dokunmadan yapılmaz; resme ve metne IP adresi veya Wi-Fi adı eklenmez."
+      },
+      {
+        "p": "Test geçmişini **Excel (XLSX) veya CSV** olarak dışa aktardığınızda dosya telefonun geçici klasöründe oluşturulur ve yalnızca sizin seçtiğiniz uygulamaya gönderilir. Dosyada IP adresi veya Wi-Fi adı bulunmaz."
       },
       {
         "p": "Hız testi Wi-Fi'de \"Hız Testi\" sekmesi açıldığında kendiliğinden başlar. **Mobil veride kendiliğinden başlamaz**, siz başlatırsınız; bir test mobil verinizden en fazla yaklaşık 100 MB kullanabilir."
@@ -149,7 +155,7 @@
     "meta": [
       [
         "Effective date",
-        "November 4, 2026"
+        "{date}"
       ],
       [
         "App",
@@ -186,7 +192,7 @@
         "h3": "1. Mobile network and signal information"
       },
       {
-        "p": "Signal strength (dBm, RSRP, RSRQ, SINR), connection technology (2G/3G/4G/5G) and the operator name are read from Android. This information is **only displayed on screen**; it is not sent off your phone and is not stored. On dual-SIM phones, the SIM used for mobile data is read. When connected to Wi-Fi, the Wi-Fi signal strength, band, channel and link speed are also read and likewise only displayed on screen. If you add the home screen widgets, the signal strength, score, operator and technology (signal widget) and the last speed test result (speed test widget) are shown there too, likewise only on your phone. The \"Start\" button on the speed test widget only opens the app; the test runs in the app, started by your tap."
+        "p": "Signal strength (dBm, RSRP, RSRQ, SINR), connection technology (2G/3G/4G/5G) and the operator name are read from Android. This information is **only displayed on screen**; it is not sent off your phone and is not stored. On dual-SIM phones, the SIM used for mobile data is read. When connected to Wi-Fi, the Wi-Fi signal strength, band, channel and link speed are also read and likewise only displayed on screen. If you add the home screen widgets, the signal strength, score, operator and technology (signal widget) and the last speed test result (speed test widget) are shown there too, likewise only on your phone. The \"Start\" button on the speed test widget only opens the app; the test runs in the app, started by your tap. If you add the Quick Settings tile, the signal strength and operator are shown there too, only on your phone."
       },
       {
         "h3": "2. Connection information"
@@ -228,7 +234,13 @@
         "p": "How Cloudflare processes this information is governed by Cloudflare's privacy policy: https://www.cloudflare.com/privacypolicy/"
       },
       {
+        "p": "The **connection stability test** also sends a small request to the same Cloudflare server every half second for 30 seconds (a few tens of KB in total). It only runs when you start it; its results are not stored."
+      },
+      {
         "p": "The **Share result** button sends the test result as an image or text only to the app you choose (e.g. WhatsApp). The image is created in the phone's temporary folder for sharing. Nothing is shared unless you tap it; the image and text never include your IP address or Wi-Fi name."
+      },
+      {
+        "p": "When you export the test history as **Excel (XLSX) or CSV**, the file is created in the phone's temporary folder and sent only to the app you choose. The file contains no IP address or Wi-Fi name."
       },
       {
         "p": "On Wi-Fi, the speed test starts automatically when you open the \"Speed Test\" tab. **On mobile data it does not start automatically**; you start it yourself, and one test can use up to about 100 MB of mobile data."

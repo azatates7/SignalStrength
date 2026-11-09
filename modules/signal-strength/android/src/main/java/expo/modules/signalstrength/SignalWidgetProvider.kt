@@ -49,7 +49,8 @@ class SignalWidgetProvider : AppWidgetProvider() {
   }
 
   companion object {
-    private data class Reading(val dbm: Int?, val tech: String, val operator: String?, val level: Int)
+    // Hızlı Ayarlar kutucuğu (SignalTileService) da bu okumayı ve metinleri kullanır
+    internal data class Reading(val dbm: Int?, val tech: String, val operator: String?, val level: Int)
 
     private const val ACTION_REFRESH = "expo.modules.signalstrength.WIDGET_REFRESH"
     private const val THROTTLE_MS = 10_000L
@@ -153,7 +154,7 @@ class SignalWidgetProvider : AppWidgetProvider() {
 
     // --- Metinler (dil: WidgetStyle.isTurkish) ---
 
-    private fun quality(score: Int, tr: Boolean) = when {
+    internal fun quality(score: Int, tr: Boolean) = when {
       score == 0 -> if (tr) "Sinyal yok" else "No signal"
       score <= 20 -> if (tr) "Çok zayıf" else "Very poor"
       score <= 40 -> if (tr) "Zayıf" else "Poor"
@@ -162,7 +163,7 @@ class SignalWidgetProvider : AppWidgetProvider() {
       else -> if (tr) "Mükemmel" else "Excellent"
     }
 
-    private fun techLabel(tech: String, tr: Boolean) = when (tech) {
+    internal fun techLabel(tech: String, tr: Boolean) = when (tech) {
       "NR" -> "5G"
       "LTE" -> "4G (LTE)"
       "WCDMA" -> "3G (WCDMA)"
@@ -174,7 +175,7 @@ class SignalWidgetProvider : AppWidgetProvider() {
 
     // --- Sinyal okuma (modüldeki getCurrent ile aynı yöntem: mobil veri SIM'i, izin gerekmez) ---
 
-    private fun read(context: Context): Reading? {
+    internal fun read(context: Context): Reading? {
       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return null
       val base = context.getSystemService(TelephonyManager::class.java) ?: return null
       val subId = runCatching { SubscriptionManager.getDefaultDataSubscriptionId() }
@@ -192,7 +193,7 @@ class SignalWidgetProvider : AppWidgetProvider() {
     }
 
     // src/signal/levels.ts → toScore ile aynı aralıklar
-    private fun score(r: Reading): Int {
+    internal fun score(r: Reading): Int {
       val dbm = r.dbm ?: return Math.round(r.level / 4f * 100)
       val (min, max) = when (r.tech) {
         "NR", "LTE" -> -125 to -75

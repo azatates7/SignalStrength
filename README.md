@@ -31,7 +31,15 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 - **Canlı sinyal grafiği:** Mobil ve Wi-Fi sinyalinin son 2 dakikası çizgi grafikle gösterilir; telefonla dolaşarak sinyalin en iyi olduğu yer bulunabilir. Hiçbir şey saklanmaz.
 - **Hız testi geçmişi:** Son 20 test (tarih, bağlantı tipi, sağlayıcı, indirme, yükleme, ping) yalnızca telefonda saklanır; "Temizle" ile silinir.
 - **Sonucu paylaş:** Test sonucu bir resim kartı olarak (indirme, yükleme, ping, sağlayıcı, tarih) WhatsApp vb. ile paylaşılır. "Metin olarak paylaş" ile aynı bilgi metin olarak da gönderilebilir.
-- **Ana ekran widget'ı:** Uygulamayı açmadan mobil sinyal gücü, 0–100 puan, operatör ve teknoloji. Eklemek için ana ekranda boş bir yere uzun basın → *Widget'lar* → *Sinyal Ölçer*. Android widget'ı en sık 30 dakikada bir günceller; ⟳ butonu anında yeniler, uygulama açıkken de kendiliğinden güncellenir.
+- **Canlı hız grafiği:** İndirme ve yükleme sırasında hız saniye saniye çizilir; test bitince iki çizgi de görünür.
+- **Bu hız neye yeter?:** Sonuca göre web, HD/4K video, görüntülü görüşme ve online oyun için "Rahat / Sınırda / Yetersiz" ve 1 GB dosyanın indirme/yükleme süresi.
+- **Bağlantı kararlılığı testi:** 30 saniye boyunca sürekli ping; gecikme grafiği, dalgalanma (jitter), kayıp istek ve yorum. Görüntülü görüşmede donma gibi sorunları hız testinden iyi gösterir. Birkaç on KB veri kullanır.
+- **Geçmiş özeti ve dışa aktarma:** İndirme hızı trendi, Wi-Fi / mobil ortalamaları; geçmiş Excel (XLSX) veya CSV olarak paylaşılabilir (ör. servis sağlayıcıya şikâyet için).
+- **Hızlı Ayarlar kutucuğu:** Bildirim panelinde "−81 dBm · Turkcell 4G". Eklemek için paneli aşağı çekin → kalem (düzenle) simgesi → *Mobil sinyal* kutucuğunu sürükleyin.
+- **Ana ekran widget'ları:** Eklemek için ana ekranda boş bir yere uzun basın → *Widget'lar* → *Sinyal Ölçer*.
+  - *Mobil sinyal:* dBm, 0–100 puan, operatör ve teknoloji. Android en sık 30 dakikada bir günceller; ⟳ anında yeniler, uygulama açıkken kendiliğinden güncellenir.
+  - *Hız testi:* Son test sonucu ve **Başlat** butonu; Başlat uygulamayı Hız Testi sekmesinde açıp testi başlatır.
+  - Her iki widget'ta ☀️ / 🌙 butonu açık ve koyu tema arasında geçiş yapar (seçilmediyse uygulamanın temasını izler).
 - **Çift SIM desteği:** Sinyal, teknoloji ve operatör, mobil verinin kullanıldığı SIM'den okunur. Veri SIM'i değiştirilince uygulama yeni SIM'e geçer.
 - **Canlı bağlantı bilgisi:** Hız Testi kartındaki `Turkcell · 4G (LTE)` bilgisi sinyal değiştikçe güncellenir (ör. 4G → 5G geçişi hemen görünür).
 - **Pil dostu:** Uygulama arka plandayken sinyal ve ağ dinleyicileri durur, öne gelince güncel değer okunup yeniden başlar.
@@ -70,7 +78,7 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 ├─ docs/privacy/index.html     Gizlilik politikası web sayfası (Play Console için, otomatik üretilir)
 ├─ scripts/build-privacy-page.mjs  policy.json → docs/privacy/index.html
 ├─ src/
-│  ├─ appInfo.ts              Sürüm ve alt bilgi yazısı
+│  ├─ AppInfo.ts              Sürüm ve politika tarihi (app.json'dan), alt bilgi yazısı
 │  ├─ AppFooter.tsx           Sayfa altı: sürüm + gizlilik politikası bağlantısı
 │  ├─ privacy/
 │  │  ├─ policy.json           Gizlilik politikası metni (Türkçe / İngilizce, tek kaynak)
@@ -82,12 +90,16 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 │  ├─ info/
 │  │  └─ ConnectionInfoScreen.tsx  Bağlantı Bilgisi sekmesi (IP, modem, DNS, statik IP, VPN)
 │  ├─ speedtest/
-│  │  ├─ history.ts            Hız testi geçmişi (son 20 test, telefonda)
-│  │  ├─ share.ts              Paylaşılan sonuç metni
+│  │  ├─ History.ts            Hız testi geçmişi (son 20 test, telefonda)
+│  │  ├─ Share.ts              Paylaşılan sonuç metni
 │  │  ├─ ShareCard.tsx         Paylaşılan sonuç resmi
-│  │  ├─ format.ts             Hız ve tarih biçimi
-│  │  ├─ cloudflare.ts         Hız testi motoru (ping, indirme, yükleme, sunucu bilgisi)
-│  │  ├─ useNetwork.ts         Aktif bağlantıyı (Wi-Fi / mobil veri) izleyen hook
+│  │  ├─ UsageCard.tsx / usage.ts      "Bu hız neye yeter?"
+│  │  ├─ StabilityCard.tsx / stability.ts  Bağlantı kararlılığı testi
+│  │  ├─ Summary.ts            Geçmiş özeti (trend, ortalamalar)
+│  │  ├─ Xlsx.ts / exportHistory.ts  XLSX / CSV dışa aktarma
+│  │  ├─ Format.ts             Hız ve tarih biçimi
+│  │  ├─ Cloudflare.ts         Hız testi motoru (ping, indirme, yükleme, sunucu bilgisi)
+│  │  ├─ UseNetwork.ts         Aktif bağlantıyı (Wi-Fi / mobil veri) izleyen hook
 │  │  └─ SpeedTestScreen.tsx   Hız testi sekmesi
 │  ├─ ui/
 │  │  ├─ Sparkline.tsx         Kütüphanesiz çizgi grafik
@@ -105,7 +117,10 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
    ├─ index.ts                 Modülün TypeScript arayüzü
    └─ android/src/main/java/expo/modules/signalstrength/
       ├─ SignalStrengthModule.kt
-      └─ SignalWidgetProvider.kt   Ana ekran widget'ı
+      ├─ SignalWidgetProvider.kt   Mobil sinyal widget'ı
+      ├─ SpeedWidgetProvider.kt    Hız testi widget'ı
+      ├─ SignalTileService.kt      Hızlı Ayarlar kutucuğu
+      └─ WidgetStyle.kt            Widget teması ve dili
 ```
 
 `android/` klasörü `npx expo prebuild` ile her seferinde yeniden üretiliyor. Bu yüzden repoda tutulmuyor ve elle düzenlenmemeli.
@@ -181,21 +196,23 @@ Sonuç olarak imzalı bir `.aab` dosyası üretilir. Bu dosya Play Console'a yü
 
 **Gizlilik politikası:** Uygulama konum izni istediği için Play Console zorunlu tutuyor. Politika GitHub Pages ile yayınlanır: GitHub'da repo → *Settings → Pages → Build and deployment*: Source **Deploy from a branch**, Branch **main**, klasör **/docs** → *Save*. Birkaç dakika sonra sayfa `https://azatates7.github.io/SignalStrength/privacy/` adresinde açılır (repo herkese açık olmalı). Play Console → *Uygulama içeriği → Gizlilik politikası* alanına bu adres girilir. Uygulama politikayı kendi içinde gösterir; bu web sayfası yalnızca Play Console'un istediği herkese açık adres içindir. Metin `src/privacy/policy.json` dosyasında; değiştirince `node scripts/build-privacy-page.mjs` çalıştırıp `docs/privacy/index.html`'i de commit edin. İzin, sunucu veya veri saklama eklenirse *Veri güvenliği* formu da güncellenmeli.
 
-## Sürüm güncelleme
+## Sürüm ve gizlilik politikası tarihi
 
-Sürüm sadece `app.json` içinde değiştirilir. Ekranın altındaki `Sinyal Ölçer v4.0` yazısı otomatik olarak buradan okunur.
+İkisi de **tek yerde**, `app.json` içinde tutulur; başka hiçbir dosyada yazılmaz:
 
 ```json
-"version": "4.0.0",
-"android": { "versionCode": 4 }
+"version": "10.0.0",
+"android": { "versionCode": 10 },
+"extra": { "privacyPolicyDate": "2026-11" }
 ```
 
 | Alan | Açıklama |
 |---|---|
-| `version` | Kullanıcının gördüğü sürüm (ekranda `v4.0` olarak gösterilir) |
-| `versionCode` | Play Store'un iç sürüm numarası. **Her yeni sürümde en az 1 artmalı.** |
+| `version` | Kullanıcının gördüğü sürüm. Ekranın altındaki `Sinyal Ölçer v10.0` yazısı buradan okunur. |
+| `versionCode` | Play Store'un iç sürüm numarası. **Her yüklemede en az 1 artmalı.** |
+| `extra.privacyPolicyDate` | Gizlilik politikasının yürürlük tarihi (YIL-AY). Uygulamada ve web sayfasında "Kasım 2026" / "November 2026" olarak gösterilir. |
 
-Değişiklikten sonra `npx expo prebuild --clean` çalıştırın.
+Politika metni (`src/privacy/policy.json`) tarihi içermez, yerine `{date}` yazar. Politika değişince tarihi `app.json`'da güncelleyip `node scripts/build-privacy-page.mjs` çalıştırın. `package.json` içinde sürüm alanı yoktur. Değişiklikten sonra `npx expo prebuild --clean` çalıştırılmalı.
 
 ## Nasıl çalışır
 

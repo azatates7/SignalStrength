@@ -166,6 +166,12 @@ class SignalStrengthModule : Module() {
       Thread { promise.resolve(pingSamples(url, count, referer)) }.start()
     }
 
+    // Kararlılık testi: tek bir ping (ms). Zaman aşımı / hata → null (kayıp sayılır).
+    // Android'in bağlantı havuzu sayesinde ardışık çağrılar aynı bağlantıyı kullanır.
+    AsyncFunction("pingOnce") { url: String, referer: String, timeoutMs: Int, promise: Promise ->
+      Thread { promise.resolve(pingOnceMs(url, referer, timeoutMs)) }.start()
+    }
+
     OnDestroy {
       runCatching { stopListening() }
       runCatching { stopNetworkListening() }
@@ -285,6 +291,28 @@ class SignalStrengthModule : Module() {
       // Ağ hatası: o ana kadarki örnekler yeterliyse kullanılır
     }
     return if (samples.size >= 3) samples else null
+  }
+
+  private fun pingOnceMs(url: String, referer: String, timeoutMs: Int): Double? = try {
+    val conn = URL(url).openConnection() as HttpURLConnection
+    conn.connectTimeout = timeoutMs
+    conn.readTimeout = timeoutMs
+    conn.useCaches = false
+    conn.setRequestProperty("Referer", referer)
+    val t0 = System.nanoTime()
+    val code = conn.responseCode
+    val t1 = System.nanoTime()
+    if (code !in 200..299) {
+      conn.disconnect()
+      null
+    } else {
+      conn.inputStream.use { it.readBytes() } // gövde okunur → bağlantı havuzda açık kalır
+      val serverMs = parseServerTiming(conn.getHeaderField("server-timing"))
+      val ms = (t1 - t0) / 1_000_000.0
+      if (ms > timeoutMs) null else maxOf(0.0, ms - serverMs)
+    }
+  } catch (e: Exception) {
+    null
   }
 
   // "cfRequestDuration;dur=12.3" → 12.3

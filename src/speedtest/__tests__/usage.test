@@ -1,0 +1,49 @@
+import { secondsPerGigabyte, usageVerdicts } from '../usage';
+
+const verdicts = (r: Parameters<typeof usageVerdicts>[0]) =>
+  Object.fromEntries(usageVerdicts(r).map((v) => [v.key, v.verdict]));
+
+describe('usageVerdicts', () => {
+  it('hızlı ve düşük gecikmeli bağlantı: hepsi rahat', () => {
+    expect(verdicts({ downloadMbps: 245, uploadMbps: 38, pingMs: 12, jitterMs: 3 })).toEqual({
+      web: 'ok',
+      hdVideo: 'ok',
+      uhdVideo: 'ok',
+      videoCall: 'ok',
+      gaming: 'ok',
+    });
+  });
+
+  it('orta hız: 4K sınırda, HD rahat', () => {
+    const v = verdicts({ downloadMbps: 18, uploadMbps: 5, pingMs: 40, jitterMs: 5 });
+    expect(v.hdVideo).toBe('ok');
+    expect(v.uhdVideo).toBe('maybe');
+  });
+
+  it('yüksek ping oyunu ve görüşmeyi düşürür', () => {
+    const v = verdicts({ downloadMbps: 100, uploadMbps: 20, pingMs: 300, jitterMs: 10 });
+    expect(v.gaming).toBe('no');
+    expect(v.videoCall).toBe('no');
+  });
+
+  it('yükleme ölçülemediyse görüntülü görüşme en iyi ihtimalle sınırda', () => {
+    expect(verdicts({ downloadMbps: 100, pingMs: 20 }).videoCall).toBe('maybe');
+  });
+
+  it('çok yavaş bağlantı', () => {
+    const v = verdicts({ downloadMbps: 0.3, uploadMbps: 0.1, pingMs: 600 });
+    expect(v.web).toBe('no');
+    expect(v.hdVideo).toBe('no');
+  });
+});
+
+describe('secondsPerGigabyte', () => {
+  it('1 GB = 8000 megabit', () => {
+    expect(secondsPerGigabyte(100)).toBe(80);
+    expect(secondsPerGigabyte(8000)).toBe(1);
+  });
+  it('hız yoksa undefined', () => {
+    expect(secondsPerGigabyte(undefined)).toBeUndefined();
+    expect(secondsPerGigabyte(0)).toBeUndefined();
+  });
+});
