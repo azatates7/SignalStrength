@@ -172,12 +172,9 @@ function TabBar({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
           >
-            <Text
-              style={[styles.segmentText, { color: active ? c.text : c.textMuted }]}
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              minimumFontScale={0.75}
-            >
+            {/* Bütün sekmelerde aynı yazı boyutu. Sığmazsa küçülmez, iki satıra iner
+                (ör. büyük yazı tipi ayarında); sekmeler aynı yükseklikte kalır. */}
+            <Text style={[styles.segmentText, { color: active ? c.text : c.textMuted }]} numberOfLines={2}>
               {t.tabs[key]}
             </Text>
           </Pressable>
@@ -398,8 +395,18 @@ const styles = StyleSheet.create({
   cardDesc: { fontSize: 14, lineHeight: 20, marginTop: 12 },
   cardIdeal: { fontSize: 13, marginTop: 8 },
   segment: { flexDirection: 'row', borderRadius: 12, padding: 4 },
-  segmentItem: { flex: 1, alignItems: 'center', paddingVertical: 10, paddingHorizontal: 4, borderRadius: 9 },
-  segmentText: { fontSize: 13, fontWeight: '600' },
+  // Genişlik yazıya göre: uzun ad ("Mobil Hat Kontrol") daha geniş, kısa ad ("Hız Testi") daha dar; kalan boşluk eşit paylaşılır. Böylece üç ad aynı boyutta tek satıra sığar.
+  segmentItem: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 'auto',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 9,
+  },
+  segmentText: { fontSize: 13, fontWeight: '600', textAlign: 'center' },
   errorDetail: { fontSize: 13, textAlign: 'center', marginTop: 12 },
   versionCentered: { position: 'absolute', bottom: 32 },
 });
