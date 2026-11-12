@@ -1,3 +1,4 @@
+// modules/signal-strength/index.ts
 import { NativeModule, requireOptionalNativeModule } from 'expo';
 
 export type Technology = 'NR' | 'LTE' | 'WCDMA' | 'TDSCDMA' | 'GSM' | 'CDMA' | 'UNKNOWN';
@@ -49,6 +50,27 @@ export type WifiSignal = {
   standard?: number | null; // Android 11+: 1 eski, 4 = Wi-Fi 4 (n), 5 = Wi-Fi 5 (ac), 6 = Wi-Fi 6 (ax), 8 = Wi-Fi 7 (be)
 };
 
+/** Baz istasyonu (hücre). Değerler bilinmiyorsa null. */
+export type CellTech = 'LTE' | 'NR' | 'WCDMA' | 'GSM';
+export type CellInfo = {
+  type: CellTech;
+  registered: boolean; // true: telefonun bağlı olduğu hücre; false: çevredeki hücre
+  mcc?: string | null;
+  mnc?: string | null;
+  tac?: number | null; // LTE/5G: TAC · 2G/3G: LAC
+  cellId?: number | null; // LTE: ECI (eNB × 256 + sektör) · 5G: NCI · 2G/3G: CID
+  pci?: number | null; // LTE/5G: PCI · 3G: PSC · 2G: BSIC
+  arfcn?: number | null; // EARFCN / NR-ARFCN / UARFCN / ARFCN
+  bands?: number[]; // Android 11+
+  bandwidthKhz?: number | null;
+  rsrp?: number | null;
+  rsrq?: number | null;
+  sinr?: number | null;
+  dbm?: number | null;
+  timingAdvance?: number | null; // LTE: 1 birim ≈ 78 m · GSM: ≈ 550 m
+};
+export type CellInfoResult = { status: 'ok' | 'permission' | 'unsupported' | 'error'; cells: CellInfo[] };
+
 type Events = {
   onSignalChange: (reading: SignalReading) => void;
   onNetworkChange: (info: NetworkInfo) => void;
@@ -76,6 +98,11 @@ declare class SignalStrengthNative extends NativeModule<Events> {
   measurePing(url: string, count: number, referer: string): Promise<number[] | null>;
   /** Tek ping (ms); zaman aşımı / hata → null */
   pingOnce(url: string, referer: string, timeoutMs: number): Promise<number | null>;
+  beep(durationMs: number): boolean;
+  openSystemSettings(kind: 'mobile' | 'airplane'): boolean;
+  dnsLatency(server: string, host: string, count: number, timeoutMs: number): Promise<(number | null)[]>;
+  httpLatency(url: string, count: number, timeoutMs: number): Promise<(number | null)[]>;
+  getCellInfo(): Promise<CellInfoResult>;
   startNetworkListening(): void;
   stopNetworkListening(): void;
   /** Bağlı Wi-Fi'nin adı; konum izni yoksa / konum kapalıysa null */

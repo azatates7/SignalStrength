@@ -26,19 +26,28 @@ export function historyRows(entries: HistoryEntry[], t: Strings, locale: string)
   ];
 }
 
-export async function shareHistory(entries: HistoryEntry[], format: 'xlsx' | 'csv', t: Strings, locale: string) {
-  const rows = historyRows(entries, t, locale);
-  const stamp = new Date().toISOString().slice(0, 10);
-  const file = new File(Paths.cache, `${t.history.fileName}-${stamp}.${format}`);
+/** Herhangi bir tabloyu XLSX / CSV dosyası olarak paylaşır (geçmiş, ölçüm oturumu) */
+export async function shareRows(
+  rows: Cell[][],
+  opts: { fileBase: string; format: 'xlsx' | 'csv'; sheetName: string; dialogTitle: string; widths?: number[] },
+) {
+  const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
+  const file = new File(Paths.cache, `${opts.fileBase}-${stamp}.${opts.format}`);
   if (file.exists) file.delete();
   file.create();
-  if (format === 'xlsx') {
-    await file.write(buildXlsx(rows, { sheetName: t.history.title, widths: [20, 14, 8, 18, 14, 14, 10, 10] }));
-  } else {
-    await file.write(buildCsv(rows));
-  }
+  await file.write(opts.format === 'xlsx' ? buildXlsx(rows, { sheetName: opts.sheetName, widths: opts.widths }) : buildCsv(rows));
   await Sharing.shareAsync(file.uri, {
-    mimeType: format === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'text/csv',
+    mimeType: opts.format === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'text/csv',
+    dialogTitle: opts.dialogTitle,
+  });
+}
+
+export function shareHistory(entries: HistoryEntry[], format: 'xlsx' | 'csv', t: Strings, locale: string) {
+  return shareRows(historyRows(entries, t, locale), {
+    fileBase: t.history.fileName,
+    format,
+    sheetName: t.history.title,
     dialogTitle: t.history.export,
+    widths: [20, 14, 8, 18, 14, 14, 10, 10],
   });
 }

@@ -31,6 +31,12 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 - **Canlı sinyal grafiği:** Mobil ve Wi-Fi sinyalinin son 2 dakikası çizgi grafikle gösterilir; telefonla dolaşarak sinyalin en iyi olduğu yer bulunabilir. Hiçbir şey saklanmaz.
 - **Hız testi geçmişi:** Son 20 test (tarih, bağlantı tipi, sağlayıcı, indirme, yükleme, ping) yalnızca telefonda saklanır; "Temizle" ile silinir.
 - **Sonucu paylaş:** Test sonucu bir resim kartı olarak (indirme, yükleme, ping, sağlayıcı, tarih) WhatsApp vb. ile paylaşılır. "Metin olarak paylaş" ile aynı bilgi metin olarak da gönderilebilir.
+- **Sesli sinyal modu:** Sinyal güçlendikçe bipler sıklaşır; ekrana bakmadan anten / modem için en iyi yeri bulmak için.
+- **Ölçüm oturumu:** 1 / 5 / 10 dakika boyunca sinyal saniye saniye kaydedilir; bulunulan yer not olarak eklenir (ör. Salon), sonunda noktalar iyiden kötüye sıralanır ve kayıt Excel / CSV olarak paylaşılabilir. Konum kaydedilmez.
+- **Baz istasyonu bilgisi:** Bağlı hücre ve çevredeki hücreler: operatör, bant ve frekans (ör. B3 · 1815 MHz), kanal, PCI, eNB / sektör, TAC, RSRP/RSRQ/SINR ve yaklaşık uzaklık. Android bunu yalnızca konum izni olan uygulamalara verdiği için izin "Göster"e dokununca istenir.
+- **Sinyal kötü mü?:** Mobil ağ ayarları ve uçak modu kısayolları (uçak modunu aç-kapa şebekeyi yeniden aratır).
+- **DNS hız karşılaştırması:** Kullanılan DNS ile Cloudflare, Google, Quad9 ve OpenDNS karşılaştırılır; belirgin şekilde daha hızlısı varsa Özel DNS ayarı önerilir.
+- **Servislere gecikme:** Google, YouTube, WhatsApp, Instagram, Netflix ve Steam'e gecikme; sorunun sizde mi serviste mi olduğunu anlamak için.
 - **Canlı hız grafiği:** İndirme ve yükleme sırasında hız saniye saniye çizilir; test bitince iki çizgi de görünür.
 - **Bu hız neye yeter?:** Sonuca göre web, HD/4K video, görüntülü görüşme ve online oyun için "Rahat / Sınırda / Yetersiz" ve 1 GB dosyanın indirme/yükleme süresi.
 - **Bağlantı kararlılığı testi:** 30 saniye boyunca sürekli ping; gecikme grafiği, dalgalanma (jitter), kayıp istek ve yorum. Görüntülü görüşmede donma gibi sorunları hız testinden iyi gösterir. Birkaç on KB veri kullanır.
@@ -78,7 +84,7 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 ├─ docs/privacy/index.html     Gizlilik politikası web sayfası (Play Console için, otomatik üretilir)
 ├─ scripts/build-privacy-page.mjs  policy.json → docs/privacy/index.html
 ├─ src/
-│  ├─ AppInfo.ts              Sürüm ve politika tarihi (app.json'dan), alt bilgi yazısı
+│  ├─ appInfo.ts              Sürüm ve politika tarihi (app.json'dan), alt bilgi yazısı
 │  ├─ AppFooter.tsx           Sayfa altı: sürüm + gizlilik politikası bağlantısı
 │  ├─ privacy/
 │  │  ├─ policy.json           Gizlilik politikası metni (Türkçe / İngilizce, tek kaynak)
@@ -90,16 +96,16 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 │  ├─ info/
 │  │  └─ ConnectionInfoScreen.tsx  Bağlantı Bilgisi sekmesi (IP, modem, DNS, statik IP, VPN)
 │  ├─ speedtest/
-│  │  ├─ History.ts            Hız testi geçmişi (son 20 test, telefonda)
-│  │  ├─ Share.ts              Paylaşılan sonuç metni
+│  │  ├─ history.ts            Hız testi geçmişi (son 20 test, telefonda)
+│  │  ├─ share.ts              Paylaşılan sonuç metni
 │  │  ├─ ShareCard.tsx         Paylaşılan sonuç resmi
 │  │  ├─ UsageCard.tsx / usage.ts      "Bu hız neye yeter?"
 │  │  ├─ StabilityCard.tsx / stability.ts  Bağlantı kararlılığı testi
-│  │  ├─ Summary.ts            Geçmiş özeti (trend, ortalamalar)
-│  │  ├─ Xlsx.ts / exportHistory.ts  XLSX / CSV dışa aktarma
-│  │  ├─ Format.ts             Hız ve tarih biçimi
-│  │  ├─ Cloudflare.ts         Hız testi motoru (ping, indirme, yükleme, sunucu bilgisi)
-│  │  ├─ UseNetwork.ts         Aktif bağlantıyı (Wi-Fi / mobil veri) izleyen hook
+│  │  ├─ summary.ts            Geçmiş özeti (trend, ortalamalar)
+│  │  ├─ xlsx.ts / exportHistory.ts  XLSX / CSV dışa aktarma
+│  │  ├─ format.ts             Hız ve tarih biçimi
+│  │  ├─ cloudflare.ts         Hız testi motoru (ping, indirme, yükleme, sunucu bilgisi)
+│  │  ├─ useNetwork.ts         Aktif bağlantıyı (Wi-Fi / mobil veri) izleyen hook
 │  │  └─ SpeedTestScreen.tsx   Hız testi sekmesi
 │  ├─ ui/
 │  │  ├─ Sparkline.tsx         Kütüphanesiz çizgi grafik
@@ -120,6 +126,8 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
       ├─ SignalWidgetProvider.kt   Mobil sinyal widget'ı
       ├─ SpeedWidgetProvider.kt    Hız testi widget'ı
       ├─ SignalTileService.kt      Hızlı Ayarlar kutucuğu
+      ├─ CellInfoReader.kt         Baz istasyonu bilgisi
+      ├─ NetTools.kt               DNS ve servis gecikmesi ölçümü
       └─ WidgetStyle.kt            Widget teması ve dili
 ```
 
@@ -201,8 +209,8 @@ Sonuç olarak imzalı bir `.aab` dosyası üretilir. Bu dosya Play Console'a yü
 İkisi de **tek yerde**, `app.json` içinde tutulur; başka hiçbir dosyada yazılmaz:
 
 ```json
-"version": "10.0.0",
-"android": { "versionCode": 10 },
+"version": "11.0.0",
+"android": { "versionCode": 11 },
 "extra": { "privacyPolicyDate": "2026-11" }
 ```
 
@@ -212,7 +220,7 @@ Sonuç olarak imzalı bir `.aab` dosyası üretilir. Bu dosya Play Console'a yü
 | `versionCode` | Play Store'un iç sürüm numarası. **Her yüklemede en az 1 artmalı.** |
 | `extra.privacyPolicyDate` | Gizlilik politikasının yürürlük tarihi (YIL-AY). Uygulamada ve web sayfasında "Kasım 2026" / "November 2026" olarak gösterilir. |
 
-Politika metni (`src/privacy/policy.json`) tarihi içermez, yerine `{date}` yazar. Politika değişince tarihi `app.json`'da güncelleyip `node scripts/build-privacy-page.mjs` çalıştırın. `package.json` içinde sürüm alanı yoktur. Değişiklikten sonra `npx expo prebuild --clean` çalıştırılmalı.
+Politika metni (`src/privacy/policy.json`) tarihi içermez, yerine `{date}` yazar. Politika değişince tarihi `app.json`'da güncelleyip `node scripts/build-privacy-page.mjs` çalıştırın. `package.json` içinde sürüm alanı yoktur. Değişiklikten sonra `npx expo prebuild --clean` çalıştırın.
 
 ## Nasıl çalışır
 

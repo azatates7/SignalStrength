@@ -1,4 +1,4 @@
-import { stabilityStats } from '../stability';
+import { stabilityStats } from '../Stability';
 
 describe('stabilityStats', () => {
   it('kararlı bağlantı', () => {

@@ -1,4 +1,4 @@
-import { secondsPerGigabyte, usageVerdicts } from '../usage';
+import { secondsPerGigabyte, usageVerdicts } from '../Usage';
 
 const verdicts = (r: Parameters<typeof usageVerdicts>[0]) =>
   Object.fromEntries(usageVerdicts(r).map((v) => [v.key, v.verdict]));

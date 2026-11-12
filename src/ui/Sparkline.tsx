@@ -8,19 +8,23 @@ export function Sparkline({
   gridColor,
   height = 64,
   minSpan = 10, // dBm: değerler az oynasa da grafik aşırı büyütülmesin
+  floor, // Verilirse grafik bu değerden başlar (hız grafiklerinde 0)
 }: {
   values: number[];
   color: string;
   gridColor: string;
   height?: number;
   minSpan?: number;
+  floor?: number;
 }) {
   const [width, setWidth] = useState(0);
   if (values.length < 2) return null;
 
-  let min = Math.min(...values);
+  let min = floor !== undefined ? Math.min(floor, ...values) : Math.min(...values);
   let max = Math.max(...values);
-  if (max - min < minSpan) {
+  if (floor !== undefined) {
+    max = Math.max(max, min + minSpan);
+  } else if (max - min < minSpan) {
     const mid = (max + min) / 2;
     min = mid - minSpan / 2;
     max = mid + minSpan / 2;

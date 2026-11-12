@@ -31,7 +31,7 @@
           "Hesap oluşturma, giriş, reklam veya analiz (istatistik) aracı **yoktur**.",
           "Geliştirici olarak sizinle ilgili **hiçbir veriyi toplamıyor, saklamıyor ve satmıyoruz**.",
           "Ölçümler telefonunuzda gösterilir, bir sunucuya kaydedilmez.",
-          "İnternet yalnızca hız testi için ve test sunucusuyla (Cloudflare) iletişim kurmak için kullanılır."
+          "İnternet yalnızca sizin başlattığınız ölçümler (hız testi, kararlılık testi, DNS ve servis gecikmesi testleri) ve dış IP adresinizi göstermek için kullanılır."
         ]
       },
       {
@@ -53,14 +53,14 @@
         "p": "\"Bağlantı Bilgisi\" sekmesinde cihazın yerel IP adresi, modem (ağ geçidi) adresi, DNS sunucuları ve IP'nin nasıl atandığı (statik / otomatik) Android'den okunur. Dış IP adresiniz, hız testindeki gibi Cloudflare'den alınır. Bu bilgiler **yalnızca ekranda gösterilir**; kaydedilmez ve hiçbir yere gönderilmez."
       },
       {
-        "h3": "3. Wi-Fi ağ adı ve konum izni (isteğe bağlı)"
+        "h3": "3. Wi-Fi ağ adı, baz istasyonu bilgisi ve konum izni (isteğe bağlı)"
       },
       {
-        "p": "Android, bağlı olduğunuz Wi-Fi ağının adını (SSID) yalnızca konum izni verilmiş uygulamalara gösterir. Bu nedenle uygulama, **yalnızca siz \"Göster\"e dokunduğunuzda** konum izni ister."
+        "p": "Android, bağlı olduğunuz Wi-Fi ağının adını (SSID) ve baz istasyonu (hücre) bilgisini yalnızca konum izni verilmiş uygulamalara gösterir. Bu nedenle uygulama konum iznini **yalnızca siz \"Göster\"e dokunduğunuzda** ister."
       },
       {
         "list": [
-          "Konum izni **sadece Wi-Fi adını ekranda göstermek için** kullanılır.",
+          "Konum izni **sadece Wi-Fi adını ve baz istasyonu bilgisini (bant, frekans, istasyon numarası, yaklaşık uzaklık) ekranda göstermek için** kullanılır. Bu bilgiler kaydedilmez ve hiçbir yere gönderilmez.",
           "Uygulama konumunuzu (GPS, koordinat, adres) **okumaz, kaydetmez ve hiçbir yere göndermez**.",
           "İzni vermeseniz de uygulamanın diğer tüm özellikleri çalışır.",
           "İzni istediğiniz zaman telefonunuzun Ayarlar > Uygulamalar bölümünden geri alabilirsiniz."
@@ -95,6 +95,15 @@
         "p": "Hız testi Wi-Fi'de \"Hız Testi\" sekmesi açıldığında kendiliğinden başlar. **Mobil veride kendiliğinden başlamaz**, siz başlatırsınız; bir test mobil verinizden en fazla yaklaşık 100 MB kullanabilir."
       },
       {
+        "h3": "5. Ağ testleri ve ölçüm oturumu"
+      },
+      {
+        "p": "**DNS hız karşılaştırması**, telefonunuzun kullandığı DNS sunucusuna ve Cloudflare (1.1.1.1), Google (8.8.8.8), Quad9 (9.9.9.9) ve OpenDNS sunucularına küçük DNS sorguları gönderir. **Servislere gecikme** testi Google, YouTube, WhatsApp, Instagram, Netflix ve Steam sunucularına küçük istekler gönderir. Bu sunucular, her internet bağlantısında olduğu gibi IP adresinizi görür. Testler yalnızca siz başlattığınızda çalışır ve sonuçları kaydedilmez."
+      },
+      {
+        "p": "**Ölçüm oturumu**, siz başlattığınızda sinyali saniyede bir yalnızca telefonun belleğinde kaydeder; konum kaydedilmez. Uygulama kapanınca kayıt silinir. Dışa aktardığınızda dosya telefonun geçici klasöründe oluşturulur ve yalnızca sizin seçtiğiniz uygulamaya gönderilir. **Sesli mod** yalnızca telefonda ses çalar."
+      },
+      {
         "h2": "Telefonda saklanan bilgiler"
       },
       {
@@ -123,7 +132,7 @@
           ],
           [
             "Konum (yaklaşık / hassas)",
-            "Yalnızca Wi-Fi adını göstermek için, siz isterseniz"
+            "Yalnızca Wi-Fi adını ve baz istasyonu bilgisini göstermek için, siz isterseniz"
           ]
         ]
       },
@@ -182,7 +191,7 @@
           "There are **no** accounts, sign-ins, ads or analytics tools.",
           "As the developer, we **do not collect, store or sell any data about you**.",
           "Measurements are shown on your phone and are not saved to any server.",
-          "The internet is used only for the speed test, to communicate with the test server (Cloudflare)."
+          "The internet is used only for measurements you start (speed test, stability test, DNS and service latency tests) and to show your public IP address."
         ]
       },
       {
@@ -204,14 +213,14 @@
         "p": "On the \"Connection Info\" tab, the device's local IP address, router (gateway) address, DNS servers and how the IP was assigned (static / automatic) are read from Android. Your public IP address is obtained from Cloudflare, as in the speed test. This information is **only displayed on screen**; it is not stored or sent anywhere."
       },
       {
-        "h3": "3. Wi-Fi network name and location permission (optional)"
+        "h3": "3. Wi-Fi network name, cell tower information and location permission (optional)"
       },
       {
-        "p": "Android only reveals the name (SSID) of the connected Wi-Fi network to apps that have location permission. The app therefore requests location permission **only when you tap \"Show\"**."
+        "p": "Android only reveals the name (SSID) of the connected Wi-Fi network and cell tower information to apps that have location permission. The app therefore requests location permission **only when you tap \"Show\"**."
       },
       {
         "list": [
-          "Location permission is used **only to display the Wi-Fi name**.",
+          "Location permission is used **only to display the Wi-Fi name and cell tower information (band, frequency, station number, approximate distance)**. This information is not stored or sent anywhere.",
           "The app **does not read, store or send** your location (GPS, coordinates, address).",
           "All other features work without this permission.",
           "You can revoke it at any time in your phone's Settings > Apps."
@@ -246,6 +255,15 @@
         "p": "On Wi-Fi, the speed test starts automatically when you open the \"Speed Test\" tab. **On mobile data it does not start automatically**; you start it yourself, and one test can use up to about 100 MB of mobile data."
       },
       {
+        "h3": "5. Network tests and measurement session"
+      },
+      {
+        "p": "The **DNS speed comparison** sends small DNS queries to the DNS server your phone uses and to Cloudflare (1.1.1.1), Google (8.8.8.8), Quad9 (9.9.9.9) and OpenDNS. The **service latency** test sends small requests to Google, YouTube, WhatsApp, Instagram, Netflix and Steam servers. As with any internet connection, these servers see your IP address. The tests only run when you start them and their results are not stored."
+      },
+      {
+        "p": "A **measurement session**, when you start it, records the signal once per second in the phone's memory only; no location is recorded. The recording is deleted when the app closes. When you export it, the file is created in the phone's temporary folder and sent only to the app you choose. **Sound mode** only plays sounds on your phone."
+      },
+      {
         "h2": "Information stored on your phone"
       },
       {
@@ -274,7 +292,7 @@
           ],
           [
             "Location (approximate / precise)",
-            "Only to show the Wi-Fi name, if you choose to"
+            "Only to show the Wi-Fi name and cell tower information, if you choose to"
           ]
         ]
       },

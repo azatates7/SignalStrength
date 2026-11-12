@@ -18,6 +18,10 @@ import { METRICS, rate, type MetricInfo } from './src/signal/Metrics';
 import { SpeedTestScreen } from './src/speedtest/SpeedTestScreen';
 import { useSampleHistory } from './src/signal/UseSampleHistory';
 import { SignalChart } from './src/ui/SignalChart';
+import { SoundToggle } from './src/signal/SoundToggle';
+import { SessionCard } from './src/signal/SessionCard';
+import { CellCard } from './src/signal/CellCard';
+import { ShortcutsCard } from './src/signal/ShortCutsCard';
 import { ConnectionInfoScreen } from './src/info/ConnectionInfoScreen';
 import { ThemeProvider, useTheme } from './src/Theme';
 import { LanguageProvider, useI18n } from './src/i18n/Index';
@@ -104,7 +108,7 @@ function Root() {
       >
         <View style={[styles.tabPage, { width }]}>
           <ErrorBoundary>
-            <SignalScreen />
+            <SignalScreen active={tab === 'signal'} />
           </ErrorBoundary>
         </View>
         <View style={[styles.tabPage, { width }]}>
@@ -204,10 +208,10 @@ function ErrorView({ detail }: { detail?: string }) {
   return <Centered text={t.common.error} detail={detail} />;
 }
 
-function SignalScreen() {
+function SignalScreen({ active }: { active: boolean }) {
   const reading = useSignalStrength();
   const { colors: c, tone } = useTheme();
-  const { t } = useI18n();
+  const { t, upper } = useI18n();
   // Canlı grafik: son 2 dakika, saniyede bir örnek
   const mobileHistory = useSampleHistory(reading?.available ? reading.dbm : null);
 
@@ -225,7 +229,17 @@ function SignalScreen() {
         : reading.reason === 'unsupported_os'
           ? t.signal.unsupportedOs
           : t.signal.noData;
-    return <Centered text={reason} />;
+    if (reading.reason === 'unsupported_os') return <Centered text={reason} />;
+    // Şebeke yok: mesaj + uçak modu / mobil ağ ayarları kısayolu
+    return (
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.hero}>
+          <Text style={[styles.tech, { color: c.textMuted }]}>{reason}</Text>
+        </View>
+        <ShortcutsCard />
+        <AppFooter />
+      </ScrollView>
+    );
   }
 
   const score = toScore(reading);
@@ -246,14 +260,20 @@ function SignalScreen() {
         <Text style={[styles.quality, { color: c.textSoft }]}>
           {t.quality[qualityKey(score)]} · {score}/{MAX_SCORE}
         </Text>
+        <SoundToggle score={score} active={active} />
         <SignalChart values={mobileHistory} color={tone(barColor(score))} />
       </View>
 
-      <Text style={[styles.sectionTitle, { color: c.textMuted }]}>{t.signal.details}</Text>
+      <Text style={[styles.sectionTitle, { color: c.textMuted }]}>{upper(t.signal.details)}</Text>
       <MetricCard info={METRICS.rsrp} value={reading.rsrp} />
       <MetricCard info={METRICS.rsrq} value={reading.rsrq} />
       <MetricCard info={METRICS.sinr} value={reading.sinr} />
       <MetricCard info={METRICS.systemLevel} value={reading.systemLevel} bars={4} />
+
+      <Text style={[styles.sectionTitle, styles.sectionGap, { color: c.textMuted }]}>{upper(t.signal.tools)}</Text>
+      <SessionCard dbm={reading.dbm} score={score} tech={techLabel(tech, t.common.unknown)} />
+      <CellCard active={active} />
+      <ShortcutsCard />
 
       <AppFooter />
     </ScrollView>
@@ -379,7 +399,8 @@ const styles = StyleSheet.create({
   bars: { flexDirection: 'row', alignItems: 'flex-end', gap: 6, marginVertical: 24 },
   bar: { width: 14, borderRadius: 3 },
   quality: { fontSize: 18, textAlign: 'center' },
-  sectionTitle: { fontSize: 13, fontWeight: '600', letterSpacing: 1, marginBottom: 10, textTransform: 'uppercase' },
+  sectionTitle: { fontSize: 13, fontWeight: '600', letterSpacing: 1, marginBottom: 10 },
+  sectionGap: { marginTop: 12 },
   card: { borderRadius: 14, padding: 16, marginBottom: 12 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
   cardTitleBox: { flexShrink: 1 },

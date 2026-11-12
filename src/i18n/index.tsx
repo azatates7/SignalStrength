@@ -27,6 +27,8 @@ type I18nValue = {
   lang: Lang;
   t: Strings;
   locale: string; // Tarih biçimi için, ör. "tr-TR"
+  /** Büyük harf: Türkçede i → İ (CSS/React Native textTransform "I" yapar: "DAKIKA") */
+  upper: (text: string) => string;
   toggleLang: () => void;
 };
 
@@ -48,10 +50,15 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<I18nValue>(
-    () => ({ lang, t: STRINGS[lang], locale: LOCALE[lang], toggleLang }),
+    () => ({ lang, t: STRINGS[lang], locale: LOCALE[lang], toggleLang, upper: (s: string) => toUpper(s, lang) }),
     [lang, toggleLang],
   );
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
+}
+
+/** Dile duyarlı büyük harf (toLocaleUpperCase her motorda Türkçeyi desteklemeyebilir) */
+export function toUpper(text: string, lang: Lang): string {
+  return lang === 'tr' ? text.replace(/i/g, 'İ').toUpperCase() : text.toUpperCase();
 }
 
 export function useI18n(): I18nValue {

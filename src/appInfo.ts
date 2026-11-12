@@ -1,5 +1,5 @@
 // Sürüm ve gizlilik politikası tarihi TEK YERDEN gelir: app.json
-//   expo.version                    → "10.0.0"  (ekranda "v10.0")
+//   expo.version                    → "11.0.0"  (ekranda "v11.0")
 //   expo.extra.privacyPolicyDate    → "2026-11" (ekranda "Kasım 2026" / "November 2026")
 // Ad seçili dile göre gelir (src/i18n/strings.ts → appName). Ana ekrandaki (launcher) ad telefon diline göre app.json "locales" ile ayarlanır.
 import { expo } from '../app.json';

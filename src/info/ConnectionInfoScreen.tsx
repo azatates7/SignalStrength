@@ -8,6 +8,7 @@ import { useI18n, type Strings } from '../i18n/Index';
 import { fetchMeta } from '../speedtest/Cloudflare';
 import { useNetwork } from '../speedtest/UseNetwork';
 import { WifiCard } from '../signal/WifiCard';
+import { NetTestCard } from './NetTestCard';
 import { useSampleHistory } from '../signal/UseSampleHistory';
 import { useWifiSignal } from '../signal/UseWifiSignal';
 import { useTheme } from '../Theme';
@@ -35,7 +36,7 @@ function staticText(info: IpInfo, t: Strings) {
 
 export function ConnectionInfoScreen({ active }: { active: boolean }) {
   const { colors: c, tone } = useTheme();
-  const { t } = useI18n();
+  const { t, upper } = useI18n();
   const { info } = useNetwork();
   const [ip, setIp] = useState<IpInfo>(readIpInfo);
   const [publicIp, setPublicIp] = useState<string>();
@@ -129,6 +130,10 @@ export function ConnectionInfoScreen({ active }: { active: boolean }) {
         <Text style={[styles.buttonText, { color: c.text }]}>{t.ipinfo.refresh}</Text>
       </Pressable>
 
+      <Text style={[styles.sectionTitle, { color: c.textMuted }]}>{upper(t.signal.tools)}</Text>
+      <NetTestCard mode="dns" online={info.connected} systemDns={connected ? (ip.dns ?? []) : []} />
+      <NetTestCard mode="service" online={info.connected} />
+
       <AppFooter />
     </ScrollView>
   );
@@ -172,6 +177,7 @@ const styles = StyleSheet.create({
   rowValue: { fontSize: 14, fontWeight: '600', textAlign: 'right', fontVariant: ['tabular-nums'] },
   sub: { fontSize: 11, marginTop: 2, textAlign: 'right' },
   vpnHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  sectionTitle: { fontSize: 13, fontWeight: '600', letterSpacing: 1, marginTop: 16, marginBottom: 10 },
   vpnTitle: { marginBottom: 0 },
   dot: { width: 10, height: 10, borderRadius: 5 },
   note: { fontSize: 13, lineHeight: 19, marginTop: 8 },

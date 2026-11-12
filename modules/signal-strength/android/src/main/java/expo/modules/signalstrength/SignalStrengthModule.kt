@@ -3,6 +3,8 @@ package expo.modules.signalstrength
 import android.content.Context
 import android.content.Intent
 import android.location.LocationManager
+import android.media.AudioManager
+import android.media.ToneGenerator
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -65,6 +67,8 @@ class SignalStrengthModule : Module() {
   // Dinleyicinin kayıtlı olduğu SIM; kayıt silinirken aynı nesne kullanılmalı
   private var listenTelephony: TelephonyManager? = null
   private var listenSubId: Int = SubscriptionManager.INVALID_SUBSCRIPTION_ID
+
+  private var tone: ToneGenerator? = null
 
   private val connectivity: ConnectivityManager?
     get() = appContext.reactContext?.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
@@ -139,6 +143,50 @@ class SignalStrengthModule : Module() {
     // üst panel bu kadar aşağıdan başlamalı. Çentikli / kameralı ekranlarda daha yüksek olabilir.
     Function("getStatusBarHeight") { statusBarHeightDp() }
 
+    // Sesli sinyal modu: kısa bir bip. JS, sinyal güçlendikçe bipleri sıklaştırır.
+    // Medya sesi kullanılır (telefon sessizdeyse de medya sesi açıksa duyulur).
+    Function("beep") { durationMs: Int ->
+      runCatching {
+        val gen = tone ?: ToneGenerator(AudioManager.STREAM_MUSIC, 80).also { tone = it }
+        gen.startTone(ToneGenerator.TONE_PROP_BEEP, durationMs)
+      }.isSuccess
+    }
+
+    // Telefonun ayar sayfaları: "mobile" = mobil ağ (ağ türü, operatör seçimi), "airplane" = uçak modu
+    // (aç-kapa şebekeyi yeniden aratır). Sayfa yoksa sıradaki denenir; hiçbiri açılmazsa false.
+    Function("openSystemSettings") { kind: String ->
+      val ctx = appContext.currentActivity ?: appContext.reactContext ?: return@Function false
+      val actions = when (kind) {
+        "airplane" -> listOf(Settings.ACTION_AIRPLANE_MODE_SETTINGS, Settings.ACTION_WIRELESS_SETTINGS)
+        else -> listOf(
+          Settings.ACTION_DATA_ROAMING_SETTINGS, // çoğu telefonda "Mobil ağ" sayfası
+          Settings.ACTION_NETWORK_OPERATOR_SETTINGS,
+          Settings.ACTION_WIRELESS_SETTINGS,
+        )
+      }
+      actions.any { action ->
+        val intent = Intent(action)
+        if (ctx !is android.app.Activity) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { ctx.startActivity(intent) }.isSuccess
+      }
+    }
+
+    // DNS sunucusu yanıt süreleri (ms, kayıp → null). Bkz. NetTools.dnsQueryMs
+    AsyncFunction("dnsLatency") { server: String, host: String, count: Int, timeoutMs: Int, promise: Promise ->
+      Thread { promise.resolve(List(count) { NetTools.dnsQueryMs(server, host, timeoutMs) }) }.start()
+    }
+
+    // Web servisine gecikme (ms, kayıp → null). Bkz. NetTools.httpLatencyMs
+    AsyncFunction("httpLatency") { url: String, count: Int, timeoutMs: Int, promise: Promise ->
+      Thread { promise.resolve(NetTools.httpLatencyMs(url, count, timeoutMs)) }.start()
+    }
+
+    // Baz istasyonu bilgisi (hassas konum izni gerekir). Mobil veri SIM'inin hücreleri.
+    AsyncFunction("getCellInfo") { promise: Promise ->
+      runCatching { CellInfoReader.read(dataTelephony()) { promise.resolve(it) } }
+        .onFailure { promise.resolve(mapOf("status" to "error", "cells" to emptyList<Any>())) }
+    }
+
     // "Bağlantı Bilgisi" sekmesi: yerel IP, ağ geçidi (modem), DNS ve IP'nin nasıl atandığı.
     // İnternet kullanmaz; Android'in ağ ayarlarından okunur.
     // Wi-Fi sinyali: güç (dBm), frekans (bant / kanal), bağlantı hızı, Wi-Fi standardı.
@@ -173,6 +221,8 @@ class SignalStrengthModule : Module() {
     }
 
     OnDestroy {
+      runCatching { tone?.release() }
+      tone = null
       runCatching { stopListening() }
       runCatching { stopNetworkListening() }
     }

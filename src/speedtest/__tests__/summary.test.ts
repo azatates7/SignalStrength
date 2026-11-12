@@ -1,5 +1,5 @@
-import type { HistoryEntry } from '../history';
-import { averagesByType, downloadTrend } from '../summary';
+import type { HistoryEntry } from '../History';
+import { averagesByType, downloadTrend } from '../Summary';
 
 const e = (at: number, type: HistoryEntry['type'], down: number, up: number | undefined, ping: number): HistoryEntry => ({
   at,
