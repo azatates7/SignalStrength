@@ -1,10 +1,22 @@
 // Gizlilik politikasının web sayfasını uygulamadaki metinden üretir.
-// Kaynak: src/privacy/policy.json → Çıktı: docs/privacy/index.html
-// Kullanım: node scripts/build-privacy-page.mjs   (policy.json her değiştiğinde çalıştırın)
+// Kaynak: src/privacy/policy.json → Çıktı: web sitesi projesinde (azatates.com) statik dosya varsayılan: ../BasicSpringBootWebApp/src/main/resources/static/privacy/signal-strength.html
+// Kullanım: node scripts/build-privacy-page.mjs [çıktı-yolu]   (policy.json her değiştiğinde çalıştırın)
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const root = new URL('..', import.meta.url);
 const policy = JSON.parse(readFileSync(new URL('src/privacy/policy.json', root), 'utf8'));
+// Yürürlük tarihi app.json → expo.extra.privacyPolicyDate ("2026-11") — uygulamayla aynı kaynak
+const { expo } = JSON.parse(readFileSync(new URL('app.json', root), 'utf8'));
+const MONTHS = {
+  tr: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'],
+  en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+};
+const formatMonth = (yyyyMm, lang) => {
+  const [y, m] = yyyyMm.split('-').map(Number);
+  return MONTHS[lang][m - 1] && y ? `${MONTHS[lang][m - 1]} ${y}` : yyyyMm;
+};
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 // Uygulamadaki Inline bileşeniyle aynı kurallar: **kalın**, https://… ve e-posta bağlantıları
@@ -37,13 +49,13 @@ const article = (lang) => {
   const p = policy[lang];
   return `<article id="${lang}" lang="${lang}"${lang === 'en' ? ' hidden' : ''}>
 <h1>${esc(p.title)}</h1>
-<p>${p.meta.map(([k, v]) => `<strong>${esc(k)}:</strong> ${inline(v)}`).join('<br>\n')}</p>
+<p>${p.meta.map(([k, v]) => `<strong>${esc(k)}:</strong> ${inline(v.replace('{date}', formatMonth(expo.extra.privacyPolicyDate, lang)))}`).join('<br>\n')}</p>
 ${p.blocks.map(block).join('\n')}
 </article>`;
 };
 
 const html = `<!doctype html>
-<!-- Bu dosya scripts/build-privacy-page.mjs ile src/privacy/policy.json'dan üretilir; elle düzenlemeyin. -->
+<!-- Bu dosya SignalStrength projesindeki scripts/build-privacy-page.mjs ile src/privacy/policy.json'dan üretilir; elle düzenlemeyin. -->
 <html lang="tr">
 <head>
 <meta charset="utf-8">
@@ -101,6 +113,12 @@ ${article('en')}
 </html>
 `;
 
-mkdirSync(new URL('docs/privacy/', root), { recursive: true });
-writeFileSync(new URL('docs/privacy/index.html', root), html);
-console.log('docs/privacy/index.html güncellendi');
+// Web sitesi reposu bu projeyle aynı klasörde (source/repos) varsayılır; farklıysa yolu argüman olarak verin
+const rootDir = fileURLToPath(root);
+const out = resolve(
+  rootDir,
+  process.argv[2] ?? '../BasicSpringBootWebApp/src/main/resources/static/privacy/signal-strength.html',
+);
+mkdirSync(dirname(out), { recursive: true });
+writeFileSync(out, html);
+console.log(`${out} güncellendi`);
