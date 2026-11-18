@@ -100,6 +100,11 @@ declare class SignalStrengthNative extends NativeModule<Events> {
   beep(durationMs: number): boolean;
   /** Sistemin dokunma titreşimi (izin gerektirmez; telefon ayarında kapalıysa titremez) */
   haptic(kind: 'success' | 'error' | 'tick'): boolean;
+  /** Uygulama içi değerlendirme durumu (JSON metni; ilk açılışta null) */
+  getReviewState(): string | null;
+  setReviewState(json: string): void;
+  /** Google Play puan penceresini açar; akış hatasız biterse true (pencerenin çıktığı garanti değil) */
+  requestReview(): Promise<boolean>;
   openSystemSettings(kind: 'mobile' | 'airplane'): boolean;
   dnsLatency(server: string, host: string, count: number, timeoutMs: number): Promise<(number | null)[]>;
   httpLatency(url: string, count: number, timeoutMs: number): Promise<(number | null)[]>;

@@ -37,7 +37,8 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 - **Sinyal kötü mü?:** Mobil ağ ayarları ve uçak modu kısayolları (uçak modunu aç-kapa şebekeyi yeniden aratır).
 - **DNS hız karşılaştırması:** Kullanılan DNS ile Cloudflare, Google, Quad9 ve OpenDNS karşılaştırılır; belirgin şekilde daha hızlısı varsa Özel DNS ayarı önerilir.
 - **Servislere gecikme:** Google, YouTube, WhatsApp, Instagram, Netflix ve Steam'e gecikme; sorunun sizde mi serviste mi olduğunu anlamak için.
-- **İbreli hız göstergesi:** Test sırasında ibre anlık hızı gösterir (0–1 Gbps, düşük hızlarda da okunaklı ölçek); test bitince indirme hızında durur. Telefonda "Animasyonları kaldır" açıksa ibre animasyonsuz hareket eder.
+- **İbreli hız göstergesi:** Speedtest tarzı, renk geçişli dolan yay ve ibre (indirme mavi-yeşil, yükleme mor). Test sırasında anlık hızı gösterir (0–1 Gbps, düşük hızlarda da okunaklı ölçek); test bitince indirme hızında durur. Telefonda "Animasyonları kaldır" açıksa animasyonsuz hareket eder.
+- **Uygulama içi değerlendirme:** 3. başarılı ve iyi sonuçlu (≥ 10 Mbps) testten sonra Google Play'in puan penceresi uygulamadan çıkmadan açılır; en erken 120 gün sonra tekrar sorulur.
 - **Titreşimle bildirim:** Hız testi, kararlılık testi ya da ölçüm oturumu bitince kısa bir titreşim; başarısız testte farklı bir titreşim. İzin gerektirmez, telefonun dokunmatik titreşim ayarına uyar.
 - **İkon kısayolları:** Uygulama ikonuna uzun basınca "Hız testi" (testi hemen başlatır), "Mobil sinyal" ve "Bağlantı bilgisi" kısayolları çıkar.
 - **Erişilebilirlik:** TalkBack sonuç kutucuklarını tek parça okur (ör. "İndirme: 85 Mbps, Çok iyi"); büyük yazı tipi ayarında büyük sayılar ve sekme adları taşmaz.
@@ -112,8 +113,8 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 │  │  └─ SpeedTestScreen.tsx   Hız testi sekmesi
 │  ├─ ui/
 │  │  ├─ Sparkline.tsx         Kütüphanesiz çizgi grafik
-│  │  ├─ SpeedGauge.tsx        Hız testi ibreli göstergesi (ölçek: speedtest/gauge.ts)
-│  │  ├─ Haptics.ts            Test bitince kısa titreşim (izin gerektirmez)
+│  │  ├─ SpeedGauge.tsx        Hız testi göstergesi, react-native-svg (ölçek: speedtest/gauge.ts)
+│  │  ├─ haptics.ts            Test bitince kısa titreşim (izin gerektirmez)
 │  │  └─ SignalChart.tsx       "Son 2 dakika" sinyal grafiği
 │  └─ signal/
 │     ├─ WifiCard.tsx          Wi-Fi sinyal kartı
@@ -215,8 +216,8 @@ Sonuç olarak imzalı bir `.aab` dosyası üretilir. Bu dosya Play Console'a yü
 İkisi de **tek yerde**, `app.json` içinde tutulur; başka hiçbir dosyada yazılmaz:
 
 ```json
-"version": "12.0.0",
-"android": { "versionCode": 12 },
+"version": "10.0.0",
+"android": { "versionCode": 10 },
 "extra": { "privacyPolicyDate": "2026-11" }
 ```
 

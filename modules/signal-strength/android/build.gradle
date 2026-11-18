@@ -13,3 +13,8 @@ android {
     versionName "0.1.0"
   }
 }
+
+dependencies {
+  // Uygulama içi değerlendirme penceresi (Google Play In-App Review). İzin gerektirmez.
+  implementation 'com.google.android.play:review:2.0.2'
+}

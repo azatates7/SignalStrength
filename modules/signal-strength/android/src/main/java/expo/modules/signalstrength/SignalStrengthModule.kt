@@ -30,6 +30,7 @@ import android.telephony.SubscriptionManager
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
+import com.google.android.play.core.review.ReviewManagerFactory
 import java.net.HttpURLConnection
 import java.net.Inet4Address
 import java.net.Inet6Address
@@ -117,6 +118,35 @@ class SignalStrengthModule : Module() {
     Function("getPrivacyNoticeDismissed") { prefs()?.getBoolean(KEY_PRIVACY_DISMISSED, false) ?: false }
     Function("setPrivacyNoticeDismissed") { value: Boolean ->
       prefs()?.edit()?.putBoolean(KEY_PRIVACY_DISMISSED, value)?.apply()
+    }
+
+    // Uygulama içi değerlendirme (Google Play In-App Review). Ne zaman sorulacağına JS karar verir
+    // (src/review/reviewPrompt.ts); durum burada JSON metni olarak saklanır.
+    Function("getReviewState") { prefs()?.getString(KEY_REVIEW_STATE, null) }
+    Function("setReviewState") { json: String ->
+      prefs()?.edit()?.putString(KEY_REVIEW_STATE, json)?.apply()
+    }
+    // Play'in puan penceresini açar. Pencerenin gerçekten gösterilip gösterilmediğini Play bildirmez
+    // (kota dolmuşsa hiç çıkmaz); akış hatasız biterse true döner. Play Store'dan kurulmamış
+    // (APK ile yüklenmiş) uygulamada pencere çıkmaz.
+    AsyncFunction("requestReview") { promise: Promise ->
+      val activity = appContext.currentActivity
+      if (activity == null) {
+        promise.resolve(false)
+        return@AsyncFunction
+      }
+      activity.runOnUiThread {
+        runCatching {
+          val manager = ReviewManagerFactory.create(activity)
+          manager.requestReviewFlow().addOnCompleteListener { request ->
+            if (!request.isSuccessful) {
+              promise.resolve(false)
+              return@addOnCompleteListener
+            }
+            manager.launchReviewFlow(activity, request.result).addOnCompleteListener { promise.resolve(true) }
+          }
+        }.onFailure { promise.resolve(false) }
+      }
     }
 
     // Aktif internet bağlantısı (Wi-Fi / mobil veri / ...) ve değişiklik bildirimleri
@@ -650,6 +680,7 @@ class SignalStrengthModule : Module() {
     private const val KEY_LANGUAGE = "language"
     private const val KEY_PRIVACY_DISMISSED = "privacy_notice_dismissed"
     private const val KEY_SPEED_HISTORY = "speed_history"
+    private const val KEY_REVIEW_STATE = "review_state"
   }
 
   // CellInfo.UNAVAILABLE == Int.MAX_VALUE

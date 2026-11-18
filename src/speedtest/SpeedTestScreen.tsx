@@ -1,4 +1,3 @@
-// src/speedtest/SpeedTestScreen.tsx
 // "Hız Testi" sekmesi: bağlantı bilgisi, ping / indirme / yükleme ölçümü.
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Share, StyleSheet, Text, View, type ViewInstance } from 'react-native';
@@ -35,6 +34,7 @@ import { shareHistory } from './ExportHistory';
 import { Sparkline } from '../ui/Sparkline';
 import { SpeedGauge } from '../ui/SpeedGauge';
 import { haptic } from '../ui/Haptics';
+import { onSuccessfulTest } from '../review/Review';
 
 // Canlı grafik: en fazla 5 örnek/sn, yön başına en fazla 150 örnek
 const SAMPLE_EVERY_MS = 200;
@@ -243,6 +243,7 @@ export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean;
       setValues(result);
       setStatus('done');
       haptic('success');
+      onSuccessfulTest(result.downloadMbps);
       const at = Date.now();
       setLastTestAt(at);
       const entry: HistoryEntry = {
@@ -283,7 +284,8 @@ export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean;
   const measuring = running && (phase === 'download' || phase === 'upload');
   // İbre: ölçüm sırasında anlık hız, bitince indirme hızı; ping sırasında ve boşta 0
   const gaugeMbps = measuring ? liveMbps : !running && status === 'done' ? values.downloadMbps : undefined;
-  const gaugeColor = running && phase === 'upload' ? tone('#3b82f6') : c.accent;
+  const pinging = running && (phase === 'ping' || phase === 'meta');
+  const uploading = running && phase === 'upload';
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
@@ -304,17 +306,18 @@ export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean;
                     ? t.speed.waitGauge(waitSec)
                     : t.speed.tapToStart}
         </Text>
-        <SpeedGauge mbps={gaugeMbps} color={gaugeColor} />
-        <Text style={[styles.gaugeValue, { color: c.text }]} maxFontSizeMultiplier={1.3}>
-          {running
-            ? phase === 'ping' || phase === 'meta'
-              ? formatMs(values.pingMs)
-              : formatMbps(liveMbps, lang)
-            : formatMbps(values.downloadMbps, lang)}
-          <Text style={[styles.gaugeUnit, { color: c.textMuted }]}>
-            {running && (phase === 'ping' || phase === 'meta') ? ' ms' : ' Mbps'}
+        <SpeedGauge mbps={gaugeMbps} direction={uploading ? 'upload' : 'download'}>
+          <Text style={[styles.gaugeValue, { color: c.text }]} maxFontSizeMultiplier={1.2}>
+            {running
+              ? pinging
+                ? formatMs(values.pingMs)
+                : formatMbps(liveMbps, lang)
+              : formatMbps(values.downloadMbps, lang)}
           </Text>
-        </Text>
+          <Text style={[styles.gaugeUnit, { color: c.textMuted }]} maxFontSizeMultiplier={1.2}>
+            {pinging ? 'ms' : `${uploading ? '↑' : '↓'} Mbps`}
+          </Text>
+        </SpeedGauge>
         {running && !measuring ? <ActivityIndicator color={c.textMuted} style={styles.spinner} /> : null}
         <LiveChart series={series} phase={running ? phase : undefined} done={status === 'done'} />
       </View>
@@ -788,8 +791,8 @@ const styles = StyleSheet.create({
   rowValue: { fontSize: 14, fontWeight: '600', flexShrink: 1, textAlign: 'right' },
   gauge: { borderRadius: 14, paddingVertical: 20, alignItems: 'center', marginBottom: 12 },
   gaugeLabel: { fontSize: 14, marginBottom: 8 },
-  gaugeValue: { fontSize: 48, fontWeight: '700', marginTop: -8, fontVariant: ['tabular-nums'] },
-  gaugeUnit: { fontSize: 20, fontWeight: '400' },
+  gaugeValue: { fontSize: 40, fontWeight: '300', fontVariant: ['tabular-nums'] },
+  gaugeUnit: { fontSize: 14, marginTop: 2 },
   spinner: { marginTop: 8 },
   tiles: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   tile: { flex: 1, borderRadius: 14, paddingVertical: 12, paddingHorizontal: 6, alignItems: 'center', borderWidth: 1.5 },
