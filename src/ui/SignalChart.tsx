@@ -1,6 +1,6 @@
 // "Son 2 dakika" sinyal grafiği: çizgi + en düşük / en yüksek / şu anki değer.
 import { StyleSheet, Text, View } from 'react-native';
-import { useI18n } from '../i18n/Index';
+import { useI18n } from '../i18n';
 import { useTheme } from '../Theme';
 import { Sparkline } from './Sparkline';
 

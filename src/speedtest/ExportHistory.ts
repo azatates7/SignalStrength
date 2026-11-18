@@ -1,7 +1,7 @@
 // Test geçmişini Excel (XLSX) veya CSV dosyası olarak paylaşır. Dosya telefonun geçici klasöründe oluşturulur ve yalnızca kullanıcının seçtiği uygulamaya gönderilir.
 import * as Sharing from 'expo-sharing';
 import { File, Paths } from 'expo-file-system';
-import type { Strings } from '../i18n/Index';
+import type { Strings } from '../i18n';
 import { formatDateTime } from './Format';
 import type { HistoryEntry } from './History';
 import { buildCsv, buildXlsx, type Cell } from './Xlsx';

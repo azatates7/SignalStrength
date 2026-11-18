@@ -1,6 +1,6 @@
 // "Bu hız neye yeter?" kartı: test bitince sonucun günlük kullanımdaki karşılığı.
 import { StyleSheet, Text, View } from 'react-native';
-import { useI18n } from '../i18n/Index';
+import { useI18n } from '../i18n';
 import { useTheme } from '../Theme';
 import { secondsPerGigabyte, usageVerdicts, type UsageInput, type Verdict } from './Usage';
 

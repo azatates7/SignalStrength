@@ -1,7 +1,7 @@
 // Paylaşılan resim: test sonucu kartı. Ekranın dışında çizilir, "Sonucu paylaş"a dokununca react-native-view-shot ile PNG'ye çevrilip expo-sharing ile paylaşılır, IP adresi ve Wi-Fi adı karta eklenmez.
 import type { Ref } from 'react';
 import { StyleSheet, Text, View, type ViewInstance } from 'react-native';
-import { useI18n } from '../i18n/Index';
+import { useI18n } from '../i18n';
 import { useTheme } from '../Theme';
 import { formatDateTime, formatMbps } from './Format';
 import type { HistoryEntry } from './History';

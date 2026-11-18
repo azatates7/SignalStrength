@@ -1,9 +1,10 @@
+// src/speedtest/SpeedTestScreen.tsx
 // "Hız Testi" sekmesi: bağlantı bilgisi, ping / indirme / yükleme ölçümü.
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Share, StyleSheet, Text, View, type ViewInstance } from 'react-native';
-import type { NetworkInfo } from '../../modules/signal-strength/Index';
+import type { NetworkInfo } from '../../modules/signal-strength';
 import { AppFooter } from '../AppFooter';
-import { useI18n, type Lang, type Strings } from '../i18n/Index';
+import { useI18n, type Lang, type Strings } from '../i18n';
 import { cityName } from '../i18n/Strings';
 import { techLabel } from '../signal/Levels';
 import { rate, type Rating } from '../signal/Metrics';
@@ -32,6 +33,8 @@ import { UsageCard } from './UsageCard';
 import { averagesByType, downloadTrend, type Average } from './Summary';
 import { shareHistory } from './ExportHistory';
 import { Sparkline } from '../ui/Sparkline';
+import { SpeedGauge } from '../ui/SpeedGauge';
+import { haptic } from '../ui/Haptics';
 
 // Canlı grafik: en fazla 5 örnek/sn, yön başına en fazla 150 örnek
 const SAMPLE_EVERY_MS = 200;
@@ -239,6 +242,7 @@ export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean;
       if (!current()) return;
       setValues(result);
       setStatus('done');
+      haptic('success');
       const at = Date.now();
       setLastTestAt(at);
       const entry: HistoryEntry = {
@@ -264,6 +268,7 @@ export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean;
       } else {
         setError(toErrorInfo(e));
         setStatus('error');
+        haptic('error');
         setLastTestAt(Date.now());
       }
     } finally {
@@ -275,6 +280,10 @@ export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean;
   }
 
   const running = status === 'running';
+  const measuring = running && (phase === 'download' || phase === 'upload');
+  // İbre: ölçüm sırasında anlık hız, bitince indirme hızı; ping sırasında ve boşta 0
+  const gaugeMbps = measuring ? liveMbps : !running && status === 'done' ? values.downloadMbps : undefined;
+  const gaugeColor = running && phase === 'upload' ? tone('#3b82f6') : c.accent;
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
@@ -295,7 +304,8 @@ export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean;
                     ? t.speed.waitGauge(waitSec)
                     : t.speed.tapToStart}
         </Text>
-        <Text style={[styles.gaugeValue, { color: c.text }]}>
+        <SpeedGauge mbps={gaugeMbps} color={gaugeColor} />
+        <Text style={[styles.gaugeValue, { color: c.text }]} maxFontSizeMultiplier={1.3}>
           {running
             ? phase === 'ping' || phase === 'meta'
               ? formatMs(values.pingMs)
@@ -305,7 +315,7 @@ export function SpeedTestScreen({ active, startRequest = 0 }: { active: boolean;
             {running && (phase === 'ping' || phase === 'meta') ? ' ms' : ' Mbps'}
           </Text>
         </Text>
-        {running ? <ActivityIndicator color={c.textMuted} style={styles.spinner} /> : null}
+        {running && !measuring ? <ActivityIndicator color={c.textMuted} style={styles.spinner} /> : null}
         <LiveChart series={series} phase={running ? phase : undefined} done={status === 'done'} />
       </View>
 
@@ -562,12 +572,19 @@ function ResultTile({
   const { t } = useI18n();
   const color = rating ? tone(rating.color) : undefined;
   return (
-    <View style={[styles.tile, { backgroundColor: c.card, borderColor: active ? c.textMuted : 'transparent' }]}>
+    <View
+      style={[styles.tile, { backgroundColor: c.card, borderColor: active ? c.textMuted : 'transparent' }]}
+      // Ekran okuyucu kutucuğu tek parça okur: "İndirme: 85 Mbps, Çok iyi"
+      accessible
+      accessibilityLabel={[`${title}: ${value} ${unit}`, rating ? t.rating[rating.key] : undefined, sub].filter(Boolean).join(', ')}
+    >
       {/* Dar ekranlarda uzun kelimeler (Download, Excellent) bölünmesin: tek satır, gerekirse küçülür */}
       <Text style={[styles.tileTitle, { color: c.textMuted }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
         {title}
       </Text>
-      <Text style={[styles.tileValue, { color: c.text }]}>{value}</Text>
+      <Text style={[styles.tileValue, { color: c.text }]} maxFontSizeMultiplier={1.3}>
+        {value}
+      </Text>
       <Text style={[styles.tileUnit, { color: c.textMuted }]}>{unit}</Text>
       {rating && color ? (
         <Text
@@ -769,9 +786,9 @@ const styles = StyleSheet.create({
   wifiAction: { alignItems: 'flex-end', flexShrink: 1 },
   wifiHint: { fontSize: 11, marginTop: 2, textAlign: 'right' },
   rowValue: { fontSize: 14, fontWeight: '600', flexShrink: 1, textAlign: 'right' },
-  gauge: { borderRadius: 14, paddingVertical: 24, alignItems: 'center', marginBottom: 12 },
-  gaugeLabel: { fontSize: 14 },
-  gaugeValue: { fontSize: 56, fontWeight: '700', marginTop: 4, fontVariant: ['tabular-nums'] },
+  gauge: { borderRadius: 14, paddingVertical: 20, alignItems: 'center', marginBottom: 12 },
+  gaugeLabel: { fontSize: 14, marginBottom: 8 },
+  gaugeValue: { fontSize: 48, fontWeight: '700', marginTop: -8, fontVariant: ['tabular-nums'] },
   gaugeUnit: { fontSize: 20, fontWeight: '400' },
   spinner: { marginTop: 8 },
   tiles: { flexDirection: 'row', gap: 8, marginBottom: 12 },

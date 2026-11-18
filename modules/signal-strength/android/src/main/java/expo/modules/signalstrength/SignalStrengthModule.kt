@@ -15,6 +15,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.view.HapticFeedbackConstants
 import android.view.WindowInsets
 import android.telephony.CellSignalStrength
 import android.telephony.CellSignalStrengthCdma
@@ -105,8 +106,11 @@ class SignalStrengthModule : Module() {
     Function("getLanguagePreference") { prefs()?.getString(KEY_LANGUAGE, null) }
     Function("setLanguagePreference") { lang: String ->
       prefs()?.edit()?.putString(KEY_LANGUAGE, lang)?.apply()
-      // Widget metinleri uygulamada seçilen dili izler
-      appContext.reactContext?.let { WidgetStyle.updateAllWidgets(it.applicationContext) }
+      // Widget ve ikon kısayolu metinleri uygulamada seçilen dili izler
+      appContext.reactContext?.let {
+        WidgetStyle.updateAllWidgets(it.applicationContext)
+        AppShortcuts.update(it.applicationContext)
+      }
     }
 
     // Gizlilik politikası açılışta gösterilmesin mi ("Bir daha gösterme" işaretlendiyse true)
@@ -150,6 +154,21 @@ class SignalStrengthModule : Module() {
         val gen = tone ?: ToneGenerator(AudioManager.STREAM_MUSIC, 80).also { tone = it }
         gen.startTone(ToneGenerator.TONE_PROP_BEEP, durationMs)
       }.isSuccess
+    }
+
+    // Kısa titreşimli geri bildirim: "success" (test bitti), "error" (test başarısız), "tick" (seçim).
+    // Sistemin dokunma geri bildirimi kullanılır: izin gerektirmez (VIBRATE yok) ve kullanıcı
+    // telefon ayarlarında dokunmatik titreşimi kapattıysa titremez.
+    Function("haptic") { kind: String ->
+      val view = appContext.currentActivity?.window?.decorView ?: return@Function false
+      val modern = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+      val effect = when (kind) {
+        "success" -> if (modern) HapticFeedbackConstants.CONFIRM else HapticFeedbackConstants.LONG_PRESS
+        "error" -> if (modern) HapticFeedbackConstants.REJECT else HapticFeedbackConstants.LONG_PRESS
+        else -> HapticFeedbackConstants.CLOCK_TICK
+      }
+      view.post { runCatching { view.performHapticFeedback(effect) } }
+      true
     }
 
     // Telefonun ayar sayfaları: "mobile" = mobil ağ (ağ türü, operatör seçimi), "airplane" = uçak modu
@@ -218,6 +237,11 @@ class SignalStrengthModule : Module() {
     // Android'in bağlantı havuzu sayesinde ardışık çağrılar aynı bağlantıyı kullanır.
     AsyncFunction("pingOnce") { url: String, referer: String, timeoutMs: Int, promise: Promise ->
       Thread { promise.resolve(pingOnceMs(url, referer, timeoutMs)) }.start()
+    }
+
+    // Ana ekran ikonuna uzun basınca çıkan kısayollar (hız testi / mobil sinyal / bağlantı bilgisi)
+    OnCreate {
+      appContext.reactContext?.let { AppShortcuts.update(it.applicationContext) }
     }
 
     OnDestroy {

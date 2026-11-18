@@ -1,11 +1,13 @@
+// src/signal/SoundToggle.tsx
 // Sesli sinyal modu: açıkken sinyal puanına göre bip çalar (güçlü sinyal → sık bip).
 // Uygulama arka plandayken veya sekme değişince susar.
 import { useEffect, useRef, useState } from 'react';
 import { AppState, Pressable, StyleSheet, Text } from 'react-native';
-import SignalStrength from '../../modules/signal-strength/Index';
-import { useI18n } from '../i18n/Index';
+import SignalStrength from '../../modules/signal-strength';
+import { useI18n } from '../i18n';
 import { useTheme } from '../Theme';
 import { beepIntervalMs } from './Beep';
+import { haptic } from '../ui/Haptics';
 
 export function SoundToggle({ score, active }: { score: number; active: boolean }) {
   const { colors: c } = useTheme();
@@ -40,7 +42,10 @@ export function SoundToggle({ score, active }: { score: number; active: boolean 
   return (
     <>
       <Pressable
-        onPress={() => setOn((v) => !v)}
+        onPress={() => {
+          haptic('tick');
+          setOn((v) => !v);
+        }}
         style={[styles.button, { backgroundColor: on ? c.accent : c.card }]}
         accessibilityRole="switch"
         accessibilityState={{ checked: on }}

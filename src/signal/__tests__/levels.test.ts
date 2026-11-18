@@ -1,4 +1,4 @@
-import type { SignalReading } from '../../../modules/signal-strength/Index';
+import type { SignalReading } from '../../../modules/signal-strength';
 import { qualityKey, techLabel, toScore } from '../Levels';
 
 const reading = (r: Partial<SignalReading>): SignalReading => ({ available: true, timestamp: 0, ...r });

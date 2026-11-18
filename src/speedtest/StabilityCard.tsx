@@ -1,9 +1,10 @@
 // "Bağlantı kararlılığı" kartı: 30 sn sürekli ping, canlı gecikme grafiği, dalgalanma ve kayıp.
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useI18n } from '../i18n/Index';
+import { useI18n } from '../i18n';
 import { useTheme } from '../Theme';
 import { Sparkline } from '../ui/Sparkline';
+import { haptic } from '../ui/Haptics';
 import { STABILITY_DURATION_MS, runStabilityTest, stabilityStats } from './Stability';
 
 const VERDICT_COLOR = { good: '#22c55e', fair: '#f59e0b', poor: '#ef4444' } as const;
@@ -50,8 +51,10 @@ export function StabilityCard({
         () => cancelled.current,
       );
       setStatus('done');
+      if (!cancelled.current) haptic('success');
     } catch {
       setStatus('error');
+      haptic('error');
     } finally {
       onRunningChange(false);
     }

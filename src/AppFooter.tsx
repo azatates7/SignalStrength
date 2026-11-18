@@ -2,7 +2,7 @@
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { appFooter } from './AppInfo';
 import { usePrivacyPolicy } from './privacy/PrivacyPolicy';
-import { useI18n } from './i18n/Index';
+import { useI18n } from './i18n';
 import { useTheme } from './Theme';
 
 export function AppFooter({ style }: { style?: StyleProp<ViewStyle> }) {

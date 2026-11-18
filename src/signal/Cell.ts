@@ -1,6 +1,6 @@
 // Baz istasyonu bilgisini okunur hale getiren saf fonksiyonlar: kanal numarasından (ARFCN) bant ve frekans, LTE hücre kimliğinden eNB / sektör, zamanlama ilerlemesinden (TA) yaklaşık uzaklık,
 // MCC-MNC'den operatör adı. Tablolar 3GPP TS 36.101 (LTE) ve 38.104 (5G NR) değerleridir; yalnızca yaygın bantlar listelenir (Android 11+ bandı zaten kendisi verir).
-import type { CellInfo } from '../../modules/signal-strength/Index';
+import type { CellInfo } from '../../modules/signal-strength';
 
 // LTE: [bant, DL en düşük frekans (MHz), N_offs (ilk EARFCN), son EARFCN]
 const LTE: [number, number, number, number][] = [

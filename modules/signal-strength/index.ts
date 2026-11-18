@@ -1,4 +1,3 @@
-// modules/signal-strength/index.ts
 import { NativeModule, requireOptionalNativeModule } from 'expo';
 
 export type Technology = 'NR' | 'LTE' | 'WCDMA' | 'TDSCDMA' | 'GSM' | 'CDMA' | 'UNKNOWN';
@@ -99,6 +98,8 @@ declare class SignalStrengthNative extends NativeModule<Events> {
   /** Tek ping (ms); zaman aşımı / hata → null */
   pingOnce(url: string, referer: string, timeoutMs: number): Promise<number | null>;
   beep(durationMs: number): boolean;
+  /** Sistemin dokunma titreşimi (izin gerektirmez; telefon ayarında kapalıysa titremez) */
+  haptic(kind: 'success' | 'error' | 'tick'): boolean;
   openSystemSettings(kind: 'mobile' | 'airplane'): boolean;
   dnsLatency(server: string, host: string, count: number, timeoutMs: number): Promise<(number | null)[]>;
   httpLatency(url: string, count: number, timeoutMs: number): Promise<(number | null)[]>;

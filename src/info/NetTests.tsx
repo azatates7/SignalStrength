@@ -2,7 +2,7 @@
 //  - DNS karşılaştırması: telefonun kullandığı DNS ve yaygın genel DNS sunucularının yanıt süresi
 //  - Servis gecikmesi: popüler servislere küçük (HEAD) isteklerle gecikme
 // Ölçümler native taraftadır (NetTools.kt). Az veri kullanır (her biri birkaç KB).
-import SignalStrength from '../../modules/signal-strength/Index';
+import SignalStrength from '../../modules/signal-strength';
 import { median } from '../speedtest/Cloudflare';
 
 // privateDns: Android "Özel DNS" ayarına yazılacak ad (ayar IP değil ad ister); yoksa öneride ad verilmez

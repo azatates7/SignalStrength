@@ -1,8 +1,8 @@
 // Baz istasyonu kartı. Konum izni yalnızca "Göster"e dokununca istenir (Wi-Fi adıyla aynı izin); konum servisi kapalıysa konum ayarlarına yönlendirilir. İzin varsa sekme açıkken 5 sn'de bir okunur.
 import { useCallback, useEffect, useState } from 'react';
 import { AppState, Linking, PermissionsAndroid, StyleSheet, Text, View } from 'react-native';
-import SignalStrength, { type CellInfo, type CellInfoResult } from '../../modules/signal-strength/Index';
-import { useI18n } from '../i18n/Index';
+import SignalStrength, { type CellInfo, type CellInfoResult } from '../../modules/signal-strength';
+import { useI18n } from '../i18n';
 import { useTheme } from '../Theme';
 import { Button, Card, Note, Row } from '../ui/UI';
 import { operatorName, sortCells, summarizeCell } from './Cell';

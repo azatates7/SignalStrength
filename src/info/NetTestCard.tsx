@@ -1,7 +1,7 @@
 // "DNS hız karşılaştırması" ve "Servislere gecikme" kartları (aynı bileşen, mode ile seçilir).
 // Yalnızca kullanıcı başlatınca ve internet varken çalışır; sonuçlar saklanmaz.
 import { useEffect, useRef, useState } from 'react';
-import { useI18n } from '../i18n/Index';
+import { useI18n } from '../i18n';
 import { Button, Card, Note, Row } from '../ui/UI';
 import { dnsSuggestion, rankResults, runDnsTest, runServiceTest, type LatencyResult } from './NetTests';
 

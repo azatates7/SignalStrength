@@ -37,6 +37,10 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 - **Sinyal kötü mü?:** Mobil ağ ayarları ve uçak modu kısayolları (uçak modunu aç-kapa şebekeyi yeniden aratır).
 - **DNS hız karşılaştırması:** Kullanılan DNS ile Cloudflare, Google, Quad9 ve OpenDNS karşılaştırılır; belirgin şekilde daha hızlısı varsa Özel DNS ayarı önerilir.
 - **Servislere gecikme:** Google, YouTube, WhatsApp, Instagram, Netflix ve Steam'e gecikme; sorunun sizde mi serviste mi olduğunu anlamak için.
+- **İbreli hız göstergesi:** Test sırasında ibre anlık hızı gösterir (0–1 Gbps, düşük hızlarda da okunaklı ölçek); test bitince indirme hızında durur. Telefonda "Animasyonları kaldır" açıksa ibre animasyonsuz hareket eder.
+- **Titreşimle bildirim:** Hız testi, kararlılık testi ya da ölçüm oturumu bitince kısa bir titreşim; başarısız testte farklı bir titreşim. İzin gerektirmez, telefonun dokunmatik titreşim ayarına uyar.
+- **İkon kısayolları:** Uygulama ikonuna uzun basınca "Hız testi" (testi hemen başlatır), "Mobil sinyal" ve "Bağlantı bilgisi" kısayolları çıkar.
+- **Erişilebilirlik:** TalkBack sonuç kutucuklarını tek parça okur (ör. "İndirme: 85 Mbps, Çok iyi"); büyük yazı tipi ayarında büyük sayılar ve sekme adları taşmaz.
 - **Canlı hız grafiği:** İndirme ve yükleme sırasında hız saniye saniye çizilir; test bitince iki çizgi de görünür.
 - **Bu hız neye yeter?:** Sonuca göre web, HD/4K video, görüntülü görüşme ve online oyun için "Rahat / Sınırda / Yetersiz" ve 1 GB dosyanın indirme/yükleme süresi.
 - **Bağlantı kararlılığı testi:** 30 saniye boyunca sürekli ping; gecikme grafiği, dalgalanma (jitter), kayıp istek ve yorum. Görüntülü görüşmede donma gibi sorunları hız testinden iyi gösterir. Birkaç on KB veri kullanır.
@@ -81,8 +85,7 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 ├─ app.json                    Uygulama adı, sürüm, paket adı, ikon ve splash ayarları
 ├─ assets/images/              Uygulama ikonu ve splash görselleri
 ├─ locales/tr.json            Ana ekrandaki Türkçe uygulama adı
-├─ docs/privacy/index.html     Gizlilik politikası web sayfası (Play Console için, otomatik üretilir)
-├─ scripts/build-privacy-page.mjs  policy.json → docs/privacy/index.html
+├─ scripts/build-privacy-page.mjs  policy.json → web sitesindeki gizlilik sayfası (azatates.com)
 ├─ src/
 │  ├─ appInfo.ts              Sürüm ve politika tarihi (app.json'dan), alt bilgi yazısı
 │  ├─ AppFooter.tsx           Sayfa altı: sürüm + gizlilik politikası bağlantısı
@@ -109,6 +112,8 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 │  │  └─ SpeedTestScreen.tsx   Hız testi sekmesi
 │  ├─ ui/
 │  │  ├─ Sparkline.tsx         Kütüphanesiz çizgi grafik
+│  │  ├─ SpeedGauge.tsx        Hız testi ibreli göstergesi (ölçek: speedtest/gauge.ts)
+│  │  ├─ Haptics.ts            Test bitince kısa titreşim (izin gerektirmez)
 │  │  └─ SignalChart.tsx       "Son 2 dakika" sinyal grafiği
 │  └─ signal/
 │     ├─ WifiCard.tsx          Wi-Fi sinyal kartı
@@ -126,6 +131,7 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
       ├─ SignalWidgetProvider.kt   Mobil sinyal widget'ı
       ├─ SpeedWidgetProvider.kt    Hız testi widget'ı
       ├─ SignalTileService.kt      Hızlı Ayarlar kutucuğu
+      ├─ AppShortcuts.kt           Uygulama ikonuna uzun basınca çıkan kısayollar
       ├─ CellInfoReader.kt         Baz istasyonu bilgisi
       ├─ NetTools.kt               DNS ve servis gecikmesi ölçümü
       └─ WidgetStyle.kt            Widget teması ve dili
@@ -202,15 +208,15 @@ eas build -p android --profile production
 
 Sonuç olarak imzalı bir `.aab` dosyası üretilir. Bu dosya Play Console'a yüklenir. EAS imza anahtarını (keystore) kendisi yönetir.
 
-**Gizlilik politikası:** Uygulama konum izni istediği için Play Console zorunlu tutuyor. Politika GitHub Pages ile yayınlanır: GitHub'da repo → *Settings → Pages → Build and deployment*: Source **Deploy from a branch**, Branch **main**, klasör **/docs** → *Save*. Birkaç dakika sonra sayfa `https://azatates7.github.io/SignalStrength/privacy/` adresinde açılır (repo herkese açık olmalı). Play Console → *Uygulama içeriği → Gizlilik politikası* alanına bu adres girilir. Uygulama politikayı kendi içinde gösterir; bu web sayfası yalnızca Play Console'un istediği herkese açık adres içindir. Metin `src/privacy/policy.json` dosyasında; değiştirince `node scripts/build-privacy-page.mjs` çalıştırıp `docs/privacy/index.html`'i de commit edin. İzin, sunucu veya veri saklama eklenirse *Veri güvenliği* formu da güncellenmeli.
+**Gizlilik politikası:** Uygulama konum izni istediği için Play Console herkese açık bir gizlilik politikası adresi istiyor. Sayfa kişisel web sitesinde (BasicSpringBootWebApp projesi) statik dosya olarak yayınlanır: `https://azatates.com/privacy/signal-strength` (dil: `?lang=tr` / `?lang=en`). Play Console → *Uygulama içeriği → Gizlilik politikası* alanına bu adres girilir. Uygulama politikayı kendi içinde gösterir; web sayfası yalnızca mağazanın istediği herkese açık adres içindir. Metin `src/privacy/policy.json` dosyasında; değiştirince `node scripts/build-privacy-page.mjs` çalıştırın — dosya, bu projeyle aynı klasördeki web sitesi reposuna `src/main/resources/static/privacy/signal-strength.html` olarak yazılır (repo başka yerdeyse çıktı yolunu argüman olarak verin). Sonra web sitesini commit edip yeniden yayınlayın. İzin, sunucu veya veri saklama eklenirse *Veri güvenliği* formu da güncellenmeli.
 
 ## Sürüm ve gizlilik politikası tarihi
 
 İkisi de **tek yerde**, `app.json` içinde tutulur; başka hiçbir dosyada yazılmaz:
 
 ```json
-"version": "11.0.0",
-"android": { "versionCode": 11 },
+"version": "12.0.0",
+"android": { "versionCode": 12 },
 "extra": { "privacyPolicyDate": "2026-11" }
 ```
 

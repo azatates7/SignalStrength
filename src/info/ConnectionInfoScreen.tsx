@@ -2,9 +2,9 @@
 // Yerel bilgiler internet kullanmadan Android'den okunur; dış IP, sekme açıkken Cloudflare'in meta isteğinden (~1 KB, hız testi sekmesindekiyle aynı) alınır.
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import SignalStrength, { type IpInfo } from '../../modules/signal-strength/Index';
+import SignalStrength, { type IpInfo } from '../../modules/signal-strength';
 import { AppFooter } from '../AppFooter';
-import { useI18n, type Strings } from '../i18n/Index';
+import { useI18n, type Strings } from '../i18n';
 import { fetchMeta } from '../speedtest/Cloudflare';
 import { useNetwork } from '../speedtest/UseNetwork';
 import { WifiCard } from '../signal/WifiCard';

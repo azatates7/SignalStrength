@@ -1,11 +1,13 @@
+// src/signal/SessionCard.tsx
 // Ölçüm oturumu kartı: süre seç (1 / 5 / 10 dk), kaydı başlat, dolaşırken "Not ekle" ile yeri işaretle.
 // Sonunda grafik, en zayıf / en güçlü / ortalama ve noktalara göre sıralama; XLSX / CSV dışa aktarma.
 import { useEffect, useRef, useState } from 'react';
 import { AppState, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useI18n } from '../i18n/Index';
+import { useI18n } from '../i18n';
 import { shareRows } from '../speedtest/ExportHistory';
 import { useTheme } from '../Theme';
 import { Sparkline } from '../ui/Sparkline';
+import { haptic } from '../ui/Haptics';
 import { Button, Card, Chip, Note, Row } from '../ui/UI';
 import { MAX_SESSION_SAMPLES, SESSION_DURATIONS, sessionRows, sessionStats, type SessionSample } from './Session';
 
@@ -36,6 +38,13 @@ export function SessionCard({ dbm, score, tech }: { dbm?: number | null; score: 
     }, 1000);
     return () => clearInterval(id);
   }, [recording, minutes]);
+
+  // Kayıt bitince (süre dolunca ya da durdurulunca) kısa titreşim
+  const wasRecording = useRef(false);
+  useEffect(() => {
+    if (wasRecording.current && !recording && samples.length) haptic('success');
+    wasRecording.current = recording;
+  }, [recording]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const start = () => {
     setSamples([]);

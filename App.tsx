@@ -24,10 +24,10 @@ import { CellCard } from './src/signal/CellCard';
 import { ShortcutsCard } from './src/signal/ShortCutsCard';
 import { ConnectionInfoScreen } from './src/info/ConnectionInfoScreen';
 import { ThemeProvider, useTheme } from './src/Theme';
-import { LanguageProvider, useI18n } from './src/i18n/Index';
+import { LanguageProvider, useI18n } from './src/i18n';
 import { AppFooter } from './src/AppFooter';
 import { PrivacyPolicyProvider } from './src/privacy/PrivacyPolicy';
-import SignalStrength from './modules/signal-strength/Index';
+import SignalStrength from './modules/signal-strength';
 
 type Tab = 'signal' | 'speed' | 'info';
 
@@ -44,6 +44,8 @@ function statusBarHeight(): number {
   return Math.max(native, RNStatusBar.currentHeight ?? 0) || 28;
 }
 const TABS: Tab[] = ['signal', 'speed', 'info'];
+// Deep link adresi (signalstrength://<ad>) → sekme
+const LINK_TABS: Record<string, Tab | undefined> = { signal: 'signal', speedtest: 'speed', info: 'info' };
 
 export default function App() {
   return (
@@ -69,19 +71,20 @@ function Root() {
     pager.current?.scrollTo({ x: TABS.indexOf(t) * width, animated });
   };
 
-  // Ana ekrandaki hız testi widget'ı uygulamayı signalstrength://speedtest[?start=1] ile açar:
-  // Hız Testi sekmesine geç, "start=1" ise testi başlat. Uygulama kapalıyken (ilk adres) ve
-  // açıkken (url olayı) ikisi de karşılanır.
+  // Widget'lar ve ikon kısayolları uygulamayı deep link ile açar: signalstrength://speedtest[?start=1],
+  // signalstrength://signal, signalstrength://info. İlgili sekmeye geç; "start=1" ise hız testini başlat.
+  // Uygulama kapalıyken (ilk adres) ve açıkken (url olayı) ikisi de karşılanır.
   const [startRequest, setStartRequest] = useState(0);
   const widthRef = useRef(width);
   widthRef.current = width;
   useEffect(() => {
     const handle = (url?: string | null) => {
-      if (!url || !url.startsWith('signalstrength://speedtest')) return;
-      setTab('speed');
+      const target = url ? LINK_TABS[url.match(/^signalstrength:\/\/(\w+)/)?.[1] ?? ''] : undefined;
+      if (!url || !target) return;
+      setTab(target);
       // Sayfa düzeni hazır olduktan sonra kaydır (açılışta ScrollView henüz ölçülmemiş olabilir)
-      setTimeout(() => pager.current?.scrollTo({ x: TABS.indexOf('speed') * widthRef.current, animated: false }), 50);
-      if (/[?&]start=1\b/.test(url)) setStartRequest((n) => n + 1);
+      setTimeout(() => pager.current?.scrollTo({ x: TABS.indexOf(target) * widthRef.current, animated: false }), 50);
+      if (target === 'speed' && /[?&]start=1\b/.test(url)) setStartRequest((n) => n + 1);
     };
     Linking.getInitialURL().then(handle).catch(() => {});
     const sub = Linking.addEventListener('url', (e) => handle(e.url));
@@ -131,7 +134,7 @@ function Header() {
   const { t, lang, toggleLang } = useI18n();
   return (
     <View style={[styles.header, { paddingTop: statusBarHeight() + 12 }]}>
-      <Text style={[styles.appTitle, { color: c.text }]} numberOfLines={1}>
+      <Text style={[styles.appTitle, { color: c.text }]} numberOfLines={1} maxFontSizeMultiplier={1.3}>
         {t.appName}
       </Text>
       <View style={styles.headerButtons}>
@@ -178,7 +181,11 @@ function TabBar({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
           >
             {/* Bütün sekmelerde aynı yazı boyutu. Sığmazsa küçülmez, iki satıra iner
                 (ör. büyük yazı tipi ayarında); sekmeler aynı yükseklikte kalır. */}
-            <Text style={[styles.segmentText, { color: active ? c.text : c.textMuted }]} numberOfLines={2}>
+            <Text
+              style={[styles.segmentText, { color: active ? c.text : c.textMuted }]}
+              numberOfLines={2}
+              maxFontSizeMultiplier={1.4}
+            >
               {t.tabs[key]}
             </Text>
           </Pressable>
@@ -252,7 +259,7 @@ function SignalScreen({ active }: { active: boolean }) {
           {reading.operator ? `${reading.operator} · ` : ''}
           {techLabel(tech, t.common.unknown)}
         </Text>
-        <Text style={[styles.dbm, { color: c.text }]}>
+        <Text style={[styles.dbm, { color: c.text }]} maxFontSizeMultiplier={1.3}>
           {reading.dbm ?? '—'}
           <Text style={[styles.unit, { color: c.textMuted }]}> dBm</Text>
         </Text>
@@ -284,7 +291,7 @@ function Bars({ score }: { score: number }) {
   const { colors: c, tone } = useTheme();
   const filled = Math.round(score / (MAX_SCORE / BAR_COUNT));
   return (
-    <View style={styles.bars}>
+    <View style={styles.bars} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       {Array.from({ length: BAR_COUNT }, (_, i) => (
         <View
           key={i}

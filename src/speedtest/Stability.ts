@@ -1,6 +1,6 @@
 // Bağlantı kararlılığı testi: ~30 sn boyunca yarım saniyede bir küçük bir istek (ping) gönderilir.
 // Gecikmenin dalgalanması (jitter) ve kayıp istekler, görüntülü görüşme / oyunda donmanın başlıca nedenidir; hız testi bunları göstermez. Toplam veri: birkaç on KB.
-import SignalStrength from '../../modules/signal-strength/Index';
+import SignalStrength from '../../modules/signal-strength';
 import { median } from './Cloudflare';
 
 const BASE = 'https://speed.cloudflare.com';
