@@ -1,3 +1,4 @@
+// src/speedtest/cloudflare.ts
 // Cloudflare'in hız testi sunucularıyla (speed.cloudflare.com) ping / indirme / yükleme ölçümü.
 // Uç noktalar ve süre hesabı Cloudflare'in açık kaynak @cloudflare/speedtest (MIT) kütüphanesini izler.
 
@@ -294,6 +295,16 @@ async function measureBandwidth(
   const meaningful = results.filter((x) => x.ms >= 150).map((x) => x.mbps);
   const mbps = percentile90(meaningful.length ? meaningful : results.map((x) => x.mbps));
   return { mbps, used };
+}
+
+/**
+ * Kısa indirme ölçümü (Ev Wi-Fi haritasında oda başına). Tam hız testinin indirme aşamasıyla aynı
+ * yöntem, ama veri sınırı düşük (varsayılan ~11 MB: 0,1 + 1 + 10 MB) ve ping / yükleme yok.
+ * Hız testi sınırına (dakikada 3) sayılmaz; oda başına bir kez çalışır.
+ */
+export async function quickDownload(token: CancelToken, maxBytes = 11_200_000): Promise<number> {
+  const r = await measureBandwidth('download', token, 0, maxBytes, () => {});
+  return r.mbps;
 }
 
 // --- Yük altında gecikme (bufferbloat) ---

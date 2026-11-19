@@ -1,3 +1,4 @@
+// modules/signal-strength/index.ts
 import { NativeModule, requireOptionalNativeModule } from 'expo';
 
 export type Technology = 'NR' | 'LTE' | 'WCDMA' | 'TDSCDMA' | 'GSM' | 'CDMA' | 'UNKNOWN';
@@ -33,6 +34,20 @@ export type WifiNetwork = {
   standard?: number | null; // Wi-Fi standardı (ScanResult.WIFI_STANDARD_*), Android 11+
   ageMs: number; // Bu ağın en son görüldüğü taramanın yaşı
 };
+
+export type LanDevice = {
+  ip: string;
+  hostname: string | null; // Modemin DNS'inden gelen ad (ör. "android-…", "iPhone"); kendi telefonun için model
+  openPorts: number[];
+  services: { type: string; name: string }[]; // Ağ duyuruları (Chromecast, AirPlay, yazıcı…)
+  isGateway: boolean;
+  isSelf: boolean;
+};
+
+export type LanScanResult =
+  | { status: 'ok'; selfIp: string; prefix: number; gateway: string | null; truncated: boolean; devices: LanDevice[] }
+  | { status: 'noWifi' }
+  | { status: 'error'; message?: string };
 
 export type WifiScanResult =
   | { status: 'ok'; throttled: boolean; connectedBssid: string | null; networks: WifiNetwork[] }
@@ -128,6 +143,8 @@ declare class SignalStrengthNative extends NativeModule<Events> {
   requestReview(): Promise<boolean>;
   /** Çevredeki Wi-Fi ağlarını tarar (konum izni gerekir; Android 2 dk'da en fazla 4 tarama izin verir) */
   scanWifi(): Promise<WifiScanResult>;
+  /** Wi-Fi ağındaki cihazları bulur (~15 sn; izin gerektirmez, targetSdk 36) */
+  scanLan(): Promise<LanScanResult>;
   /** Ekranı açık tut (sürekli ölçüm sırasında) */
   setKeepScreenOn(on: boolean): boolean;
   /** Küçük ayarlar (ör. taahhüt edilen hız); null siler */

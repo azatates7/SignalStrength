@@ -1,5 +1,7 @@
+// src/info/ConnectionInfoScreen.tsx
 // "Bağlantı Bilgisi" sekmesi: yerel IP, modem (ağ geçidi) IP, dış IP, DNS, statik IP, Wi-Fi sinyali ve VPN durumu.
-// Yerel bilgiler internet kullanmadan Android'den okunur; dış IP, sekme açıkken Cloudflare'in meta isteğinden (~1 KB, hız testi sekmesindekiyle aynı) alınır.
+// Yerel bilgiler internet kullanmadan Android'den okunur; dış IP, sekme açıkken Cloudflare'in
+// /meta isteğinden (~1 KB, hız testi sekmesindekiyle aynı) alınır.
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import SignalStrength, { type IpInfo } from '../../modules/signal-strength';
@@ -11,6 +13,8 @@ import { WifiCard } from '../signal/WifiCard';
 import { NetTestCard } from './NetTestCard';
 import { DropsCard } from './DropsCard';
 import { WifiChannelCard } from './WifiChannelCard';
+import { WifiSurveyCard } from './WifiSurveyCard';
+import { DevicesCard } from './DevicesCard';
 import { useSampleHistory } from '../signal/UseSampleHistory';
 import { useWifiSignal } from '../signal/UseWifiSignal';
 import { useTheme } from '../Theme';
@@ -134,7 +138,13 @@ export function ConnectionInfoScreen({ active }: { active: boolean }) {
 
       <Text style={[styles.sectionTitle, { color: c.textMuted }]}>{upper(t.signal.tools)}</Text>
       <DropsCard info={info} />
-      {info.type === 'wifi' ? <WifiChannelCard /> : null}
+      {info.type === 'wifi' ? (
+        <>
+          <WifiSurveyCard />
+          <WifiChannelCard />
+          <DevicesCard />
+        </>
+      ) : null}
       <NetTestCard mode="dns" online={info.connected} systemDns={connected ? (ip.dns ?? []) : []} />
       <NetTestCard mode="service" online={info.connected} />
 

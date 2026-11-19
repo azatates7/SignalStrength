@@ -43,6 +43,8 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 - **Sürekli ping izleme:** Kararlılık testinin "Sürekli" modu durdurana kadar (en fazla 60 dk) ölçer, ekran açık kalır; oyun konsolu, bilgisayar ya da TV aynı Wi-Fi'deyken bağlantıyı izlemek için.
 - **Bağlantı kopmaları:** Uygulama açıkken internet gidip gelirse zamanı ve süresi listelenir (Wi-Fi → mobil veri geçişleri dahil).
 - **Wi-Fi kanal analizi:** Çevredeki ağları tarar; kanalınızı kaç ağın paylaştığını ve daha boş kanalı gösterir (konum izni, yalnızca dokununca).
+- **Ev Wi-Fi haritası:** Oda oda dolaşıp her odada Wi-Fi sinyali, hız ve ping ölçülür; odalar renkli kutucuklarla gösterilir, zayıf odalar için öneri verilir (modemi taşı, mesh, 2,4 / 5 GHz).
+- **Ağdaki cihazlar:** Wi-Fi ağındaki cihazlar (modem, TV, yazıcı, telefonlar…) bulunur; önceki taramada olmayanlar "Yeni" olarak işaretlenir.
 - **5G türü:** 5G SA / 5G NSA ve 4.5G (LTE-A) ayrımı (Android 12+, ek izin gerekmez).
 - **Uygulama içi değerlendirme:** 3. başarılı ve iyi sonuçlu (≥ 10 Mbps) testten sonra Google Play'in puan penceresi uygulamadan çıkmadan açılır; en erken 120 gün sonra tekrar sorulur.
 - **Titreşimle bildirim:** Hız testi, kararlılık testi ya da ölçüm oturumu bitince kısa bir titreşim; başarısız testte farklı bir titreşim. İzin gerektirmez, telefonun dokunmatik titreşim ayarına uyar.

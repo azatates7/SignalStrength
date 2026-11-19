@@ -265,6 +265,12 @@ class SignalStrengthModule : Module() {
       if (ctx == null) promise.resolve(mapOf("status" to "unsupported")) else WifiScanner.scan(ctx, promise)
     }
 
+    // Wi-Fi ağındaki cihazlar (yalnızca kullanıcı "Ağı tara"ya dokununca; ~15 sn)
+    AsyncFunction("scanLan") { promise: Promise ->
+      val ctx = appContext.reactContext
+      if (ctx == null) promise.resolve(mapOf("status" to "noWifi")) else LanScanner.scan(ctx, promise)
+    }
+
     // Küçük ayarlar (ör. taahhüt edilen hız). Anahtarlar "kv_" önekiyle diğer kayıtlardan ayrılır.
     Function("getStoredString") { key: String -> prefs()?.getString("kv_$key", null) }
     Function("setStoredString") { key: String, value: String? ->
