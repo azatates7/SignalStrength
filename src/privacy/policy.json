@@ -53,14 +53,14 @@
         "p": "\"Bağlantı Bilgisi\" sekmesinde cihazın yerel IP adresi, modem (ağ geçidi) adresi, DNS sunucuları ve IP'nin nasıl atandığı (statik / otomatik) Android'den okunur. Dış IP adresiniz, hız testindeki gibi Cloudflare'den alınır. Bu bilgiler **yalnızca ekranda gösterilir**; kaydedilmez ve hiçbir yere gönderilmez."
       },
       {
-        "h3": "3. Wi-Fi ağ adı, baz istasyonu bilgisi ve konum izni (isteğe bağlı)"
+        "h3": "3. Wi-Fi ağ adı, çevredeki Wi-Fi ağları, baz istasyonu bilgisi ve konum izni (isteğe bağlı)"
       },
       {
-        "p": "Android, bağlı olduğunuz Wi-Fi ağının adını (SSID) ve baz istasyonu (hücre) bilgisini yalnızca konum izni verilmiş uygulamalara gösterir. Bu nedenle uygulama konum iznini **yalnızca siz \"Göster\"e dokunduğunuzda** ister."
+        "p": "Android, bağlı olduğunuz Wi-Fi ağının adını (SSID), çevredeki Wi-Fi ağlarını ve baz istasyonu (hücre) bilgisini yalnızca konum izni verilmiş uygulamalara gösterir. Bu nedenle uygulama konum iznini **yalnızca siz \"Göster\" ya da \"Tara\"ya dokunduğunuzda** ister."
       },
       {
         "list": [
-          "Konum izni **sadece Wi-Fi adını ve baz istasyonu bilgisini (bant, frekans, istasyon numarası, yaklaşık uzaklık) ekranda göstermek için** kullanılır. Bu bilgiler kaydedilmez ve hiçbir yere gönderilmez.",
+          "Konum izni **sadece Wi-Fi adını, Wi-Fi kanal analizi için çevredeki ağları (ad, kanal, sinyal gücü) ve baz istasyonu bilgisini (bant, frekans, istasyon numarası, yaklaşık uzaklık) ekranda göstermek için** kullanılır. Bu bilgiler kaydedilmez ve hiçbir yere gönderilmez. Çevredeki ağlar yalnızca siz \"Tara\"ya dokununca taranır.",
           "Uygulama konumunuzu (GPS, koordinat, adres) **okumaz, kaydetmez ve hiçbir yere göndermez**.",
           "İzni vermeseniz de uygulamanın diğer tüm özellikleri çalışır.",
           "İzni istediğiniz zaman telefonunuzun Ayarlar > Uygulamalar bölümünden geri alabilirsiniz."
@@ -83,7 +83,7 @@
         "p": "Cloudflare'in bu bilgileri nasıl işlediği Cloudflare'in kendi gizlilik politikasına tabidir: https://www.cloudflare.com/privacypolicy/"
       },
       {
-        "p": "**Bağlantı kararlılığı testi** de aynı Cloudflare sunucusuna 30 saniye boyunca yarım saniyede bir küçük bir istek gönderir (toplam birkaç on KB). Yalnızca siz başlattığınızda çalışır; sonuçlar kaydedilmez."
+        "p": "**Bağlantı kararlılığı testi** de aynı Cloudflare sunucusuna 30 saniye boyunca yarım saniyede bir küçük bir istek gönderir (toplam birkaç on KB). **Sürekli** modda bu, siz durdurana kadar (en fazla 60 dakika, dakikada yaklaşık 100 KB) sürer ve ekran açık tutulur. Hız testi sırasında **yük altında gecikmeyi** ölçmek için de aynı sunucuya yarım saniyede bir küçük istek gönderilir. Bu ölçümler yalnızca siz başlattığınızda (ya da hız testi sürerken) çalışır; sonuçlar kaydedilmez."
       },
       {
         "p": "**Sonucu paylaş** butonu, test sonucunu yalnızca sizin seçtiğiniz uygulamaya (ör. WhatsApp) resim veya metin olarak gönderir. Resim, paylaşım için telefonun geçici klasöründe oluşturulur. Paylaşım siz dokunmadan yapılmaz; resme ve metne IP adresi veya Wi-Fi adı eklenmez."
@@ -101,13 +101,13 @@
         "p": "**DNS hız karşılaştırması**, telefonunuzun kullandığı DNS sunucusuna ve Cloudflare (1.1.1.1), Google (8.8.8.8), Quad9 (9.9.9.9) ve OpenDNS sunucularına küçük DNS sorguları gönderir. **Servislere gecikme** testi Google, YouTube, WhatsApp, Instagram, Netflix ve Steam sunucularına küçük istekler gönderir. Bu sunucular, her internet bağlantısında olduğu gibi IP adresinizi görür. Testler yalnızca siz başlattığınızda çalışır ve sonuçları kaydedilmez."
       },
       {
-        "p": "**Ölçüm oturumu**, siz başlattığınızda sinyali saniyede bir yalnızca telefonun belleğinde kaydeder; konum kaydedilmez. Uygulama kapanınca kayıt silinir. Dışa aktardığınızda dosya telefonun geçici klasöründe oluşturulur ve yalnızca sizin seçtiğiniz uygulamaya gönderilir. **Sesli mod** yalnızca telefonda ses çalar."
+        "p": "**Ölçüm oturumu**, siz başlattığınızda sinyali saniyede bir yalnızca telefonun belleğinde kaydeder; konum kaydedilmez. Uygulama kapanınca kayıt silinir. Dışa aktardığınızda dosya telefonun geçici klasöründe oluşturulur ve yalnızca sizin seçtiğiniz uygulamaya gönderilir. **Sesli mod** yalnızca telefonda ses çalar. **Bağlantı kopmaları** listesi, uygulama açıkken internetin ne zaman gidip geldiğini yalnızca telefonun belleğinde tutar; uygulama kapanınca silinir."
       },
       {
         "h2": "Telefonda saklanan bilgiler"
       },
       {
-        "p": "Uygulama telefonunuzda yalnızca şunları saklar: seçtiğiniz **tema** (açık/koyu), **dil** (Türkçe/İngilizce), bu bildirimin **tekrar gösterilmemesi** seçimi, widget'ların **açık/koyu tema** seçimi, **son 20 hız testinin sonucu** (tarih, bağlantı tipi, servis sağlayıcı adı, ping, indirme ve yükleme hızı; IP adresi ve Wi-Fi adı saklanmaz) ve uygulamayı **değerlendirme** isteğinin ne zaman gösterileceği için başarılı test sayısı ile son gösterim tarihi. Bu bilgiler telefonunuzdan dışarı gönderilmez. Birkaç başarılı testten sonra Google Play'in kendi değerlendirme penceresi açılabilir; puan ve yorum vermek isteğe bağlıdır ve yalnızca siz gönderirseniz Google Play'e iletilir (uygulama puanınızı görmez). Test geçmişini \"Temizle\" ile istediğiniz zaman silebilirsiniz; uygulamayı kaldırdığınızda hepsi silinir."
+        "p": "Uygulama telefonunuzda yalnızca şunları saklar: seçtiğiniz **tema** (açık/koyu), **dil** (Türkçe/İngilizce), bu bildirimin **tekrar gösterilmemesi** seçimi, widget'ların **açık/koyu tema** seçimi, girdiğiniz **taahhüt edilen (paket) hız**, **son 20 hız testinin sonucu** (tarih, bağlantı tipi, servis sağlayıcı adı, ping, indirme ve yükleme hızı; IP adresi ve Wi-Fi adı saklanmaz) ve uygulamayı **değerlendirme** isteğinin ne zaman gösterileceği için başarılı test sayısı ile son gösterim tarihi. Bu bilgiler telefonunuzdan dışarı gönderilmez. Birkaç başarılı testten sonra Google Play'in kendi değerlendirme penceresi açılabilir; puan ve yorum vermek isteğe bağlıdır ve yalnızca siz gönderirseniz Google Play'e iletilir (uygulama puanınızı görmez). Test geçmişini \"Temizle\" ile istediğiniz zaman silebilirsiniz; uygulamayı kaldırdığınızda hepsi silinir."
       },
       {
         "h2": "Uygulamanın kullandığı izinler"
@@ -127,17 +127,17 @@
             "Wi-Fi / mobil veri ayrımı, bağlantı var mı"
           ],
           [
-            "Wi-Fi durumunu görme",
-            "Wi-Fi ağ adını okumak"
+            "Wi-Fi durumunu görme / değiştirme",
+            "Wi-Fi ağ adını okumak; çevredeki Wi-Fi ağlarını taramak (kanal analizi)"
           ],
           [
             "Konum (yaklaşık / hassas)",
-            "Yalnızca Wi-Fi adını ve baz istasyonu bilgisini göstermek için, siz isterseniz"
+            "Yalnızca Wi-Fi adını, çevredeki Wi-Fi ağlarını ve baz istasyonu bilgisini göstermek için, siz isterseniz"
           ]
         ]
       },
       {
-        "p": "Sinyal gücünü okumak için ek bir izin gerekmez."
+        "p": "Sinyal gücünü ve 5G türünü (SA / NSA) okumak için ek bir izin gerekmez."
       },
       {
         "h2": "Çocukların gizliliği"
@@ -213,14 +213,14 @@
         "p": "On the \"Connection Info\" tab, the device's local IP address, router (gateway) address, DNS servers and how the IP was assigned (static / automatic) are read from Android. Your public IP address is obtained from Cloudflare, as in the speed test. This information is **only displayed on screen**; it is not stored or sent anywhere."
       },
       {
-        "h3": "3. Wi-Fi network name, cell tower information and location permission (optional)"
+        "h3": "3. Wi-Fi network name, nearby Wi-Fi networks, cell tower information and location permission (optional)"
       },
       {
-        "p": "Android only reveals the name (SSID) of the connected Wi-Fi network and cell tower information to apps that have location permission. The app therefore requests location permission **only when you tap \"Show\"**."
+        "p": "Android only reveals the name (SSID) of the connected Wi-Fi network, nearby Wi-Fi networks and cell tower information to apps that have location permission. The app therefore requests location permission **only when you tap \"Show\" or \"Scan\"**."
       },
       {
         "list": [
-          "Location permission is used **only to display the Wi-Fi name and cell tower information (band, frequency, station number, approximate distance)**. This information is not stored or sent anywhere.",
+          "Location permission is used **only to display the Wi-Fi name, nearby networks for the Wi-Fi channel analysis (name, channel, signal strength) and cell tower information (band, frequency, station number, approximate distance)**. This information is not stored or sent anywhere. Nearby networks are scanned only when you tap \"Scan\".",
           "The app **does not read, store or send** your location (GPS, coordinates, address).",
           "All other features work without this permission.",
           "You can revoke it at any time in your phone's Settings > Apps."
@@ -243,7 +243,7 @@
         "p": "How Cloudflare processes this information is governed by Cloudflare's privacy policy: https://www.cloudflare.com/privacypolicy/"
       },
       {
-        "p": "The **connection stability test** also sends a small request to the same Cloudflare server every half second for 30 seconds (a few tens of KB in total). It only runs when you start it; its results are not stored."
+        "p": "The **connection stability test** also sends a small request to the same Cloudflare server every half second for 30 seconds (a few tens of KB in total). In **continuous** mode it runs until you stop it (up to 60 minutes, about 100 KB per minute) and keeps the screen on. During a speed test, a small request is also sent to the same server every half second to measure **latency under load**. These measurements only run when you start them (or while a speed test runs); their results are not stored."
       },
       {
         "p": "The **Share result** button sends the test result as an image or text only to the app you choose (e.g. WhatsApp). The image is created in the phone's temporary folder for sharing. Nothing is shared unless you tap it; the image and text never include your IP address or Wi-Fi name."
@@ -261,13 +261,13 @@
         "p": "The **DNS speed comparison** sends small DNS queries to the DNS server your phone uses and to Cloudflare (1.1.1.1), Google (8.8.8.8), Quad9 (9.9.9.9) and OpenDNS. The **service latency** test sends small requests to Google, YouTube, WhatsApp, Instagram, Netflix and Steam servers. As with any internet connection, these servers see your IP address. The tests only run when you start them and their results are not stored."
       },
       {
-        "p": "A **measurement session**, when you start it, records the signal once per second in the phone's memory only; no location is recorded. The recording is deleted when the app closes. When you export it, the file is created in the phone's temporary folder and sent only to the app you choose. **Sound mode** only plays sounds on your phone."
+        "p": "A **measurement session**, when you start it, records the signal once per second in the phone's memory only; no location is recorded. The recording is deleted when the app closes. When you export it, the file is created in the phone's temporary folder and sent only to the app you choose. **Sound mode** only plays sounds on your phone. The **connection drops** list keeps when the internet dropped and came back while the app was open, in the phone's memory only; it is deleted when the app closes."
       },
       {
         "h2": "Information stored on your phone"
       },
       {
-        "p": "The app stores only the following on your phone: your chosen **theme** (light/dark), **language** (Turkish/English), whether this notice should **not be shown again**, the widgets' **light/dark theme** choice, the **results of the last 20 speed tests** (date, connection type, provider name, ping, download and upload speed; no IP address or Wi-Fi name) and, to decide when to show the **rating** request, the number of successful tests and the date it was last shown. This is never sent off your phone. After a few successful tests Google Play's own rating window may appear; rating and reviewing are optional and are sent to Google Play only if you submit them (the app does not see your rating). You can delete the test history at any time with \"Clear\"; everything is deleted when you uninstall the app."
+        "p": "The app stores only the following on your phone: your chosen **theme** (light/dark), **language** (Turkish/English), whether this notice should **not be shown again**, the widgets' **light/dark theme** choice, the **subscribed (plan) speed** you enter, the **results of the last 20 speed tests** (date, connection type, provider name, ping, download and upload speed; no IP address or Wi-Fi name) and, to decide when to show the **rating** request, the number of successful tests and the date it was last shown. This is never sent off your phone. After a few successful tests Google Play's own rating window may appear; rating and reviewing are optional and are sent to Google Play only if you submit them (the app does not see your rating). You can delete the test history at any time with \"Clear\"; everything is deleted when you uninstall the app."
       },
       {
         "h2": "Permissions used"
@@ -287,17 +287,17 @@
             "Wi-Fi / mobile data detection, connectivity"
           ],
           [
-            "View Wi-Fi state",
-            "Reading the Wi-Fi network name"
+            "View / change Wi-Fi state",
+            "Reading the Wi-Fi network name; scanning nearby Wi-Fi networks (channel analysis)"
           ],
           [
             "Location (approximate / precise)",
-            "Only to show the Wi-Fi name and cell tower information, if you choose to"
+            "Only to show the Wi-Fi name, nearby Wi-Fi networks and cell tower information, if you choose to"
           ]
         ]
       },
       {
-        "p": "Reading signal strength requires no additional permission."
+        "p": "Reading signal strength and the 5G type (SA / NSA) requires no additional permission."
       },
       {
         "h2": "Children's privacy"

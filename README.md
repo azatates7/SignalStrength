@@ -38,6 +38,12 @@ Telefonun o anki mobil şebeke çekim gücünü **internet bağlantısı gerekti
 - **DNS hız karşılaştırması:** Kullanılan DNS ile Cloudflare, Google, Quad9 ve OpenDNS karşılaştırılır; belirgin şekilde daha hızlısı varsa Özel DNS ayarı önerilir.
 - **Servislere gecikme:** Google, YouTube, WhatsApp, Instagram, Netflix ve Steam'e gecikme; sorunun sizde mi serviste mi olduğunu anlamak için.
 - **İbreli hız göstergesi:** Speedtest tarzı, renk geçişli dolan yay ve ibre (indirme mavi-yeşil, yükleme mor). Test sırasında anlık hızı gösterir (0–1 Gbps, düşük hızlarda da okunaklı ölçek); test bitince indirme hızında durur. Telefonda "Animasyonları kaldır" açıksa animasyonsuz hareket eder.
+- **Yük altında gecikme (bufferbloat):** Hız testi sürerken ping de ölçülür ve A+…F arası not verilir; görüntülü görüşme ve oyundaki takılmaların asıl nedenini gösterir.
+- **Taahhüt edilen hız:** Ev internetinizin paket hızını bir kez girin; Wi-Fi / kablolu sonuçlar paketin yüzdesi ve son 10 testin ortalaması olarak gösterilir.
+- **Sürekli ping izleme:** Kararlılık testinin "Sürekli" modu durdurana kadar (en fazla 60 dk) ölçer, ekran açık kalır; oyun konsolu, bilgisayar ya da TV aynı Wi-Fi'deyken bağlantıyı izlemek için.
+- **Bağlantı kopmaları:** Uygulama açıkken internet gidip gelirse zamanı ve süresi listelenir (Wi-Fi → mobil veri geçişleri dahil).
+- **Wi-Fi kanal analizi:** Çevredeki ağları tarar; kanalınızı kaç ağın paylaştığını ve daha boş kanalı gösterir (konum izni, yalnızca dokununca).
+- **5G türü:** 5G SA / 5G NSA ve 4.5G (LTE-A) ayrımı (Android 12+, ek izin gerekmez).
 - **Uygulama içi değerlendirme:** 3. başarılı ve iyi sonuçlu (≥ 10 Mbps) testten sonra Google Play'in puan penceresi uygulamadan çıkmadan açılır; en erken 120 gün sonra tekrar sorulur.
 - **Titreşimle bildirim:** Hız testi, kararlılık testi ya da ölçüm oturumu bitince kısa bir titreşim; başarısız testte farklı bir titreşim. İzin gerektirmez, telefonun dokunmatik titreşim ayarına uyar.
 - **İkon kısayolları:** Uygulama ikonuna uzun basınca "Hız testi" (testi hemen başlatır), "Mobil sinyal" ve "Bağlantı bilgisi" kısayolları çıkar.

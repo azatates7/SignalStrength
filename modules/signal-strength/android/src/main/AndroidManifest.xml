@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Bu modülün manifesti uygulamanın manifestiyle otomatik birleştirilir (prebuild gerekmez). -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Wi-Fi kanal analizi: taramayı başlatmak için (normal izin, kullanıcıya sorulmaz) -->
+  <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
   <application>
     <!-- Ana ekran widget'ı: mobil sinyal gücü -->
     <receiver

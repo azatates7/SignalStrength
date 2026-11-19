@@ -9,6 +9,8 @@ import { fetchMeta } from '../speedtest/Cloudflare';
 import { useNetwork } from '../speedtest/UseNetwork';
 import { WifiCard } from '../signal/WifiCard';
 import { NetTestCard } from './NetTestCard';
+import { DropsCard } from './DropsCard';
+import { WifiChannelCard } from './WifiChannelCard';
 import { useSampleHistory } from '../signal/UseSampleHistory';
 import { useWifiSignal } from '../signal/UseWifiSignal';
 import { useTheme } from '../Theme';
@@ -131,6 +133,8 @@ export function ConnectionInfoScreen({ active }: { active: boolean }) {
       </Pressable>
 
       <Text style={[styles.sectionTitle, { color: c.textMuted }]}>{upper(t.signal.tools)}</Text>
+      <DropsCard info={info} />
+      {info.type === 'wifi' ? <WifiChannelCard /> : null}
       <NetTestCard mode="dns" online={info.connected} systemDns={connected ? (ip.dns ?? []) : []} />
       <NetTestCard mode="service" online={info.connected} />
 

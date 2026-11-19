@@ -24,6 +24,8 @@ export type SpeedResult = {
   uploadMbps?: number;  // Yükleme ölçülemezse boş kalır
   uploadError?: SpeedErrorInfo; // Yükleme neden ölçülemedi
   bytesUsed: number; // Test boyunca harcanan veri (indirme + yükleme)
+  loadedDownMs?: number; // İndirme sürerken ölçülen ping (ortanca) — yük altında gecikme
+  loadedUpMs?: number; // Yükleme sürerken ölçülen ping (ortanca)
 };
 
 export type Progress = {
@@ -294,6 +296,48 @@ async function measureBandwidth(
   return { mbps, used };
 }
 
+// --- Yük altında gecikme (bufferbloat) ---
+// İndirme / yükleme sürerken araya ~0,4 sn'de bir küçük ping isteği gönderilir. Modem ya da operatör
+// tarafındaki tamponlar dolunca bu ping boşta ölçülenden çok yükselir; görüntülü görüşme ve oyundaki
+// takılmaların başlıca nedeni budur. Ölçüm native tarafta (pingOnce), ayrı bir bağlantı üzerinden.
+const LOADED_INTERVAL_MS = 400;
+const LOADED_TIMEOUT_MS = 2000;
+const LOADED_WARMUP_MS = 500; // Aktarım hızlanana kadar bekle
+const LOADED_MIN_SAMPLES = 3;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+function startLoadedProbe(token: CancelToken) {
+  const samples: (number | null)[] = [];
+  let stopped = false;
+  const mod = SignalStrength;
+  if (mod?.pingOnce) {
+    (async () => {
+      await sleep(LOADED_WARMUP_MS);
+      while (!stopped && !token.cancelled) {
+        const t0 = now();
+        const ms = await mod.pingOnce(`${BASE}/__down?bytes=0`, `${BASE}/`, LOADED_TIMEOUT_MS).catch(() => null);
+        if (stopped) break;
+        samples.push(ms);
+        await sleep(Math.max(0, LOADED_INTERVAL_MS - (now() - t0)));
+      }
+    })();
+  }
+  return () => {
+    stopped = true;
+    return loadedLatency(samples);
+  };
+}
+
+/**
+ * Yük altındaki örneklerin ortancası. Yanıt gelmeyen (zaman aşımı) örnek, en az bir yanıt varsa
+ * zaman aşımı süresi sayılır: tampon o kadar dolmuştur. Hiç yanıt yoksa ölçüm yok sayılır.
+ */
+export function loadedLatency(samples: (number | null)[]): number | undefined {
+  if (!samples.some((x) => x !== null)) return undefined;
+  const xs = samples.map((x) => x ?? LOADED_TIMEOUT_MS);
+  return xs.length >= LOADED_MIN_SAMPLES ? median(xs) : undefined;
+}
+
 const payloadCache = new Map<number, string>();
 function payload(size: number) {
   let p = payloadCache.get(size);
@@ -316,14 +360,31 @@ export async function runSpeedTest(
   const { pingMs, jitterMs } = await measurePing(token, onProgress);
   onProgress({ phase: 'download', partial: { pingMs, jitterMs } });
 
-  const down = await measureBandwidth('download', token, pingMs, maxBytesPerDirection, onProgress);
-  onProgress({ phase: 'upload', partial: { pingMs, jitterMs, downloadMbps: down.mbps } });
+  const stopDown = startLoadedProbe(token);
+  let down: Awaited<ReturnType<typeof measureBandwidth>>;
+  let loadedDownMs: number | undefined;
+  try {
+    down = await measureBandwidth('download', token, pingMs, maxBytesPerDirection, onProgress);
+  } finally {
+    loadedDownMs = stopDown();
+  }
+  onProgress({ phase: 'upload', partial: { pingMs, jitterMs, downloadMbps: down.mbps, loadedDownMs } });
 
   // Yükleme başarısız olsa da ping ve indirme sonuçları kaybolmasın
+  const stopUp = startLoadedProbe(token);
   try {
     const up = await measureBandwidth('upload', token, pingMs, maxBytesPerDirection, onProgress);
-    return { pingMs, jitterMs, downloadMbps: down.mbps, uploadMbps: up.mbps, bytesUsed: down.used + up.used };
+    return {
+      pingMs,
+      jitterMs,
+      downloadMbps: down.mbps,
+      uploadMbps: up.mbps,
+      bytesUsed: down.used + up.used,
+      loadedDownMs,
+      loadedUpMs: stopUp(),
+    };
   } catch (e) {
+    stopUp();
     if (e instanceof TestCancelled) throw e;
     return {
       pingMs,
@@ -331,6 +392,7 @@ export async function runSpeedTest(
       downloadMbps: down.mbps,
       uploadError: toErrorInfo(e),
       bytesUsed: down.used,
+      loadedDownMs,
     };
   }
 }

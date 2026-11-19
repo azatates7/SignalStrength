@@ -17,6 +17,7 @@ import android.os.Looper
 import android.provider.Settings
 import android.view.HapticFeedbackConstants
 import android.view.WindowInsets
+import android.view.WindowManager
 import android.telephony.CellSignalStrength
 import android.telephony.CellSignalStrengthCdma
 import android.telephony.CellSignalStrengthGsm
@@ -28,6 +29,7 @@ import android.telephony.PhoneStateListener
 import android.telephony.SignalStrength
 import android.telephony.SubscriptionManager
 import android.telephony.TelephonyCallback
+import android.telephony.TelephonyDisplayInfo
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
 import com.google.android.play.core.review.ReviewManagerFactory
@@ -79,6 +81,9 @@ class SignalStrengthModule : Module() {
   private var telephonyCallback: TelephonyCallback? = null   // Android 12+
   @Suppress("DEPRECATION")
   private var legacyListener: PhoneStateListener? = null     // Android 9-11
+  // Durum çubuğundaki ağ gösterimi (4.5G / 5G NSA / 5G+). Android 12+'da izin gerektirmez.
+  private var displayOverride: Int = TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NONE
+  private var lastSignal: SignalStrength? = null
   private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
   override fun definition() = ModuleDefinition {
@@ -201,6 +206,18 @@ class SignalStrengthModule : Module() {
       true
     }
 
+    // Ekranı açık tut (sürekli ping izlemesi sürerken); kapanınca normale döner
+    Function("setKeepScreenOn") { on: Boolean ->
+      val activity = appContext.currentActivity ?: return@Function false
+      activity.runOnUiThread {
+        runCatching {
+          if (on) activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+          else activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+      }
+      true
+    }
+
     // Telefonun ayar sayfaları: "mobile" = mobil ağ (ağ türü, operatör seçimi), "airplane" = uçak modu
     // (aç-kapa şebekeyi yeniden aratır). Sayfa yoksa sıradaki denenir; hiçbiri açılmazsa false.
     Function("openSystemSettings") { kind: String ->
@@ -241,6 +258,20 @@ class SignalStrengthModule : Module() {
     // Wi-Fi sinyali: güç (dBm), frekans (bant / kanal), bağlantı hızı, Wi-Fi standardı.
     // Konum izni gerekmez (izin yalnızca ağ adı için gerekiyor). Wi-Fi'ye bağlı değilse null.
     Function("getWifiSignal") { runCatching { wifiSignal() }.getOrNull() }
+
+    // Çevredeki Wi-Fi ağları (kanal analizi); yalnızca kullanıcı "Tara"ya dokununca
+    AsyncFunction("scanWifi") { promise: Promise ->
+      val ctx = appContext.reactContext
+      if (ctx == null) promise.resolve(mapOf("status" to "unsupported")) else WifiScanner.scan(ctx, promise)
+    }
+
+    // Küçük ayarlar (ör. taahhüt edilen hız). Anahtarlar "kv_" önekiyle diğer kayıtlardan ayrılır.
+    Function("getStoredString") { key: String -> prefs()?.getString("kv_$key", null) }
+    Function("setStoredString") { key: String, value: String? ->
+      val editor = prefs()?.edit() ?: return@Function
+      if (value == null) editor.remove("kv_$key") else editor.putString("kv_$key", value)
+      editor.apply()
+    }
 
     // Hız testi geçmişi (JSON). Yalnızca telefonda, tema tercihiyle aynı yerde saklanır.
     Function("getSpeedHistory") { prefs()?.getString(KEY_SPEED_HISTORY, null) }
@@ -552,6 +583,7 @@ class SignalStrengthModule : Module() {
   // Dinleyici callback'leri ana thread'de çalışır; buradaki bir hata uygulamayı kapatmasın,
   // JS tarafına "error" olarak iletilsin
   private fun emit(ss: SignalStrength?) {
+    lastSignal = ss
     val payload = try {
       toMap(ss)
     } catch (e: Exception) {
@@ -575,9 +607,21 @@ class SignalStrengthModule : Module() {
     listenSubId = dataSubId()
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-      val cb = SignalCallback { emit(it) }
-      tm.registerTelephonyCallback(ctx.mainExecutor, cb)
-      telephonyCallback = cb
+      // Önce sinyal + ağ gösterimi (5G NSA / 4.5G) birlikte; bir cihaz ağ gösterimini izinsiz
+      // vermezse (SecurityException) yalnızca sinyal dinlenir
+      val withDisplay = SignalDisplayCallback(
+        onSignal = { emit(it) },
+        onDisplay = {
+          displayOverride = it.overrideNetworkType
+          emit(lastSignal)
+        },
+      )
+      telephonyCallback = try {
+        tm.registerTelephonyCallback(ctx.mainExecutor, withDisplay)
+        withDisplay
+      } catch (e: SecurityException) {
+        SignalCallback { emit(it) }.also { tm.registerTelephonyCallback(ctx.mainExecutor, it) }
+      }
     } else {
       // PhoneStateListener, Looper'ı olan bir thread'de oluşturulmalı
       mainHandler.post {
@@ -608,6 +652,7 @@ class SignalStrengthModule : Module() {
       }
     }
     legacyListener = null
+    displayOverride = TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NONE
     listenTelephony = null
     listenSubId = SubscriptionManager.INVALID_SUBSCRIPTION_ID
   }
@@ -625,10 +670,13 @@ class SignalStrengthModule : Module() {
     }
 
     // 5G NSA'da LTE + NR birlikte gelir; en yeni teknolojiyi seç
-    val cell = ss.cellSignalStrengths
-      .filter { valid(it.dbm) != null }
-      .minByOrNull { priority(it) }
+    val cells = ss.cellSignalStrengths.filter { valid(it.dbm) != null }
+    val cell = cells.minByOrNull { priority(it) }
       ?: return mapOf("available" to false, "reason" to "no_service", "timestamp" to now)
+    val hasNr = cells.any { it is CellSignalStrengthNr }
+    val hasLte = cells.any { it is CellSignalStrengthLte }
+    val nsaDisplay = displayOverride == TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NR_NSA ||
+      displayOverride == TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NR_ADVANCED
 
     val result = mutableMapOf<String, Any?>(
       "available" to true,
@@ -637,6 +685,20 @@ class SignalStrengthModule : Module() {
       "dbm" to valid(cell.dbm),
       "asu" to valid(cell.asuLevel),
       "systemLevel" to cell.level,   // Android'in kendi 0-4 seviyesi (karşılaştırma için)
+      // 5G türü: SA = yalnızca 5G; NSA = 4G ile birlikte 5G (Türkiye'deki yaygın kurulum).
+      // 5G hücresi o an veri taşımıyorsa bile durum çubuğu "5G" gösteriyorsa NSA sayılır.
+      "nrMode" to when {
+        hasNr && !hasLte -> "SA"
+        hasNr || (hasLte && nsaDisplay) -> "NSA"
+        else -> null
+      },
+      // 4.5G: birden çok 4G frekansı birlikte (taşıyıcı birleştirme, LTE-A / LTE-A Pro)
+      "lteAdvanced" to when (displayOverride) {
+        TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_LTE_CA -> "LTE-A"
+        TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_LTE_ADVANCED_PRO -> "LTE-A Pro"
+        else -> null
+      },
+      "nrAdvanced" to (displayOverride == TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NR_ADVANCED),
       "timestamp" to now
     )
     when (cell) {
@@ -685,6 +747,15 @@ class SignalStrengthModule : Module() {
 
   // CellInfo.UNAVAILABLE == Int.MAX_VALUE
   private fun valid(v: Int): Int? = if (v == Int.MAX_VALUE || v == Int.MIN_VALUE) null else v
+}
+
+@RequiresApi(Build.VERSION_CODES.S)
+private class SignalDisplayCallback(
+  private val onSignal: (SignalStrength) -> Unit,
+  private val onDisplay: (TelephonyDisplayInfo) -> Unit,
+) : TelephonyCallback(), TelephonyCallback.SignalStrengthsListener, TelephonyCallback.DisplayInfoListener {
+  override fun onSignalStrengthsChanged(signalStrength: SignalStrength) = onSignal(signalStrength)
+  override fun onDisplayInfoChanged(telephonyDisplayInfo: TelephonyDisplayInfo) = onDisplay(telephonyDisplayInfo)
 }
 
 @RequiresApi(Build.VERSION_CODES.S)

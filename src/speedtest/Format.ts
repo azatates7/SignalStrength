@@ -9,6 +9,12 @@ export function formatMbps(v: number | undefined, lang: Lang) {
   return lang === 'tr' ? s.replace('.', ',') : s;
 }
 
+/** Milisaniye, tam sayı; bilinmiyorsa "—" */
+export function formatMs(v?: number) {
+  if (v === undefined || !Number.isFinite(v)) return '—';
+  return String(Math.round(v));
+}
+
 // Ör. "30 Eki 2026 14:05" / "30 Oct 2026, 14:05"
 export function formatDateTime(ts: number, locale: string) {
   try {

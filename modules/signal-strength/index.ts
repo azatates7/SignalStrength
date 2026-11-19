@@ -15,8 +15,29 @@ export type SignalReading = {
   rsrq?: number | null;
   sinr?: number | null;
   rssi?: number | null;
+  /** 5G türü: SA = yalnızca 5G, NSA = 4G ile birlikte (Android 10+; NSA tespiti Android 12+) */
+  nrMode?: 'SA' | 'NSA' | null;
+  /** 4.5G: taşıyıcı birleştirme (Android 12+) */
+  lteAdvanced?: 'LTE-A' | 'LTE-A Pro' | null;
+  /** Operatörün "5G+" gösterimi (Android 12+) */
+  nrAdvanced?: boolean;
   timestamp: number;
 };
+
+export type WifiNetwork = {
+  ssid: string | null; // Gizli ağlarda null
+  bssid: string | null;
+  frequency: number; // MHz
+  widthMhz: number; // Kanal genişliği
+  level: number; // dBm
+  standard?: number | null; // Wi-Fi standardı (ScanResult.WIFI_STANDARD_*), Android 11+
+  ageMs: number; // Bu ağın en son görüldüğü taramanın yaşı
+};
+
+export type WifiScanResult =
+  | { status: 'ok'; throttled: boolean; connectedBssid: string | null; networks: WifiNetwork[] }
+  | { status: 'permission' | 'wifiOff' | 'locationOff' | 'unsupported' }
+  | { status: 'error'; message?: string };
 
 export type NetworkType = 'wifi' | 'cellular' | 'ethernet' | 'vpn' | 'other' | 'none';
 
@@ -105,6 +126,13 @@ declare class SignalStrengthNative extends NativeModule<Events> {
   setReviewState(json: string): void;
   /** Google Play puan penceresini açar; akış hatasız biterse true (pencerenin çıktığı garanti değil) */
   requestReview(): Promise<boolean>;
+  /** Çevredeki Wi-Fi ağlarını tarar (konum izni gerekir; Android 2 dk'da en fazla 4 tarama izin verir) */
+  scanWifi(): Promise<WifiScanResult>;
+  /** Ekranı açık tut (sürekli ölçüm sırasında) */
+  setKeepScreenOn(on: boolean): boolean;
+  /** Küçük ayarlar (ör. taahhüt edilen hız); null siler */
+  getStoredString(key: string): string | null;
+  setStoredString(key: string, value: string | null): void;
   openSystemSettings(kind: 'mobile' | 'airplane'): boolean;
   dnsLatency(server: string, host: string, count: number, timeoutMs: number): Promise<(number | null)[]>;
   httpLatency(url: string, count: number, timeoutMs: number): Promise<(number | null)[]>;

@@ -1,4 +1,5 @@
-// Android'in 0-4 seviyesi yerine dBm'den 0-100 arası bir sinyal puanı hesaplar.
+// src/signal/levels.ts
+// Android'in 0-4 seviyesi yerine dBm'den 0-100 arası bir sinyal puanı hesaplıyoruz.
 import type { SignalReading, Technology } from '../../modules/signal-strength';
 import type { QualityKey } from '../i18n/Strings';
 
@@ -50,3 +51,23 @@ export const TECH_LABEL: Record<Exclude<Technology, 'UNKNOWN'>, string> = {
 };
 
 export const techLabel = (tech: Technology, unknown: string) => (tech === 'UNKNOWN' ? unknown : TECH_LABEL[tech]);
+
+/**
+ * Ekranda gösterilen ağ türü, 5G türü ve 4.5G ile birlikte:
+ * "5G SA" (yalnızca 5G), "5G NSA" (4G ile birlikte 5G), "5G+ NSA" (operatörün 5G+ gösterimi),
+ * "4G (LTE) · 5G NSA" (5G hücresine bağlı ama o an veri 4G'den), "4.5G (LTE-A)" (taşıyıcı birleştirme).
+ * Bu ayrıntılar Android 12+'da gelir; yoksa yalnızca teknoloji yazılır.
+ */
+export function networkTechLabel(
+  r: Pick<SignalReading, 'technology' | 'nrMode' | 'lteAdvanced' | 'nrAdvanced'>,
+  unknown: string,
+): string {
+  const tech = r.technology ?? 'UNKNOWN';
+  const five = (mode: 'SA' | 'NSA') => `5G${r.nrAdvanced ? '+' : ''} ${mode}`;
+  if (tech === 'NR') return r.nrMode ? five(r.nrMode) : TECH_LABEL.NR;
+  if (tech === 'LTE') {
+    if (r.nrMode === 'NSA') return `${TECH_LABEL.LTE} · ${five('NSA')}`;
+    if (r.lteAdvanced) return `4.5G (${r.lteAdvanced})`;
+  }
+  return techLabel(tech, unknown);
+}

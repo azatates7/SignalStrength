@@ -13,7 +13,7 @@ import {
   type ScrollViewInstance,
 } from 'react-native';
 import { useSignalStrength } from './src/signal/UseSignalStrength';
-import { BAR_COUNT, MAX_SCORE, qualityKey, techLabel, toScore } from './src/signal/Levels';
+import { BAR_COUNT, MAX_SCORE, networkTechLabel, qualityKey, techLabel, toScore } from './src/signal/Levels';
 import { METRICS, rate, type MetricInfo } from './src/signal/Metrics';
 import { SpeedTestScreen } from './src/speedtest/SpeedTestScreen';
 import { useSampleHistory } from './src/signal/UseSampleHistory';
@@ -257,7 +257,7 @@ function SignalScreen({ active }: { active: boolean }) {
       <View style={styles.hero}>
         <Text style={[styles.tech, { color: c.textMuted }]}>
           {reading.operator ? `${reading.operator} · ` : ''}
-          {techLabel(tech, t.common.unknown)}
+          {networkTechLabel(reading, t.common.unknown)}
         </Text>
         <Text style={[styles.dbm, { color: c.text }]} maxFontSizeMultiplier={1.3}>
           {reading.dbm ?? '—'}
@@ -423,7 +423,8 @@ const styles = StyleSheet.create({
   cardDesc: { fontSize: 14, lineHeight: 20, marginTop: 12 },
   cardIdeal: { fontSize: 13, marginTop: 8 },
   segment: { flexDirection: 'row', borderRadius: 12, padding: 4 },
-  // Genişlik yazıya göre: uzun ad ("Mobil Hat Kontrol") daha geniş, kısa ad ("Hız Testi") daha dar; kalan boşluk eşit paylaşılır. Böylece üç ad aynı boyutta tek satıra sığar.
+  // Genişlik yazıya göre: uzun ad ("Mobil Hat Kontrol") daha geniş, kısa ad ("Hız Testi") daha dar;
+  // kalan boşluk eşit paylaşılır. Böylece üç ad aynı boyutta tek satıra sığar.
   segmentItem: {
     flexGrow: 1,
     flexShrink: 1,

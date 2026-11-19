@@ -1,5 +1,5 @@
 import type { SignalReading } from '../../../modules/signal-strength';
-import { qualityKey, techLabel, toScore } from '../Levels';
+import { networkTechLabel, qualityKey, techLabel, toScore } from '../Levels';
 
 const reading = (r: Partial<SignalReading>): SignalReading => ({ available: true, timestamp: 0, ...r });
 
@@ -50,5 +50,26 @@ describe('techLabel', () => {
     expect(techLabel('LTE', '?')).toBe('4G (LTE)');
     expect(techLabel('NR', '?')).toBe('5G');
     expect(techLabel('UNKNOWN', 'Bilinmiyor')).toBe('Bilinmiyor');
+  });
+});
+
+describe('networkTechLabel', () => {
+  it('5G türü', () => {
+    expect(networkTechLabel({ technology: 'NR', nrMode: 'SA' }, '?')).toBe('5G SA');
+    expect(networkTechLabel({ technology: 'NR', nrMode: 'NSA' }, '?')).toBe('5G NSA');
+    expect(networkTechLabel({ technology: 'NR', nrMode: 'NSA', nrAdvanced: true }, '?')).toBe('5G+ NSA');
+    expect(networkTechLabel({ technology: 'NR' }, '?')).toBe('5G');
+  });
+
+  it('4G: 5G hazır ve 4.5G', () => {
+    expect(networkTechLabel({ technology: 'LTE', nrMode: 'NSA' }, '?')).toBe('4G (LTE) · 5G NSA');
+    expect(networkTechLabel({ technology: 'LTE', lteAdvanced: 'LTE-A' }, '?')).toBe('4.5G (LTE-A)');
+    expect(networkTechLabel({ technology: 'LTE', lteAdvanced: 'LTE-A Pro' }, '?')).toBe('4.5G (LTE-A Pro)');
+    expect(networkTechLabel({ technology: 'LTE' }, '?')).toBe('4G (LTE)');
+  });
+
+  it('diğerleri', () => {
+    expect(networkTechLabel({ technology: 'WCDMA' }, '?')).toBe('3G (WCDMA)');
+    expect(networkTechLabel({}, 'Bilinmiyor')).toBe('Bilinmiyor');
   });
 });
