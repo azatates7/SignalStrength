@@ -5,7 +5,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useI18n } from '../i18n';
 import { useTheme } from '../Theme';
 import { Card, Row } from '../ui/UI';
-import { bloatLevel, bufferbloat } from './bufferbloat';
+import { bloatLevel, bufferbloat } from './Bufferbloat';
 import type { SpeedResult } from './Cloudflare';
 import { formatMs } from './Format';
 

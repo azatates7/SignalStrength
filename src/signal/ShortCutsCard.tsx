@@ -1,4 +1,4 @@
-// "Sinyal kötü mü?": mobil ağ ayarları ve uçak modu sayfalarına kısayol.
+// "Sinyal kötü mü ?": mobil ağ ayarları ve uçak modu sayfalarına kısayol.
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import SignalStrength from '../../modules/signal-strength';

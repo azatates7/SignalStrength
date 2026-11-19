@@ -1,5 +1,4 @@
-// İbreli hız göstergesinin ölçeği. Doğrusal ölçekte 5 Mbps ile 50 Mbps neredeyse aynı yerde
-// dururdu; bu yüzden ölçek, her aralık eşit yay payı alacak şekilde seçilmiş eşiklerden oluşur
+// İbreli hız göstergesinin ölçeği. Doğrusal ölçekte 5 Mbps ile 50 Mbps neredeyse aynı yerde dururdu; bu yüzden ölçek, her aralık eşit yay payı alacak şekilde seçilmiş eşiklerden oluşur
 // (Speedtest uygulamalarındaki gibi). Aralık içinde doğrusal.
 export const GAUGE_STOPS = [0, 1, 5, 10, 20, 50, 100, 250, 500, 1000] as const;
 

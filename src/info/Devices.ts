@@ -1,7 +1,4 @@
-// src/info/devices.ts
-// "Ağdaki cihazlar" (saf mantık): taramadan gelen cihazlara tür ve ad verir, sıralar ve bir önceki
-// taramayla karşılaştırıp yeni cihazları işaretler. Android MAC adresi vermediği için bir cihaz
-// adıyla (yoksa IP'siyle) tanınır; modem IP'yi değiştirirse adı olmayan cihaz "yeni" görünebilir.
+// "Ağdaki cihazlar" (saf mantık): taramadan gelen cihazlara tür ve ad verir, sıralar ve bir önceki taramayla karşılaştırıp yeni cihazları işaretler. Android MAC adresi vermediği için bir cihaz adıyla (yoksa IP'siyle) tanınır; modem IP'yi değiştirirse adı olmayan cihaz "yeni" görünebilir.
 import type { LanDevice } from '../../modules/signal-strength';
 
 export const KNOWN_KEY = 'lan_known';

@@ -1,6 +1,5 @@
 // "Wi-Fi kanal analizi" kartı. Yalnızca "Tara"ya dokununca tarar (Android sık taramayı sınırlar).
-// Konum izni gerekir (Android kuralı; Wi-Fi adı ve baz istasyonu bilgisiyle aynı izin), izin yalnızca
-// bu kartta dokununca istenir. Mantık wifiChannels.ts'te.
+// Konum izni gerekir (Android kuralı; Wi-Fi adı ve baz istasyonu bilgisiyle aynı izin), izin yalnızca bu kartta dokununca istenir. Mantık wifiChannels.ts'te.
 import { useState } from 'react';
 import { Linking, PermissionsAndroid, StyleSheet, Text, View } from 'react-native';
 import SignalStrength, { type WifiScanResult } from '../../modules/signal-strength';

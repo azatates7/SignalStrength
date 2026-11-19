@@ -1,6 +1,4 @@
-// src/info/drops.ts
-// Bağlantı kopma kaydı (saf mantık). Uygulama açıkken internet gidip gelirse ne zaman ve ne kadar
-// sürdüğü kaydedilir. "İnternet var" = bir ağa bağlı ve Android internete çıkılabildiğini doğrulamış.
+// Bağlantı kopma kaydı (saf mantık). Uygulama açıkken internet gidip gelirse ne zaman ve ne kadar sürdüğü kaydedilir. "İnternet var" = bir ağa bağlı ve Android internete çıkılabildiğini doğrulamış.
 // Uygulama arka plandayken ağ dinlenmez (pil); o aralık izlenmez, öne gelince izleme yeniden başlar.
 // Kayıt yalnızca bellektedir; uygulama kapanınca silinir.
 import type { NetworkInfo, NetworkType } from '../../modules/signal-strength';

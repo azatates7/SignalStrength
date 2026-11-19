@@ -1,4 +1,3 @@
-// src/signal/SessionCard.tsx
 // Ölçüm oturumu kartı: süre seç (1 / 5 / 10 dk), kaydı başlat, dolaşırken "Not ekle" ile yeri işaretle.
 // Sonunda grafik, en zayıf / en güçlü / ortalama ve noktalara göre sıralama; XLSX / CSV dışa aktarma.
 import { useEffect, useRef, useState } from 'react';

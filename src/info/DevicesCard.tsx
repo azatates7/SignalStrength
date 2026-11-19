@@ -1,6 +1,4 @@
-// src/info/DevicesCard.tsx
-// "Ağdaki cihazlar": Wi-Fi ağındaki cihazları tarar (~15 sn, yalnızca dokununca). Önceki taramada
-// görülmeyenler "Yeni" olarak işaretlenir; bilinen cihaz anahtarları telefonda saklanır.
+// "Ağdaki cihazlar": Wi-Fi ağındaki cihazları tarar (~15 sn, yalnızca dokununca). Önceki taramada görülmeyenler "Yeni" olarak işaretlenir; bilinen cihaz anahtarları telefonda saklanır.
 // Mantık devices.ts'te, tarama native tarafta (LanScanner.kt).
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';

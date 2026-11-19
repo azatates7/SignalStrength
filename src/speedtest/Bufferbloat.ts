@@ -1,7 +1,4 @@
-// src/speedtest/bufferbloat.ts
-// Yük altında gecikme notu (bufferbloat). Not, boştaki ping'e göre indirme / yükleme sırasında
-// gecikmenin ne kadar arttığına göre verilir; ikisinden kötü olanı belirler. Sınırlar, bu ölçüm
-// için yaygın kullanılan ölçekten (A+ < 5 ms, A < 30, B < 60, C < 200, D < 400, F ≥ 400 ms artış).
+// Yük altında gecikme notu (bufferbloat). Not, boştaki ping'e göre indirme / yükleme sırasında gecikmenin ne kadar arttığına göre verilir; ikisinden kötü olanı belirler. Sınırlar, bu ölçüm için yaygın kullanılan ölçekten (A+ < 5 ms, A < 30, B < 60, C < 200, D < 400, F ≥ 400 ms artış).
 export type BloatGrade = 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
 export type BloatLevel = 'good' | 'fair' | 'poor';
 

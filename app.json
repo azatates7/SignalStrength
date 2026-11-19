@@ -3,7 +3,7 @@
     "name": "Signal Strength",
     "slug": "signal-strength",
     "scheme": "signalstrength",
-    "version": "11.0.0",
+    "version": "13.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
@@ -12,7 +12,7 @@
     },
     "android": {
       "package": "com.azatates.signalstrength",
-      "versionCode": 11,
+      "versionCode": 13,
       "adaptiveIcon": {
         "backgroundColor": "#0F172A",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

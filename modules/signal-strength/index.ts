@@ -1,4 +1,3 @@
-// modules/signal-strength/index.ts
 import { NativeModule, requireOptionalNativeModule } from 'expo';
 
 export type Technology = 'NR' | 'LTE' | 'WCDMA' | 'TDSCDMA' | 'GSM' | 'CDMA' | 'UNKNOWN';

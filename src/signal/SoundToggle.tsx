@@ -1,4 +1,3 @@
-// src/signal/SoundToggle.tsx
 // Sesli sinyal modu: açıkken sinyal puanına göre bip çalar (güçlü sinyal → sık bip).
 // Uygulama arka plandayken veya sekme değişince susar.
 import { useEffect, useRef, useState } from 'react';

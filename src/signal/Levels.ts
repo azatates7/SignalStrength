@@ -1,4 +1,3 @@
-// src/signal/levels.ts
 // Android'in 0-4 seviyesi yerine dBm'den 0-100 arası bir sinyal puanı hesaplıyoruz.
 import type { SignalReading, Technology } from '../../modules/signal-strength';
 import type { QualityKey } from '../i18n/Strings';
